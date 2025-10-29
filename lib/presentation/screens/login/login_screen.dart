@@ -48,18 +48,37 @@ class LoginScreen extends StatelessWidget {
                 const SizedBox(height: 16),
                 const Text("O", textAlign: TextAlign.center),
                 const SizedBox(height: 16),
-                FloatingActionButton.extended(
-                  onPressed: () {},
-                  label: const Text("Iniciar sesión con Google"),
-                  icon: const Icon(Icons.login),
-                  elevation: 0,
-                ),
+                GoogleSignInButton(),
                 Expanded(child: SizedBox()),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+class GoogleSignInButton extends StatelessWidget {
+  final VoidCallback? onPressed;
+
+  const GoogleSignInButton({super.key, this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton.icon(
+      icon: Image.asset('assets/images/google_logo.png', height: 24),
+      label: const Text(
+        'Iniciar sesión con Google',
+        style: TextStyle(fontSize: 16, color: Colors.black87),
+      ),
+      style: OutlinedButton.styleFrom(
+        side: const BorderSide(color: Colors.grey),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        backgroundColor: Colors.white,
+      ),
+      onPressed: () {}, // <- sin lógica por ahora
     );
   }
 }
