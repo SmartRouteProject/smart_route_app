@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smart_route_app/config/theme/app_theme.dart';
 
 class LoginScreen extends StatelessWidget {
   static const name = 'login-screen';
@@ -50,6 +51,13 @@ class LoginScreen extends StatelessWidget {
                 const SizedBox(height: 16),
                 GoogleSignInButton(),
                 Expanded(child: SizedBox()),
+                Text("¿No tienes una cuenta?", textAlign: TextAlign.center),
+                const SizedBox(height: 10),
+                FloatingActionButton.extended(
+                  onPressed: () {},
+                  label: const Text("Registrate"),
+                  elevation: 0,
+                ),
               ],
             ),
           ),

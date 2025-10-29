@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  ThemeData getTheme() {
-    const primary = Color(0xFF2862F5);
+  static final primary = Color(0xFF2862F5);
 
+  ThemeData getTheme() {
     return ThemeData(
       useMaterial3: true,
       colorSchemeSeed: primary,
 
-      inputDecorationTheme: const InputDecorationTheme(
+      inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: Colors.white, // fondo blanco
         isDense: true, // altura compacta
@@ -50,6 +50,11 @@ class AppTheme {
 
         // Que el label no “flote” (queda como placeholder)
         floatingLabelBehavior: FloatingLabelBehavior.auto,
+      ),
+
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: primary,
+        foregroundColor: Colors.white,
       ),
     );
   }
