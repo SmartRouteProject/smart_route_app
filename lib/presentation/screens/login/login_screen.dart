@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:smart_route_app/config/theme/app_theme.dart';
 
 class LoginScreen extends StatelessWidget {
   static const name = 'login-screen';
@@ -28,6 +27,7 @@ class LoginScreen extends StatelessWidget {
                   child: Column(
                     children: [
                       TextFormField(
+                        keyboardType: TextInputType.emailAddress,
                         decoration: InputDecoration(
                           labelText: 'Correo electrónico',
                         ),
