@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:smart_route_app/presentation/screens/signup/succesful_signup_screen.dart';
 
 class SignupScreen extends StatelessWidget {
   static const name = 'signup-screen';
@@ -52,7 +54,10 @@ class SignupScreen extends StatelessWidget {
               ),
               Expanded(child: SizedBox()),
               FloatingActionButton.extended(
-                onPressed: () {},
+                heroTag: null,
+                onPressed: () {
+                  context.goNamed(SuccesfulSignupScreen.name);
+                },
                 label: const Text("Registrarse"),
                 elevation: 0,
               ),
