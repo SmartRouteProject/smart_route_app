@@ -5,19 +5,19 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "smart_route_app (debug)",
+			"name": "Debug",
 			"request": "launch",
 			"type": "dart",
 			"flutterMode": "debug"
 		},
 		{
-			"name": "smart_route_app (profile mode)",
+			"name": "Profile",
 			"request": "launch",
 			"type": "dart",
 			"flutterMode": "profile"
 		},
 		{
-			"name": "smart_route_app (release mode)",
+			"name": "Release",
 			"request": "launch",
 			"type": "dart",
 			"flutterMode": "release"
