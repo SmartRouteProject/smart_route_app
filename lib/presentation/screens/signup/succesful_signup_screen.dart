@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
 
 class SuccesfulSignupScreen extends StatelessWidget {
@@ -27,7 +28,10 @@ class SuccesfulSignupScreen extends StatelessWidget {
               ),
               Expanded(child: SizedBox()),
               FloatingActionButton.extended(
-                onPressed: () {},
+                heroTag: null,
+                onPressed: () {
+                  context.go("/login");
+                },
                 label: const Text("Iniciar Sesion"),
                 elevation: 0,
               ),

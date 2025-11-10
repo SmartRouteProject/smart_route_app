@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:smart_route_app/presentation/screens/screens.dart';
 
 class LoginScreen extends StatelessWidget {
   static const name = 'login-screen';
@@ -42,7 +44,10 @@ class LoginScreen extends StatelessWidget {
                 ),
                 Expanded(child: SizedBox()),
                 FloatingActionButton.extended(
-                  onPressed: () {},
+                  heroTag: null,
+                  onPressed: () {
+                    context.goNamed(HomeScreen.name);
+                  },
                   label: const Text("Ingresar"),
                   elevation: 0,
                 ),
@@ -54,7 +59,10 @@ class LoginScreen extends StatelessWidget {
                 Text("¿No tienes una cuenta?", textAlign: TextAlign.center),
                 const SizedBox(height: 10),
                 FloatingActionButton.extended(
-                  onPressed: () {},
+                  heroTag: null,
+                  onPressed: () {
+                    context.pushNamed(SignupScreen.name);
+                  },
                   label: const Text("Registrate"),
                   elevation: 0,
                 ),

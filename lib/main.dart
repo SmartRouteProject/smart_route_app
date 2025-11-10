@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 
 import 'package:smart_route_app/config/router/app_router.dart';
 import 'package:smart_route_app/config/theme/app_theme.dart';
 
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Geolocator.requestPermission();
+
   runApp(const ProviderScope(child: MyApp()));
 }
 
