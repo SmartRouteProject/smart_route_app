@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:smart_route_app/presentation/providers/login_form_provider.dart';
+
 import 'package:smart_route_app/presentation/screens/screens.dart';
+import 'package:smart_route_app/presentation/widgets/shared/custom_text_form_field.dart';
 
 class LoginScreen extends StatelessWidget {
   static const name = 'login-screen';
@@ -19,45 +23,29 @@ class LoginScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Expanded(child: SizedBox()),
+
                 const Text(
                   "Inicia Sesión",
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   textAlign: TextAlign.center,
                 ),
+
                 Expanded(child: SizedBox()),
-                Form(
-                  child: Column(
-                    children: [
-                      TextFormField(
-                        keyboardType: TextInputType.emailAddress,
-                        decoration: InputDecoration(
-                          labelText: 'Correo electrónico',
-                        ),
-                      ),
-                      SizedBox(height: 16),
-                      TextFormField(
-                        decoration: InputDecoration(labelText: 'Contraseña'),
-                        obscureText: true,
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(child: SizedBox()),
-                FloatingActionButton.extended(
-                  heroTag: null,
-                  onPressed: () {
-                    context.goNamed(HomeScreen.name);
-                  },
-                  label: const Text("Ingresar"),
-                  elevation: 0,
-                ),
+
+                _LoginForm(),
+
                 const SizedBox(height: 16),
                 const Text("O", textAlign: TextAlign.center),
                 const SizedBox(height: 16),
+
                 GoogleSignInButton(),
+
                 Expanded(child: SizedBox()),
+
                 Text("¿No tienes una cuenta?", textAlign: TextAlign.center),
+
                 const SizedBox(height: 10),
+
                 FloatingActionButton.extended(
                   heroTag: null,
                   onPressed: () {
@@ -71,6 +59,56 @@ class LoginScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _LoginForm extends ConsumerWidget {
+  const _LoginForm();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final loginForm = ref.watch(loginFormProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Form(
+          child: Column(
+            children: [
+              CustomTextFormField(
+                keyboardType: TextInputType.emailAddress,
+                label: 'Correo electrónico',
+                onChanged: ref.read(loginFormProvider.notifier).onEmailChange,
+                errorMessage: loginForm.isFormPosted
+                    ? loginForm.email.errorMessage
+                    : null,
+              ),
+              const SizedBox(height: 16),
+              CustomTextFormField(
+                label: 'Contraseña',
+                obscureText: true,
+                onChanged: ref
+                    .read(loginFormProvider.notifier)
+                    .onPasswordChanged,
+                errorMessage: loginForm.isFormPosted
+                    ? loginForm.password.errorMessage
+                    : null,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+        FloatingActionButton.extended(
+          heroTag: null,
+          onPressed: () {
+            ref.read(loginFormProvider.notifier).onFormSubmit();
+            // context.goNamed(HomeScreen.name);
+          },
+          label: const Text("Ingresar"),
+          elevation: 0,
+        ),
+      ],
     );
   }
 }
