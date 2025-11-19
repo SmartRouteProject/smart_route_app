@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
+import 'package:smart_route_app/presentation/widgets/widgets.dart';
+
 class HomeScreen extends StatefulWidget {
   static const name = 'home-screen';
 
@@ -34,6 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(title: Text("HomeScreen")),
+      drawer: CustomSideMenu(),
       body: GoogleMap(
         mapType: MapType.normal,
         initialCameraPosition: _kGooglePlex,
@@ -50,7 +53,8 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomSheet: GestureDetector(
         onVerticalDragUpdate: (details) {
           setState(() {
-            final next = (_sheetHeight ?? _initialSheetHeight) - details.delta.dy;
+            final next =
+                (_sheetHeight ?? _initialSheetHeight) - details.delta.dy;
             _sheetHeight = next.clamp(_minSheetHeight, maxSheetHeight);
           });
         },
@@ -58,7 +62,10 @@ class _HomeScreenState extends State<HomeScreen> {
           duration: const Duration(milliseconds: 120),
           curve: Curves.easeOut,
           width: double.infinity,
-          height: (_sheetHeight ?? _initialSheetHeight).clamp(_minSheetHeight, maxSheetHeight),
+          height: (_sheetHeight ?? _initialSheetHeight).clamp(
+            _minSheetHeight,
+            maxSheetHeight,
+          ),
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
             boxShadow: const [
@@ -66,7 +73,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: Colors.black26,
                 blurRadius: 12,
                 offset: Offset(0, -2),
-              )
+              ),
             ],
             borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
           ),
