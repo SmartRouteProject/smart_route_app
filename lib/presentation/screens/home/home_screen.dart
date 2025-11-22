@@ -126,23 +126,21 @@ class _HomeScreenState extends State<HomeScreen> {
                       SizedBox(height: 12),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Routes nearby',
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
-                            IconButton(
-                              tooltip: 'Expand',
-                              icon: Icon(Icons.keyboard_arrow_up_rounded),
-                              onPressed: () {
-                                final maxSheetHeight =
-                                    MediaQuery.of(context).size.height * 0.6;
-                                setState(() => _sheetHeight = maxSheetHeight);
-                              },
-                            ),
-                          ],
+                        child: TextFormField(
+                          onTap: () async {
+                            final result = await showSearch(
+                              context: context,
+                              delegate: AddressSearchDelegate(),
+                            );
+
+                            debugPrint('Resultado seleccionado: $result');
+
+                            // Si querés mostrarlo en el campo luego:
+                            // controller.text = result;
+                          },
+                          decoration: InputDecoration(
+                            hintText: "Excribe para añadir una parada",
+                          ),
                         ),
                       ),
                       Expanded(

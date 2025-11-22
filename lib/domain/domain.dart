@@ -1,3 +1,4 @@
+export 'package:smart_route_app/domain/enums/stop_status.dart';
 export 'package:smart_route_app/domain/entities/delivery_stop.dart';
 export 'package:smart_route_app/domain/entities/package.dart';
 export 'package:smart_route_app/domain/entities/pickup_stop.dart';
