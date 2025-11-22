@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:smart_route_app/presentation/widgets/returnAdress/return_address_list.dart';
 
 import 'package:smart_route_app/presentation/widgets/widgets.dart';
 
@@ -37,101 +38,135 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(title: Text("HomeScreen")),
       drawer: CustomSideMenu(),
-      body: GoogleMap(
-        mapType: MapType.normal,
-        initialCameraPosition: _kGooglePlex,
-        mapToolbarEnabled: false,
-        myLocationEnabled: true,
-        myLocationButtonEnabled: false,
-        zoomControlsEnabled: false,
-        compassEnabled: true,
-        onMapCreated: (GoogleMapController controller) {
-          _controller.complete(controller);
-        },
-      ),
-      // Permanent, draggable bottom sheet
-      bottomSheet: GestureDetector(
-        onVerticalDragUpdate: (details) {
-          setState(() {
-            final next =
-                (_sheetHeight ?? _initialSheetHeight) - details.delta.dy;
-            _sheetHeight = next.clamp(_minSheetHeight, maxSheetHeight);
-          });
-        },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 120),
-          curve: Curves.easeOut,
-          width: double.infinity,
-          height: (_sheetHeight ?? _initialSheetHeight).clamp(
-            _minSheetHeight,
-            maxSheetHeight,
+
+      body: Stack(
+        children: [
+          // MAPA
+          GoogleMap(
+            mapType: MapType.normal,
+            initialCameraPosition: _kGooglePlex,
+            mapToolbarEnabled: false,
+            myLocationEnabled: true,
+            myLocationButtonEnabled: false,
+            zoomControlsEnabled: false,
+            compassEnabled: true,
+            onMapCreated: (GoogleMapController controller) {
+              _controller.complete(controller);
+            },
           ),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            boxShadow: const [
-              BoxShadow(
-                color: Colors.black26,
-                blurRadius: 12,
-                offset: Offset(0, -2),
-              ),
-            ],
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+
+          Positioned(
+            bottom:
+                (_sheetHeight ?? _initialSheetHeight) +
+                12, // <-- separación fija
+            right: 16,
+            child: FloatingActionButton(
+              onPressed: () {
+                showGeneralDialog(
+                  context: context,
+                  barrierColor: Colors.black54,
+                  barrierDismissible: true,
+                  barrierLabel: 'close-return-adress-list',
+                  transitionDuration: const Duration(milliseconds: 250),
+                  pageBuilder: (_, __, ___) {
+                    return ReturnAdressList();
+                  },
+                );
+              },
+              elevation: 2,
+              child: Icon(Icons.home),
+            ),
           ),
-          child: SafeArea(
-            top: false,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox(height: 8),
-                // Drag handle
-                Container(
-                  width: 44,
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.outlineVariant,
-                    borderRadius: BorderRadius.circular(3),
+
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: GestureDetector(
+              onVerticalDragUpdate: (details) {
+                setState(() {
+                  final next =
+                      (_sheetHeight ?? _initialSheetHeight) - details.delta.dy;
+                  final maxSheetHeight =
+                      MediaQuery.of(context).size.height * 0.6;
+                  _sheetHeight = next.clamp(_minSheetHeight, maxSheetHeight);
+                });
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 120),
+                curve: Curves.easeOut,
+                width: double.infinity,
+                height: (_sheetHeight ?? _initialSheetHeight),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 12,
+                      offset: Offset(0, -2),
+                    ),
+                  ],
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(16),
                   ),
                 ),
-                const SizedBox(height: 12),
-                // Content placeholder: replace with your widgets
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: SafeArea(
+                  top: false,
+                  child: Column(
                     children: [
-                      Text(
-                        'Routes nearby',
-                        style: Theme.of(context).textTheme.titleMedium,
+                      SizedBox(height: 8),
+                      Container(
+                        width: 44,
+                        height: 5,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.outlineVariant,
+                          borderRadius: BorderRadius.circular(3),
+                        ),
                       ),
-                      IconButton(
-                        tooltip: 'Expand',
-                        icon: const Icon(Icons.keyboard_arrow_up_rounded),
-                        onPressed: () {
-                          setState(() => _sheetHeight = maxSheetHeight);
-                        },
+                      SizedBox(height: 12),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Routes nearby',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            IconButton(
+                              tooltip: 'Expand',
+                              icon: Icon(Icons.keyboard_arrow_up_rounded),
+                              onPressed: () {
+                                final maxSheetHeight =
+                                    MediaQuery.of(context).size.height * 0.6;
+                                setState(() => _sheetHeight = maxSheetHeight);
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: ListView.builder(
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                          itemCount: 8,
+                          itemBuilder: (context, index) => Card(
+                            child: ListTile(
+                              leading: Icon(Icons.route),
+                              title: Text('Route #${index + 1}'),
+                              subtitle: Text('Tap to view details'),
+                              trailing: Icon(Icons.chevron_right),
+                              onTap: () {},
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                   ),
                 ),
-                Expanded(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                    itemCount: 8,
-                    itemBuilder: (context, index) => Card(
-                      child: ListTile(
-                        leading: const Icon(Icons.route),
-                        title: Text('Route #${index + 1}'),
-                        subtitle: const Text('Tap to view details'),
-                        trailing: const Icon(Icons.chevron_right),
-                        onTap: () {},
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
