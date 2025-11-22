@@ -55,6 +55,7 @@ class AppTheme {
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: primary,
         foregroundColor: Colors.white,
+        elevation: 2,
       ),
     );
   }
