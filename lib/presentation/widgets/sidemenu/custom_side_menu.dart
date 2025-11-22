@@ -23,28 +23,75 @@ class CustomSideMenu extends StatelessWidget {
               decoration: const BoxDecoration(
                 color: Color.fromARGB(255, 117, 193, 255),
               ),
-              child: Row(
+              child: Stack(
                 children: [
-                  CircleAvatar(radius: 32, child: Icon(Icons.person)),
-                  SizedBox(width: 16),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      Text(
-                        'Nombre Apellido',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        'usuario@correo.com',
-                        style: TextStyle(color: Colors.white70, fontSize: 14),
+                  // Contenido principal (avatar + nombre + email)
+                  Row(
+                    children: [
+                      const CircleAvatar(radius: 32, child: Icon(Icons.person)),
+                      const SizedBox(width: 16),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Text(
+                            'Nombre Apellido',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            'usuario@correo.com',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
+                  ),
+
+                  // Ícono arriba a la derecha
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    child: IconButton(
+                      icon: const Icon(Icons.edit_square, color: Colors.white),
+                      onPressed: () {
+                        showGeneralDialog(
+                          context: context,
+                          barrierColor: Colors.black54,
+                          barrierDismissible: true,
+                          barrierLabel: 'close-profile-form',
+                          transitionDuration: const Duration(milliseconds: 250),
+                          pageBuilder: (_, __, ___) {
+                            return Scaffold(
+                              appBar: AppBar(
+                                title: const Text("Perfil"),
+                                automaticallyImplyLeading: false,
+                                actions: [
+                                  IconButton(
+                                    icon: const Icon(Icons.close),
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(),
+                                  ),
+                                ],
+                              ),
+                              body: SafeArea(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: const ProfileForm(),
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
                   ),
                 ],
               ),
