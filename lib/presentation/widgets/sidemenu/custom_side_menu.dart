@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:smart_route_app/infrastructure/mocks/route_sample.dart';
 import 'package:intl/intl.dart';
+
+import 'package:smart_route_app/infrastructure/mocks/route_sample.dart';
+import 'package:smart_route_app/presentation/widgets/widgets.dart';
 
 class CustomSideMenu extends StatelessWidget {
   const CustomSideMenu({super.key});
@@ -80,7 +82,35 @@ class CustomSideMenu extends StatelessWidget {
               child: FloatingActionButton.extended(
                 icon: Icon(Icons.add),
                 heroTag: null,
-                onPressed: () {},
+                onPressed: () {
+                  showGeneralDialog(
+                    context: context,
+                    barrierColor: Colors.black54,
+                    barrierDismissible: true,
+                    barrierLabel: 'close-route-form',
+                    transitionDuration: const Duration(milliseconds: 250),
+                    pageBuilder: (_, __, ___) {
+                      return Scaffold(
+                        appBar: AppBar(
+                          title: const Text("Crear Ruta"),
+                          automaticallyImplyLeading: false,
+                          actions: [
+                            IconButton(
+                              icon: const Icon(Icons.close),
+                              onPressed: () => Navigator.of(context).pop(),
+                            ),
+                          ],
+                        ),
+                        body: SafeArea(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: const CreateRoute(),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
                 label: const Text("Nueva Ruta"),
                 elevation: 0,
               ),
