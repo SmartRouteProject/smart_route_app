@@ -128,36 +128,17 @@ class _HomeScreenState extends State<HomeScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: TextFormField(
                           onTap: () async {
-                            final result = await showSearch(
+                            await showSearch(
                               context: context,
                               delegate: AddressSearchDelegate(),
                             );
-
-                            debugPrint('Resultado seleccionado: $result');
-
-                            // Si querés mostrarlo en el campo luego:
-                            // controller.text = result;
                           },
                           decoration: InputDecoration(
                             hintText: "Excribe para añadir una parada",
                           ),
                         ),
                       ),
-                      Expanded(
-                        child: ListView.builder(
-                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                          itemCount: 8,
-                          itemBuilder: (context, index) => Card(
-                            child: ListTile(
-                              leading: Icon(Icons.route),
-                              title: Text('Route #${index + 1}'),
-                              subtitle: Text('Tap to view details'),
-                              trailing: Icon(Icons.chevron_right),
-                              onTap: () {},
-                            ),
-                          ),
-                        ),
-                      ),
+                      Expanded(child: StopsList()),
                     ],
                   ),
                 ),
