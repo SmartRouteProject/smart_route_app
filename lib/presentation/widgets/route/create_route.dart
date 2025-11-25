@@ -10,7 +10,7 @@ class CreateRoute extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Agregar direccion de retorno"),
+        title: const Text("Nueva Ruta"),
         automaticallyImplyLeading: false,
         actions: [
           IconButton(

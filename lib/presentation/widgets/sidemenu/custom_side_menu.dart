@@ -137,24 +137,7 @@ class CustomSideMenu extends StatelessWidget {
                     barrierLabel: 'close-route-form',
                     transitionDuration: const Duration(milliseconds: 250),
                     pageBuilder: (_, __, ___) {
-                      return Scaffold(
-                        appBar: AppBar(
-                          title: const Text("Crear Ruta"),
-                          automaticallyImplyLeading: false,
-                          actions: [
-                            IconButton(
-                              icon: const Icon(Icons.close),
-                              onPressed: () => Navigator.of(context).pop(),
-                            ),
-                          ],
-                        ),
-                        body: SafeArea(
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: const CreateRoute(),
-                          ),
-                        ),
-                      );
+                      return const CreateRoute();
                     },
                   );
                 },
