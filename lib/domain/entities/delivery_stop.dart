@@ -10,6 +10,7 @@ class DeliveryStop extends Stop {
     required super.latitude,
     required super.longitude,
     required super.address,
+    super.status = StopStatus.pending,
     // required this.packages,
   });
 
@@ -18,6 +19,7 @@ class DeliveryStop extends Stop {
       latitude: (json['latitude'] as num).toDouble(),
       longitude: (json['longitude'] as num).toDouble(),
       address: json['address'] ?? '',
+      status: json['status'] ?? '',
       // packages: (json['packages'] as List<dynamic>?)
       //         ?.map((e) => Package.fromJson(e as Map<String, dynamic>))
       //         .toList() ??
@@ -31,6 +33,7 @@ class DeliveryStop extends Stop {
       'latitude': latitude,
       'longitude': longitude,
       'address': address,
+      'status': status,
       // 'packages': packages.map((p) => p.toJson()).toList(),
     };
   }

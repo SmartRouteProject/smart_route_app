@@ -1,6 +1,8 @@
 import 'package:go_router/go_router.dart';
 
 import '../../presentation/screens/screens.dart';
+import 'package:smart_route_app/presentation/widgets/widgets.dart';
+import 'package:smart_route_app/infrastructure/mocks/stops_sample.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/login',

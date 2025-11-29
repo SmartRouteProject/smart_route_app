@@ -126,40 +126,19 @@ class _HomeScreenState extends State<HomeScreen> {
                       SizedBox(height: 12),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Routes nearby',
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
-                            IconButton(
-                              tooltip: 'Expand',
-                              icon: Icon(Icons.keyboard_arrow_up_rounded),
-                              onPressed: () {
-                                final maxSheetHeight =
-                                    MediaQuery.of(context).size.height * 0.6;
-                                setState(() => _sheetHeight = maxSheetHeight);
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                      Expanded(
-                        child: ListView.builder(
-                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                          itemCount: 8,
-                          itemBuilder: (context, index) => Card(
-                            child: ListTile(
-                              leading: Icon(Icons.route),
-                              title: Text('Route #${index + 1}'),
-                              subtitle: Text('Tap to view details'),
-                              trailing: Icon(Icons.chevron_right),
-                              onTap: () {},
-                            ),
+                        child: TextFormField(
+                          onTap: () async {
+                            await showSearch(
+                              context: context,
+                              delegate: AddressSearchDelegate(),
+                            );
+                          },
+                          decoration: InputDecoration(
+                            hintText: "Excribe para añadir una parada",
                           ),
                         ),
                       ),
+                      Expanded(child: StopsList()),
                     ],
                   ),
                 ),

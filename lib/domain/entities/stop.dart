@@ -4,11 +4,13 @@ abstract class Stop {
   double latitude;
   double longitude;
   String address;
+  StopStatus status;
 
   Stop({
     required this.latitude,
     required this.longitude,
     required this.address,
+    this.status = StopStatus.pending,
   });
 
   factory Stop.fromJson(Map<String, dynamic> json) {
