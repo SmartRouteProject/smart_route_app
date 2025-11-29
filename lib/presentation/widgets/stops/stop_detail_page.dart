@@ -77,7 +77,9 @@ class StopDetailPage extends StatelessWidget {
                         Text(
                           'Montevideo, Uruguay', // mock, podés cambiarlo
                           style: textTheme.bodySmall?.copyWith(
-                            color: textTheme.bodySmall?.color?.withOpacity(0.7),
+                            color: textTheme.bodySmall?.color?.withValues(
+                              alpha: 0.7,
+                            ),
                           ),
                         ),
                       ],
@@ -149,7 +151,9 @@ class StopDetailPage extends StatelessWidget {
               // Eliminar parada (en rojo)
               Card(
                 elevation: 0,
-                color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
+                color: theme.colorScheme.surfaceContainerHighest.withValues(
+                  alpha: 0.3,
+                ),
                 child: ListTile(
                   onTap: () {},
                   leading: Icon(
@@ -191,13 +195,13 @@ class _InfoTile extends StatelessWidget {
     return Card(
       elevation: 0,
       margin: const EdgeInsets.symmetric(vertical: 4),
-      color: theme.colorScheme.surfaceVariant.withOpacity(0.25),
+      color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.25),
       child: ListTile(
         leading: Icon(icon),
         title: Text(
           title,
           style: textTheme.bodySmall?.copyWith(
-            color: textTheme.bodySmall?.color?.withOpacity(0.8),
+            color: textTheme.bodySmall?.color?.withValues(alpha: 0.8),
           ),
         ),
         subtitle: Text(subtitle, style: textTheme.bodyMedium),

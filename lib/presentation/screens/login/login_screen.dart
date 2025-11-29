@@ -102,7 +102,7 @@ class _LoginForm extends ConsumerWidget {
         FloatingActionButton.extended(
           heroTag: null,
           onPressed: () {
-            // ref.read(loginFormProvider.notifier).onFormSubmit();
+            ref.read(loginFormProvider.notifier).onFormSubmit();
             context.goNamed(HomeScreen.name);
           },
           label: const Text("Ingresar"),
