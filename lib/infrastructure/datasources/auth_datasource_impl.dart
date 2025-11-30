@@ -1,10 +1,26 @@
+import 'package:dio_flow/dio_flow.dart';
+
 import 'package:smart_route_app/domain/domain.dart';
 
-class AuthDatasourceImpl extends AuthDatasource {
+class AuthDatasourceImpl extends IAuthDatasource {
   @override
-  Future<User> login(String email, String password) {
-    // TODO: implement login
-    throw UnimplementedError();
+  Future<User> login(String email, String password) async {
+    try {
+      final loginResponse = await DioRequestHandler.post(
+        'auth/login',
+        data: {'email': email, 'password': password},
+        requestOptions: RequestOptionsModel(hasBearerToken: false),
+      );
+
+      if (loginResponse is SuccessResponseModel) {
+        final user = User.fromJson(loginResponse.data as Map<String, dynamic>);
+        return user;
+      } else {
+        throw '❌ Error: ${loginResponse.error?.message}';
+      }
+    } catch (err) {
+      rethrow;
+    }
   }
 
   @override

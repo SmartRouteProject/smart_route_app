@@ -8,5 +8,5 @@ export 'package:smart_route_app/domain/entities/stop.dart';
 export 'package:smart_route_app/domain/entities/user.dart';
 export 'package:smart_route_app/domain/enums/route_state.dart';
 export 'package:smart_route_app/domain/enums/package_weight_type.dart';
-export 'datasources/auth_datasource.dart';
-export 'repositories/auth_repository.dart';
+export 'datasources/i_auth_datasource.dart';
+export 'repositories/i_/i_auth_repository.dart';

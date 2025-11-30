@@ -2,18 +2,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:formz/formz.dart';
 
 import 'package:smart_route_app/infrastructure/inputs/inputs.dart';
+import 'package:smart_route_app/presentation/providers/providers.dart';
 
 final loginFormProvider =
     StateNotifierProvider.autoDispose<LoginFormNotifier, LoginFormState>((ref) {
-      // final loginUserCallback = ref.watch(authProvider.notifier).loginUser;
+      final loginUserCallback = ref.watch(authProvider.notifier).loginUser;
 
-      return LoginFormNotifier();
+      return LoginFormNotifier(loginUserCallback: loginUserCallback);
     });
 
 class LoginFormNotifier extends StateNotifier<LoginFormState> {
-  // final Function(String, String) loginUserCallback;
+  final Function(String, String) loginUserCallback;
 
-  LoginFormNotifier() : super(LoginFormState());
+  LoginFormNotifier({required this.loginUserCallback})
+    : super(LoginFormState());
 
   onEmailChange(String value) {
     final newEmail = Email.dirty(value);
@@ -31,12 +33,18 @@ class LoginFormNotifier extends StateNotifier<LoginFormState> {
     );
   }
 
-  onFormSubmit() async {
-    _touchEveryField();
+  Future<bool> onFormSubmit() async {
+    try {
+      _touchEveryField();
 
-    if (!state.isValid) return;
+      if (!state.isValid) return false;
 
-    // await loginUserCallback(state.email.value, state.password.value);
+      await loginUserCallback(state.email.value, state.password.value);
+
+      return true;
+    } catch (err) {
+      return false;
+    }
   }
 
   _touchEveryField() {

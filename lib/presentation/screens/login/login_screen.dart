@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:smart_route_app/presentation/providers/login_form_provider.dart';
 
+import 'package:smart_route_app/presentation/providers/providers.dart';
 import 'package:smart_route_app/presentation/screens/screens.dart';
 import 'package:smart_route_app/presentation/widgets/shared/custom_text_form_field.dart';
 
@@ -66,9 +66,25 @@ class LoginScreen extends StatelessWidget {
 class _LoginForm extends ConsumerWidget {
   const _LoginForm();
 
+  void showSnackbar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red.shade400,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final loginForm = ref.watch(loginFormProvider);
+
+    ref.listen(authProvider, (previous, next) {
+      if (next.errorMessage.isEmpty) return;
+      showSnackbar(context, next.errorMessage);
+    });
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -101,9 +117,11 @@ class _LoginForm extends ConsumerWidget {
         const SizedBox(height: 20),
         FloatingActionButton.extended(
           heroTag: null,
-          onPressed: () {
-            ref.read(loginFormProvider.notifier).onFormSubmit();
-            context.goNamed(HomeScreen.name);
+          onPressed: () async {
+            final loginResp = await ref
+                .read(loginFormProvider.notifier)
+                .onFormSubmit();
+            if (loginResp) context.goNamed(HomeScreen.name);
           },
           label: const Text("Ingresar"),
           elevation: 0,

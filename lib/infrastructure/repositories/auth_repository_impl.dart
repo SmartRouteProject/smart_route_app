@@ -1,10 +1,10 @@
 import 'package:smart_route_app/domain/domain.dart';
 import 'package:smart_route_app/infrastructure/infrastructure.dart';
 
-class AuthRepositoryImpl extends AuthRepository {
-  final AuthDatasource authDatasource;
+class AuthRepositoryImpl extends IAuthRepository {
+  final IAuthDatasource authDatasource;
 
-  AuthRepositoryImpl(AuthDatasource? authDatasource)
+  AuthRepositoryImpl({IAuthDatasource? authDatasource})
     : authDatasource = authDatasource ?? AuthDatasourceImpl();
 
   @override
