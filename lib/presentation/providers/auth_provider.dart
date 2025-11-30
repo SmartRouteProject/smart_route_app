@@ -27,7 +27,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<void> registerUser(User user) async {}
+  Future<void> registerUser(User user) async {
+    try {
+      await authRepository.register(user);
+    } on ArgumentError catch (err) {
+      state = state.copyWith(errorMessage: err.message);
+      rethrow;
+    } catch (err) {
+      rethrow;
+    }
+  }
 
   Future<void> logout({String? errorMsg}) async {
     state = state.copyWith(

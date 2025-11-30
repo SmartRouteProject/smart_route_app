@@ -1,24 +1,40 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:formz/formz.dart';
+import 'package:smart_route_app/domain/domain.dart';
 
 import 'package:smart_route_app/infrastructure/inputs/inputs.dart';
+import 'package:smart_route_app/presentation/providers/providers.dart';
 
 final signupFormProvider =
     StateNotifierProvider.autoDispose<SignupFormNotifier, SignupFormState>((
       ref,
     ) {
-      return SignupFormNotifier();
+      Future<void> signupUserCallback(User user) =>
+          ref.watch(authProvider.notifier).registerUser(user);
+
+      return SignupFormNotifier(signupUserCallback: signupUserCallback);
     });
 
 class SignupFormNotifier extends StateNotifier<SignupFormState> {
-  SignupFormNotifier() : super(SignupFormState());
+  final Function(User) signupUserCallback;
+
+  SignupFormNotifier({required this.signupUserCallback})
+    : super(SignupFormState());
 
   Future<bool> onFormSubmit() async {
-    _touchEveryField();
+    try {
+      _touchEveryField();
 
-    if (!state.isValid) return false;
+      if (!state.isValid) return false;
 
-    return true;
+      final newUser = User.fromSignupForm(state);
+
+      await signupUserCallback(newUser);
+
+      return true;
+    } catch (err) {
+      return false;
+    }
   }
 
   onUserNameChange(String value) {

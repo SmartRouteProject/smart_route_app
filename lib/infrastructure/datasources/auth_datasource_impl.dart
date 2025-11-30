@@ -36,8 +36,21 @@ class AuthDatasourceImpl extends IAuthDatasource {
   }
 
   @override
-  Future<bool> register(String email, String password) {
-    // TODO: implement register
-    throw UnimplementedError();
+  Future<bool> register(User user) async {
+    try {
+      final signupResponse = await DioRequestHandler.post(
+        'auth/register',
+        data: {'user': user},
+        requestOptions: RequestOptionsModel(hasBearerToken: false),
+      );
+
+      if (signupResponse is SuccessResponseModel) {
+        return true;
+      } else {
+        throw '❌ Error: ${signupResponse.error?.message}';
+      }
+    } catch (err) {
+      rethrow;
+    }
   }
 }

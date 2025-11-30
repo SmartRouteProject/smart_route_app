@@ -23,7 +23,7 @@ class AuthRepositoryImpl extends IAuthRepository {
   }
 
   @override
-  Future<bool> register(String email, String password) {
-    return authDatasource.register(email, password);
+  Future<bool> register(User user) {
+    return authDatasource.register(user);
   }
 }

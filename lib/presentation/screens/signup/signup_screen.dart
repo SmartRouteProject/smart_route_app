@@ -16,26 +16,34 @@ class SignupScreen extends StatelessWidget {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              SizedBox(
-                height: size.height * 0.3,
-                child: Center(
-                  child: const Text(
-                    "Registrate",
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center,
+      body: SingleChildScrollView(
+        child: SizedBox(
+          height: size.height,
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  SizedBox(
+                    height: size.height * 0.3,
+                    child: Center(
+                      child: const Text(
+                        "Registrate",
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
                   ),
-                ),
-              ),
 
-              Expanded(child: _SignupForm()),
-            ],
+                  Expanded(child: _SignupForm()),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -44,9 +52,25 @@ class SignupScreen extends StatelessWidget {
 }
 
 class _SignupForm extends ConsumerWidget {
+  void showSnackbar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red.shade400,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final signupForm = ref.watch(signupFormProvider);
+
+    ref.listen(authProvider, (previous, next) {
+      if (next.errorMessage.isEmpty) return;
+      showSnackbar(context, next.errorMessage);
+    });
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
