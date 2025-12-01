@@ -1,13 +1,14 @@
 import 'package:dio_flow/dio_flow.dart';
 
 import 'package:smart_route_app/domain/domain.dart';
+import 'package:smart_route_app/infrastructure/models/api_endpoints.dart';
 
 class AuthDatasourceImpl extends IAuthDatasource {
   @override
   Future<User> login(String email, String password) async {
     try {
       final loginResponse = await DioRequestHandler.post(
-        'auth/login',
+        ApiEndpoints.login,
         data: {'email': email, 'password': password},
         requestOptions: RequestOptionsModel(hasBearerToken: false),
       );
