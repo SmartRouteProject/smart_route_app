@@ -1,5 +1,7 @@
 import 'dart:typed_data';
 
+import 'package:smart_route_app/presentation/providers/providers.dart';
+
 class User {
   String email;
   String password;
@@ -24,6 +26,16 @@ class User {
       profilePicture: Uint8List.fromList(
         List<int>.from(json['profilePicture'] ?? []),
       ),
+    );
+  }
+
+  factory User.fromSignupForm(SignupFormState formState) {
+    return User(
+      email: formState.email.value,
+      password: formState.password.value,
+      name: formState.userName.value,
+      lastName: formState.userLastName.value,
+      profilePicture: Uint8List.fromList([]),
     );
   }
 
