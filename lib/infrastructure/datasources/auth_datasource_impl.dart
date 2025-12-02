@@ -1,11 +1,11 @@
 import 'package:dio_flow/dio_flow.dart';
 
 import 'package:smart_route_app/domain/domain.dart';
-import 'package:smart_route_app/infrastructure/models/api_endpoints.dart';
+import 'package:smart_route_app/infrastructure/infrastructure.dart';
 
 class AuthDatasourceImpl extends IAuthDatasource {
   @override
-  Future<User> login(String email, String password) async {
+  Future<LoginResponse> login(String email, String password) async {
     try {
       final loginResponse = await DioRequestHandler.post(
         ApiEndpoints.login,
@@ -14,10 +14,14 @@ class AuthDatasourceImpl extends IAuthDatasource {
       );
 
       if (loginResponse is SuccessResponseModel) {
-        final user = User.fromJson(loginResponse.data as Map<String, dynamic>);
-        return user;
+        final loginResp = LoginResponse.fromJson(
+          loginResponse.data as Map<String, dynamic>,
+        );
+        return loginResp;
+      } else if (loginResponse.statusCode == 401) {
+        throw WrongCredentials();
       } else {
-        throw '❌ Error: ${loginResponse.error?.message}';
+        throw 'Error del servidor, consultar con el administrados';
       }
     } catch (err) {
       rethrow;

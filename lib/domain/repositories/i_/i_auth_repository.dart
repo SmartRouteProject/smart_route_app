@@ -1,7 +1,8 @@
 import 'package:smart_route_app/domain/domain.dart';
+import 'package:smart_route_app/infrastructure/infrastructure.dart';
 
 abstract class IAuthRepository {
-  Future<User> login(String email, String password);
+  Future<LoginResponse> login(String email, String password);
 
   Future<bool> register(User user);
 

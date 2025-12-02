@@ -1,3 +1,4 @@
+import 'package:dio_flow/dio_flow.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:smart_route_app/domain/domain.dart';
@@ -18,11 +19,23 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> loginUser(String email, String password) async {
     try {
-      final user = await authRepository.login(email, password);
+      final logResp = await authRepository.login(email, password);
 
-      state = state.copyWith(user: user, authStatus: AuthStatus.authenticated);
+      await TokenManager.setTokens(
+        accessToken: logResp.accessToken,
+        refreshToken: logResp.refreshToken,
+        expiry: DateTime.now().add(Duration(minutes: logResp.expiresIn)),
+      );
+
+      state = state.copyWith(
+        user: logResp.user,
+        authStatus: AuthStatus.authenticated,
+      );
     } on ArgumentError catch (err) {
       state = state.copyWith(errorMessage: err.message);
+      rethrow;
+    } on WrongCredentials catch (err) {
+      state = state.copyWith(errorMessage: "Credenciales incorrectas");
       rethrow;
     }
   }
