@@ -4,13 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smart_route_app/domain/domain.dart';
 import 'package:smart_route_app/infrastructure/infrastructure.dart';
 
-final authProvider = StateNotifierProvider.autoDispose<AuthNotifier, AuthState>(
-  (ref) {
-    final authRepository = AuthRepositoryImpl();
+final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
+  final authRepository = AuthRepositoryImpl();
 
-    return AuthNotifier(authRepository: authRepository);
-  },
-);
+  return AuthNotifier(authRepository: authRepository);
+});
 
 class AuthNotifier extends StateNotifier<AuthState> {
   final IAuthRepository authRepository;

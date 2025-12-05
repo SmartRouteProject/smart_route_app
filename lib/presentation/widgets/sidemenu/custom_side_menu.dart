@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import 'package:smart_route_app/infrastructure/mocks/route_sample.dart';
+import 'package:smart_route_app/presentation/providers/providers.dart';
 import 'package:smart_route_app/presentation/widgets/widgets.dart';
 
-class CustomSideMenu extends StatelessWidget {
+class CustomSideMenu extends ConsumerWidget {
   const CustomSideMenu({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final vpSize = MediaQuery.of(context).size;
     final dateFormat = DateFormat('dd/MM/yyyy');
 
@@ -19,83 +21,7 @@ class CustomSideMenu extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Header
-            DrawerHeader(
-              decoration: const BoxDecoration(
-                color: Color.fromARGB(255, 117, 193, 255),
-              ),
-              child: Stack(
-                children: [
-                  // Contenido principal (avatar + nombre + email)
-                  Row(
-                    children: [
-                      const CircleAvatar(radius: 32, child: Icon(Icons.person)),
-                      const SizedBox(width: 16),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Text(
-                            'Nombre Apellido',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            'usuario@correo.com',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-
-                  // Ícono arriba a la derecha
-                  Positioned(
-                    right: 0,
-                    top: 0,
-                    child: IconButton(
-                      icon: const Icon(Icons.edit_square, color: Colors.white),
-                      onPressed: () {
-                        showGeneralDialog(
-                          context: context,
-                          barrierColor: Colors.black54,
-                          barrierDismissible: true,
-                          barrierLabel: 'close-profile-form',
-                          transitionDuration: const Duration(milliseconds: 250),
-                          pageBuilder: (_, __, ___) {
-                            return Scaffold(
-                              appBar: AppBar(
-                                title: const Text("Perfil"),
-                                automaticallyImplyLeading: false,
-                                actions: [
-                                  IconButton(
-                                    icon: const Icon(Icons.close),
-                                    onPressed: () =>
-                                        Navigator.of(context).pop(),
-                                  ),
-                                ],
-                              ),
-                              body: SafeArea(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16.0),
-                                  child: const ProfileForm(),
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            _SideMenuHeader(),
 
             // Opciones de menú
             Expanded(
@@ -147,6 +73,88 @@ class CustomSideMenu extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _SideMenuHeader extends ConsumerWidget {
+  const _SideMenuHeader();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(authProvider).user!;
+
+    return DrawerHeader(
+      decoration: const BoxDecoration(
+        color: Color.fromARGB(255, 117, 193, 255),
+      ),
+      child: Stack(
+        children: [
+          Row(
+            children: [
+              const CircleAvatar(radius: 32, child: Icon(Icons.person)),
+              const SizedBox(width: 16),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "${user.name} ${user.lastName}",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    user.email,
+                    style: TextStyle(color: Colors.white70, fontSize: 14),
+                  ),
+                ],
+              ),
+            ],
+          ),
+
+          // Ícono arriba a la derecha
+          Positioned(
+            right: 0,
+            top: 0,
+            child: IconButton(
+              icon: const Icon(Icons.edit_square, color: Colors.white),
+              onPressed: () {
+                showGeneralDialog(
+                  context: context,
+                  barrierColor: Colors.black54,
+                  barrierDismissible: true,
+                  barrierLabel: 'close-profile-form',
+                  transitionDuration: const Duration(milliseconds: 250),
+                  pageBuilder: (_, __, ___) {
+                    return Scaffold(
+                      appBar: AppBar(
+                        title: const Text("Perfil"),
+                        automaticallyImplyLeading: false,
+                        actions: [
+                          IconButton(
+                            icon: const Icon(Icons.close),
+                            onPressed: () => Navigator.of(context).pop(),
+                          ),
+                        ],
+                      ),
+                      body: SafeArea(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: const ProfileForm(),
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
