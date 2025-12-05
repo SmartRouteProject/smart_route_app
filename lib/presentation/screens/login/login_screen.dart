@@ -117,13 +117,24 @@ class _LoginForm extends ConsumerWidget {
         const SizedBox(height: 20),
         FloatingActionButton.extended(
           heroTag: null,
-          onPressed: () async {
-            final loginResp = await ref
-                .read(loginFormProvider.notifier)
-                .onFormSubmit();
-            if (loginResp) context.goNamed(HomeScreen.name);
-          },
-          label: const Text("Ingresar"),
+          onPressed: loginForm.isPosting
+              ? null
+              : () async {
+                  final loginResp = await ref
+                      .read(loginFormProvider.notifier)
+                      .onFormSubmit();
+                  if (loginResp) context.goNamed(HomeScreen.name);
+                },
+          label: loginForm.isPosting
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              : const Text("Ingresar"),
           elevation: 0,
         ),
       ],

@@ -39,10 +39,15 @@ class LoginFormNotifier extends StateNotifier<LoginFormState> {
 
       if (!state.isValid) return false;
 
+      state = state.copyWith(isPosting: true);
+
       await loginUserCallback(state.email.value, state.password.value);
+
+      state = state.copyWith(isPosting: false);
 
       return true;
     } catch (err) {
+      state = state.copyWith(isPosting: false);
       return false;
     }
   }
