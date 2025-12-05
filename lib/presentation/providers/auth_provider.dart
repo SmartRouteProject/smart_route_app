@@ -54,12 +54,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<void> logout({String? errorMsg}) async {
+  Future<bool> logout({String? errorMsg}) async {
     state = state.copyWith(
       user: null,
       authStatus: AuthStatus.notAuthenticated,
       errorMessage: errorMsg,
     );
+
+    return true;
   }
 }
 

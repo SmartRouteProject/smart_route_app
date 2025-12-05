@@ -1,21 +1,25 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:smart_route_app/presentation/widgets/returnAdress/return_address_list.dart';
 
+import 'package:smart_route_app/presentation/providers/auth_provider.dart';
+import 'package:smart_route_app/presentation/screens/screens.dart';
+import 'package:smart_route_app/presentation/widgets/returnAdress/return_address_list.dart';
 import 'package:smart_route_app/presentation/widgets/widgets.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   static const name = 'home-screen';
 
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
 
@@ -36,7 +40,21 @@ class _HomeScreenState extends State<HomeScreen> {
     _sheetHeight ??= _initialSheetHeight.clamp(_minSheetHeight, maxSheetHeight);
 
     return Scaffold(
-      appBar: AppBar(title: Text("HomeScreen")),
+      appBar: AppBar(
+        title: Text("HomeScreen"),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout),
+            onPressed: () async {
+              final logoutResp = await ref.read(authProvider.notifier).logout();
+              if (logoutResp) {
+                context.pushReplacementNamed(LoginScreen.name);
+              }
+            },
+            tooltip: 'Cerrar sesión',
+          ),
+        ],
+      ),
       drawer: CustomSideMenu(),
 
       body: Stack(
