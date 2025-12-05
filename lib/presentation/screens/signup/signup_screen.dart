@@ -140,7 +140,16 @@ class _SignupForm extends ConsumerWidget {
             // ignore: use_build_context_synchronously
             if (isValidForm) context.goNamed(SuccesfulSignupScreen.name);
           },
-          label: const Text("Registrarse"),
+          label: signupForm.isPosting
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              : const Text("Registrarse"),
           elevation: 0,
         ),
       ],
