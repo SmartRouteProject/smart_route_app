@@ -4,3 +4,4 @@ export 'errors/auth_errors.dart';
 export 'models/api_endpoints.dart';
 export 'models/api_response.dart';
 export 'models/login_response.dart';
+export 'errors/signup_errors.dart';

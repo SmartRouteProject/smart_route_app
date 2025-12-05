@@ -29,7 +29,7 @@ class User {
       profilePicture: Uint8List.fromList(
         json['profilePicture'] is int
             ? [json['profilePicture']]
-            : List<int>.from(json['profilePicture'] ?? []),
+            : List<int>.from([]),
       ),
     );
   }

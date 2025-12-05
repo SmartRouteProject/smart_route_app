@@ -34,7 +34,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } on ArgumentError catch (err) {
       state = state.copyWith(errorMessage: err.message);
       rethrow;
-    } on WrongCredentials catch (err) {
+    } on WrongCredentials catch (_) {
       state = state.copyWith(errorMessage: "Credenciales incorrectas");
       rethrow;
     }
@@ -43,6 +43,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> registerUser(User user) async {
     try {
       await authRepository.register(user);
+    } on DuplicatedEmail catch (_) {
+      state = state.copyWith(
+        errorMessage: "Ya existe una cuenta con ese correo",
+      );
+      rethrow;
     } on ArgumentError catch (err) {
       state = state.copyWith(errorMessage: err.message);
       rethrow;

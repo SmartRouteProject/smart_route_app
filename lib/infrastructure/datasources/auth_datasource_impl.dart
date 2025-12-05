@@ -14,14 +14,21 @@ class AuthDatasourceImpl extends IAuthDatasource {
       );
 
       if (loginResponse is SuccessResponseModel) {
-        final loginResp = LoginResponse.fromJson(
-          loginResponse.data as Map<String, dynamic>,
-        );
-        return loginResp;
-      } else if (loginResponse.statusCode == 401) {
-        throw WrongCredentials();
+        final apiResponse = LoginResponse.fromJson(loginResponse.data);
+
+        return apiResponse;
       } else {
-        throw 'Error del servidor, consultar con el administrados';
+        final apiResponse = ApiResponse<LoginResponse>.fromJson(
+          loginResponse.data,
+          (json) => LoginResponse.fromJson(json as Map<String, dynamic>),
+        );
+
+        if (apiResponse.error.code == 'AUTH002') {
+          throw WrongCredentials();
+        }
+        throw ArgumentError(
+          'Error del servidor, consultar con el administrador',
+        );
       }
     } catch (err) {
       rethrow;
@@ -44,15 +51,25 @@ class AuthDatasourceImpl extends IAuthDatasource {
   Future<bool> register(User user) async {
     try {
       final signupResponse = await DioRequestHandler.post(
-        'auth/register',
-        data: {'user': user},
+        ApiEndpoints.registerUser,
+        data: user.toMap(),
         requestOptions: RequestOptionsModel(hasBearerToken: false),
       );
 
       if (signupResponse is SuccessResponseModel) {
         return true;
       } else {
-        throw '❌ Error: ${signupResponse.error?.message}';
+        final apiResponse = ApiResponse<LoginResponse>.fromJson(
+          signupResponse.data,
+          (json) => LoginResponse.fromJson(json as Map<String, dynamic>),
+        );
+
+        if (apiResponse.error.code == 'USER003') {
+          throw DuplicatedEmail();
+        }
+        throw ArgumentError(
+          'Error del servidor, consultar con el administrador',
+        );
       }
     } catch (err) {
       rethrow;
