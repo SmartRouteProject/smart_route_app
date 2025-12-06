@@ -28,6 +28,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = state.copyWith(
         user: logResp.user,
         authStatus: AuthStatus.authenticated,
+        errorMessage: '',
       );
     } on ArgumentError catch (err) {
       state = state.copyWith(errorMessage: err.message);
@@ -56,6 +57,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
       return true;
     } on ArgumentError catch (err) {
       state = state.copyWith(errorMessage: err.message);
+      return false;
+    } on EmailAlreadyRegisterdManually catch (_) {
+      state = state.copyWith(
+        errorMessage:
+            "Email ya fue registrado con otro metodo de autenticacion",
+      );
       return false;
     } catch (_) {
       state = state.copyWith(

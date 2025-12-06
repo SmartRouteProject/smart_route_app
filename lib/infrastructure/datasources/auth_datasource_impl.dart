@@ -58,7 +58,9 @@ class AuthDatasourceImpl extends IAuthDatasource {
           (json) => LoginResponse.fromJson(json as Map<String, dynamic>),
         );
 
-        if (apiResponse.error.message.isNotEmpty) {
+        if (apiResponse.error.code == "AUTH004") {
+          throw EmailAlreadyRegisterdManually();
+        } else if (apiResponse.error.message.isNotEmpty) {
           throw ArgumentError(apiResponse.error.message);
         }
         throw ArgumentError(
