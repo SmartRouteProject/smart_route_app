@@ -1,0 +1,1 @@
+class DuplicatedEmail implements Exception {}
