@@ -13,6 +13,11 @@ class AuthRepositoryImpl extends IAuthRepository {
   }
 
   @override
+  Future<LoginResponse> loginWithGoogle(String idToken) {
+    return authDatasource.loginWithGoogle(idToken);
+  }
+
+  @override
   Future<bool> logout() {
     return authDatasource.logout();
   }

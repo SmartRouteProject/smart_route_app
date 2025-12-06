@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -84,6 +86,7 @@ class _SideMenuHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authProvider).user!;
+    final profilePicture = user.profilePicture;
 
     return DrawerHeader(
       decoration: const BoxDecoration(
@@ -93,8 +96,14 @@ class _SideMenuHeader extends ConsumerWidget {
         children: [
           Row(
             children: [
-              const CircleAvatar(radius: 32, child: Icon(Icons.person)),
-              const SizedBox(width: 16),
+              CircleAvatar(
+                radius: 32,
+                backgroundImage: profilePicture != null
+                    ? FileImage(profilePicture)
+                    : null,
+                child: profilePicture != null ? null : const Icon(Icons.person),
+              ),
+              SizedBox(width: 16),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,

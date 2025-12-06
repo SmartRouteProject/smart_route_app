@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 import 'package:smart_route_app/presentation/providers/providers.dart';
 import 'package:smart_route_app/presentation/screens/screens.dart';
@@ -25,7 +26,7 @@ class LoginScreen extends StatelessWidget {
                 Expanded(child: SizedBox()),
 
                 const Text(
-                  "Inicia Sesión",
+                  "Inicia Sesion",
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   textAlign: TextAlign.center,
                 ),
@@ -38,11 +39,11 @@ class LoginScreen extends StatelessWidget {
                 const Text("O", textAlign: TextAlign.center),
                 const SizedBox(height: 16),
 
-                GoogleSignInButton(),
+                const GoogleSignInButton(),
 
                 Expanded(child: SizedBox()),
 
-                Text("¿No tienes una cuenta?", textAlign: TextAlign.center),
+                Text("No tienes una cuenta?", textAlign: TextAlign.center),
 
                 const SizedBox(height: 10),
 
@@ -94,7 +95,7 @@ class _LoginForm extends ConsumerWidget {
             children: [
               CustomTextFormField(
                 keyboardType: TextInputType.emailAddress,
-                label: 'Correo electrónico',
+                label: 'Correo electronico',
                 onChanged: ref.read(loginFormProvider.notifier).onEmailChange,
                 errorMessage: loginForm.isFormPosted
                     ? loginForm.email.errorMessage
@@ -142,17 +143,63 @@ class _LoginForm extends ConsumerWidget {
   }
 }
 
-class GoogleSignInButton extends StatelessWidget {
-  final VoidCallback? onPressed;
+class GoogleSignInButton extends ConsumerWidget {
+  final Future<void> Function()? onPressed;
 
   const GoogleSignInButton({super.key, this.onPressed});
 
+  void _showSnackbar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red.shade400,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    Future<void> handleGoogleAuth() async {
+      try {
+        final googleSignIn = GoogleSignIn(
+          serverClientId:
+              "1029869450394-1qvguaclf8dds0o6s73kn651gop1rqcn.apps.googleusercontent.com",
+        );
+        final account = await googleSignIn.signIn();
+
+        if (account == null) return;
+
+        final authentication = await account.authentication;
+        final idToken = authentication.idToken;
+
+        if (idToken == null || idToken.isEmpty) {
+          _showSnackbar(context, "No se pudo obtener el token de Google");
+          return;
+        }
+
+        debugPrint("idToken: $idToken");
+
+        final success = await ref
+            .read(authProvider.notifier)
+            .loginWithGoogle(idToken);
+
+        if (success) {
+          context.goNamed(HomeScreen.name);
+        } else {
+          final errorMsg = ref.read(authProvider).errorMessage;
+          if (errorMsg.isNotEmpty) _showSnackbar(context, errorMsg);
+        }
+      } catch (err) {
+        _showSnackbar(context, "Ocurrio un error al iniciar sesion con Google");
+      }
+    }
+
     return OutlinedButton.icon(
       icon: Image.asset('assets/images/google_logo.png', height: 24),
       label: const Text(
-        'Iniciar sesión con Google',
+        'Iniciar sesion con Google',
         style: TextStyle(fontSize: 16, color: Colors.black87),
       ),
       style: OutlinedButton.styleFrom(
@@ -161,7 +208,7 @@ class GoogleSignInButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         backgroundColor: Colors.white,
       ),
-      onPressed: () {}, // <- sin lógica por ahora
+      onPressed: onPressed ?? handleGoogleAuth,
     );
   }
 }

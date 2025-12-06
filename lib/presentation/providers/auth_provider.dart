@@ -38,6 +38,33 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  Future<bool> loginWithGoogle(String idToken) async {
+    try {
+      final logResp = await authRepository.loginWithGoogle(idToken);
+
+      await TokenManager.setTokens(
+        accessToken: logResp.accessToken,
+        refreshToken: logResp.refreshToken,
+        expiry: DateTime.now().add(Duration(minutes: logResp.expiresIn)),
+      );
+
+      state = state.copyWith(
+        user: logResp.user,
+        authStatus: AuthStatus.authenticated,
+        errorMessage: '',
+      );
+      return true;
+    } on ArgumentError catch (err) {
+      state = state.copyWith(errorMessage: err.message);
+      return false;
+    } catch (_) {
+      state = state.copyWith(
+        errorMessage: "No se pudo iniciar sesión con Google",
+      );
+      return false;
+    }
+  }
+
   Future<void> registerUser(User user) async {
     try {
       await authRepository.register(user);

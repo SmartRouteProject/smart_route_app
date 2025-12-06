@@ -42,6 +42,35 @@ class AuthDatasourceImpl extends IAuthDatasource {
   }
 
   @override
+  Future<LoginResponse> loginWithGoogle(String idToken) async {
+    try {
+      final loginResponse = await DioRequestHandler.post(
+        ApiEndpoints.authGoogle,
+        data: {'idToken': idToken},
+        requestOptions: RequestOptionsModel(hasBearerToken: false),
+      );
+
+      if (loginResponse is SuccessResponseModel) {
+        return LoginResponse.fromJson(loginResponse.data);
+      } else {
+        final apiResponse = ApiResponse<LoginResponse>.fromJson(
+          loginResponse.data,
+          (json) => LoginResponse.fromJson(json as Map<String, dynamic>),
+        );
+
+        if (apiResponse.error.message.isNotEmpty) {
+          throw ArgumentError(apiResponse.error.message);
+        }
+        throw ArgumentError(
+          'Error del servidor, consultar con el administrador',
+        );
+      }
+    } catch (err) {
+      rethrow;
+    }
+  }
+
+  @override
   Future<String> refreshToken(String token) {
     // TODO: implement refreshToken
     throw UnimplementedError();
