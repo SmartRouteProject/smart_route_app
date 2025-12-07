@@ -1,15 +1,14 @@
+import 'package:dio_flow/dio_flow.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:smart_route_app/domain/domain.dart';
 import 'package:smart_route_app/infrastructure/infrastructure.dart';
 
-final authProvider = StateNotifierProvider.autoDispose<AuthNotifier, AuthState>(
-  (ref) {
-    final authRepository = AuthRepositoryImpl();
+final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
+  final authRepository = AuthRepositoryImpl();
 
-    return AuthNotifier(authRepository: authRepository);
-  },
-);
+  return AuthNotifier(authRepository: authRepository);
+});
 
 class AuthNotifier extends StateNotifier<AuthState> {
   final IAuthRepository authRepository;
@@ -18,18 +17,69 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> loginUser(String email, String password) async {
     try {
-      final user = await authRepository.login(email, password);
+      final logResp = await authRepository.login(email, password);
 
-      state = state.copyWith(user: user, authStatus: AuthStatus.authenticated);
+      await TokenManager.setTokens(
+        accessToken: logResp.accessToken,
+        refreshToken: logResp.refreshToken,
+        expiry: DateTime.now().add(Duration(minutes: logResp.expiresIn)),
+      );
+
+      state = state.copyWith(
+        user: logResp.user,
+        authStatus: AuthStatus.authenticated,
+        errorMessage: '',
+      );
     } on ArgumentError catch (err) {
       state = state.copyWith(errorMessage: err.message);
       rethrow;
+    } on WrongCredentials catch (_) {
+      state = state.copyWith(errorMessage: "Credenciales incorrectas");
+      rethrow;
+    }
+  }
+
+  Future<bool> loginWithGoogle(String idToken) async {
+    try {
+      final logResp = await authRepository.loginWithGoogle(idToken);
+
+      await TokenManager.setTokens(
+        accessToken: logResp.accessToken,
+        refreshToken: logResp.refreshToken,
+        expiry: DateTime.now().add(Duration(minutes: logResp.expiresIn)),
+      );
+
+      state = state.copyWith(
+        user: logResp.user,
+        authStatus: AuthStatus.authenticated,
+        errorMessage: '',
+      );
+      return true;
+    } on ArgumentError catch (err) {
+      state = state.copyWith(errorMessage: err.message);
+      return false;
+    } on EmailAlreadyRegisterdManually catch (_) {
+      state = state.copyWith(
+        errorMessage:
+            "Email ya fue registrado con otro metodo de autenticacion",
+      );
+      return false;
+    } catch (_) {
+      state = state.copyWith(
+        errorMessage: "No se pudo iniciar sesión con Google",
+      );
+      return false;
     }
   }
 
   Future<void> registerUser(User user) async {
     try {
       await authRepository.register(user);
+    } on DuplicatedEmail catch (_) {
+      state = state.copyWith(
+        errorMessage: "Ya existe una cuenta con ese correo",
+      );
+      rethrow;
     } on ArgumentError catch (err) {
       state = state.copyWith(errorMessage: err.message);
       rethrow;
@@ -38,12 +88,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<void> logout({String? errorMsg}) async {
+  Future<bool> logout({String? errorMsg}) async {
     state = state.copyWith(
       user: null,
       authStatus: AuthStatus.notAuthenticated,
       errorMessage: errorMsg,
     );
+
+    return true;
   }
 }
 

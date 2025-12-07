@@ -8,8 +8,13 @@ class AuthRepositoryImpl extends IAuthRepository {
     : authDatasource = authDatasource ?? AuthDatasourceImpl();
 
   @override
-  Future<User> login(String email, String password) {
+  Future<LoginResponse> login(String email, String password) {
     return authDatasource.login(email, password);
+  }
+
+  @override
+  Future<LoginResponse> loginWithGoogle(String idToken) {
+    return authDatasource.loginWithGoogle(idToken);
   }
 
   @override

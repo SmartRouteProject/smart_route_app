@@ -29,10 +29,15 @@ class SignupFormNotifier extends StateNotifier<SignupFormState> {
 
       final newUser = User.fromSignupForm(state);
 
+      state = state.copyWith(isPosting: true);
+
       await signupUserCallback(newUser);
+
+      state = state.copyWith(isPosting: false);
 
       return true;
     } catch (err) {
+      state = state.copyWith(isPosting: false);
       return false;
     }
   }

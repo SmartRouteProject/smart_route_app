@@ -28,6 +28,7 @@ class CustomTextFormField extends StatelessWidget {
       obscureText: obscureText,
       keyboardType: keyboardType,
       decoration: InputDecoration(
+        //TODO: Make the error message take up to two lines
         label: label != null ? Text(label!) : null,
         hintText: hint,
         errorText: errorMessage,
