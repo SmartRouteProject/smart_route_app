@@ -110,14 +110,14 @@ class _SignupForm extends ConsumerWidget {
                 onChanged: ref
                     .read(signupFormProvider.notifier)
                     .onPasswordChange,
-                obscureText: true,
+                isPassword: true,
                 errorMessage: signupForm.isFormPosted
                     ? signupForm.password.errorMessage
                     : null,
               ),
               CustomTextFormField(
                 label: 'Confirmar Contraseña',
-                obscureText: true,
+                isPassword: true,
                 onChanged: ref
                     .read(signupFormProvider.notifier)
                     .onConfirmPasswordChange,
