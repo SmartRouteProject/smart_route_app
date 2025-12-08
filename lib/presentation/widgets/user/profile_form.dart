@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,8 +9,8 @@ class ProfileForm extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    File? image = ref.watch(profileFormProvider);
-    final controller = ref.read(profileFormProvider.notifier);
+    final profileForm = ref.watch(profileFormProvider);
+    final profileFormController = ref.read(profileFormProvider.notifier);
 
     Future<void> chooseImageSource() async {
       showModalBottomSheet(
@@ -29,7 +28,7 @@ class ProfileForm extends ConsumerWidget {
                   title: const Text("Elegir de la galería"),
                   onTap: () async {
                     Navigator.of(context).pop();
-                    await controller.pickFromGallery();
+                    await profileFormController.pickFromGallery();
                   },
                 ),
                 ListTile(
@@ -37,7 +36,7 @@ class ProfileForm extends ConsumerWidget {
                   title: const Text("Tomar una foto"),
                   onTap: () async {
                     Navigator.of(context).pop();
-                    await controller.pickFromCamera();
+                    await profileFormController.pickFromCamera();
                   },
                 ),
               ],
@@ -66,8 +65,10 @@ class ProfileForm extends ConsumerWidget {
                     CircleAvatar(
                       radius: 48,
                       backgroundColor: Colors.grey[300],
-                      backgroundImage: image != null ? FileImage(image) : null,
-                      child: image == null
+                      backgroundImage: profileForm.profilePicture != null
+                          ? FileImage(profileForm.profilePicture!)
+                          : null,
+                      child: profileForm.profilePicture == null
                           ? const Icon(Icons.person, size: 48)
                           : null,
                     ),
@@ -96,8 +97,22 @@ class ProfileForm extends ConsumerWidget {
                 ),
               ),
 
-              CustomTextFormField(label: 'Nombre'),
-              CustomTextFormField(label: 'Apellido'),
+              CustomTextFormField(
+                label: 'Nombre',
+                initialValue: profileForm.userName.value,
+                onChanged: profileFormController.onUserNameChange,
+                errorMessage: profileForm.isFormPosted
+                    ? profileForm.userName.errorMessage
+                    : null,
+              ),
+              CustomTextFormField(
+                label: 'Apellido',
+                initialValue: profileForm.userLastName.value,
+                onChanged: profileFormController.onUserLastnameChange,
+                errorMessage: profileForm.isFormPosted
+                    ? profileForm.userLastName.errorMessage
+                    : null,
+              ),
 
               const Spacer(),
 
@@ -105,8 +120,11 @@ class ProfileForm extends ConsumerWidget {
                 width: double.infinity,
                 child: FloatingActionButton(
                   heroTag: null,
-                  onPressed: () {
-                    context.pop();
+                  onPressed: () async {
+                    final isValidForm = await profileFormController
+                        .onFormSubmit();
+                    // ignore: use_build_context_synchronously
+                    if (isValidForm) context.pop();
                   },
                   child: const Text('Guardar'),
                 ),
