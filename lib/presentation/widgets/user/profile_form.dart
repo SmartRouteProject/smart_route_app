@@ -99,6 +99,7 @@ class ProfileForm extends ConsumerWidget {
 
               CustomTextFormField(
                 label: 'Nombre',
+                initialValue: profileForm.userName.value,
                 onChanged: profileFormController.onUserNameChange,
                 errorMessage: profileForm.isFormPosted
                     ? profileForm.userName.errorMessage
@@ -106,6 +107,7 @@ class ProfileForm extends ConsumerWidget {
               ),
               CustomTextFormField(
                 label: 'Apellido',
+                initialValue: profileForm.userLastName.value,
                 onChanged: profileFormController.onUserLastnameChange,
                 errorMessage: profileForm.isFormPosted
                     ? profileForm.userLastName.errorMessage

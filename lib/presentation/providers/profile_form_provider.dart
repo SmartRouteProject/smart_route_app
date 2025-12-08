@@ -3,15 +3,31 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:formz/formz.dart';
 import 'package:image_picker/image_picker.dart';
 
+import 'package:smart_route_app/domain/domain.dart';
 import 'package:smart_route_app/infrastructure/inputs/inputs.dart';
+import 'package:smart_route_app/presentation/providers/auth_provider.dart';
 
 final profileFormProvider =
-    StateNotifierProvider<ProfileFormNotifier, ProfileFormState>(
-      (ref) => ProfileFormNotifier(),
-    );
+    StateNotifierProvider<ProfileFormNotifier, ProfileFormState>((ref) {
+      final user = ref.read(authProvider).user;
+
+      final userName = UserName.dirty(user?.name ?? '');
+      final userLastName = UserName.dirty(user?.lastName ?? '');
+
+      final initialState = ProfileFormState(
+        userName: userName,
+        userLastName: userLastName,
+        profilePicture: user?.profilePicture,
+        isValid: Formz.validate([userName, userLastName]),
+      );
+
+      return ProfileFormNotifier(ref, initialState);
+    });
 
 class ProfileFormNotifier extends StateNotifier<ProfileFormState> {
-  ProfileFormNotifier() : super(ProfileFormState());
+  final Ref<ProfileFormState> _ref;
+
+  ProfileFormNotifier(this._ref, super.initialState);
 
   final ImagePicker _picker = ImagePicker();
 
@@ -22,6 +38,8 @@ class ProfileFormNotifier extends StateNotifier<ProfileFormState> {
       if (!state.isValid) return false;
 
       state = state.copyWith(isPosting: true);
+
+      _updateAuthUser();
 
       state = state.copyWith(isPosting: false);
 
@@ -53,8 +71,9 @@ class ProfileFormNotifier extends StateNotifier<ProfileFormState> {
       source: ImageSource.gallery,
       imageQuality: 70,
     );
-    if (picked != null)
+    if (picked != null) {
       state = state.copyWith(profilePicture: File(picked.path));
+    }
   }
 
   Future<void> pickFromCamera() async {
@@ -62,13 +81,13 @@ class ProfileFormNotifier extends StateNotifier<ProfileFormState> {
       source: ImageSource.camera,
       imageQuality: 70,
     );
-    if (picked != null)
+    if (picked != null) {
       state = state.copyWith(profilePicture: File(picked.path));
+    }
   }
 
   void clearImage() {
     state = state = state.copyWith(profilePicture: null);
-    ;
   }
 
   _touchEveryField() {
@@ -81,6 +100,22 @@ class ProfileFormNotifier extends StateNotifier<ProfileFormState> {
       userLastName: userLastName,
       isValid: Formz.validate([userName, userLastName]),
     );
+  }
+
+  void _updateAuthUser() {
+    final currentUser = _ref.read(authProvider).user;
+    if (currentUser == null) return;
+
+    final updatedUser = User(
+      id: currentUser.id,
+      email: currentUser.email,
+      password: currentUser.password,
+      name: state.userName.value,
+      lastName: state.userLastName.value,
+      profilePicture: state.profilePicture ?? currentUser.profilePicture,
+    );
+
+    _ref.read(authProvider.notifier).updateUser(updatedUser);
   }
 }
 

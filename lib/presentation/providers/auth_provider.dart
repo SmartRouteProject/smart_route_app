@@ -97,6 +97,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
     return true;
   }
+
+  void updateUser(User updatedUser) {
+    state = state.copyWith(user: updatedUser);
+  }
 }
 
 enum AuthStatus { checking, authenticated, notAuthenticated }
