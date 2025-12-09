@@ -1,13 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:smart_route_app/presentation/providers/providers.dart';
 import 'package:smart_route_app/presentation/widgets/widgets.dart';
 
-class CreateRoute extends StatelessWidget {
+class CreateRoute extends ConsumerWidget {
   const CreateRoute({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final formState = ref.watch(routeFormProvider);
+    final formNotifier = ref.read(routeFormProvider.notifier);
+
+    final dateLabel = MaterialLocalizations.of(context).formatMediumDate(
+      formState.date.value,
+    );
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Nueva Ruta"),
@@ -35,31 +44,60 @@ class CreateRoute extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       spacing: 10,
                       children: [
-                        CustomTextFormField(label: 'Nombre de la ruta'),
+                        CustomTextFormField(
+                          label: 'Nombre de la ruta',
+                          initialValue: formState.name,
+                          onChanged: formNotifier.onNameChange,
+                        ),
                         InkWell(
-                          onTap: () {},
+                          onTap: () async {
+                            final pickedDate = await showDatePicker(
+                              context: context,
+                              initialDate: formState.date.value,
+                              firstDate: DateTime.now(),
+                              lastDate: DateTime.now().add(
+                                const Duration(days: 365 * 5),
+                              ),
+                            );
+                            if (pickedDate != null) {
+                              formNotifier.onDateChanged(pickedDate);
+                            }
+                          },
                           borderRadius: BorderRadius.circular(8),
                           child: InputDecorator(
-                            decoration: const InputDecoration(
+                            decoration: InputDecoration(
                               labelText: 'Fecha',
-                              border: OutlineInputBorder(),
+                              border: const OutlineInputBorder(),
+                              errorText: formState.isFormPosted
+                                  ? formState.date.errorMessage
+                                  : null,
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('Seleccioná una fecha'),
+                                Text(dateLabel),
                                 const Icon(Icons.calendar_today),
                               ],
                             ),
                           ),
                         ),
-                        Expanded(child: SizedBox()),
+                        const Expanded(child: SizedBox()),
                         SizedBox(
                           width: double.infinity,
                           child: FloatingActionButton(
                             heroTag: null,
-                            onPressed: () {},
-                            child: const Text('Crear ruta'),
+                            onPressed: formState.isPosting
+                                ? null
+                                : () async {
+                                    final created =
+                                        await formNotifier.onFormSubmit();
+                                    if (created && context.mounted) {
+                                      context.pop();
+                                    }
+                                  },
+                            child: formState.isPosting
+                                ? const CircularProgressIndicator()
+                                : const Text('Crear ruta'),
                           ),
                         ),
                       ],

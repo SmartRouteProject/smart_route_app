@@ -41,13 +41,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("HomeScreen"),
+        title: Text("Mapa"),
         actions: [
           IconButton(
             icon: Icon(Icons.logout),
             onPressed: () async {
               final logoutResp = await ref.read(authProvider.notifier).logout();
               if (logoutResp) {
+                // ignore: use_build_context_synchronously
                 context.pushReplacementNamed(LoginScreen.name);
               }
             },
