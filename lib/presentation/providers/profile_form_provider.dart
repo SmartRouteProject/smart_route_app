@@ -112,6 +112,7 @@ class ProfileFormNotifier extends StateNotifier<ProfileFormState> {
       password: currentUser.password,
       name: state.userName.value,
       lastName: state.userLastName.value,
+      returnAddresses: currentUser.returnAddresses,
       profilePicture: state.profilePicture ?? currentUser.profilePicture,
     );
 

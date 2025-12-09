@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:smart_route_app/presentation/providers/providers.dart';
+import 'package:smart_route_app/domain/entities/return_adress.dart';
 
 class User {
   String? id;
@@ -9,6 +10,7 @@ class User {
   String lastName;
   String email;
   String password;
+  List<ReturnAddress> returnAddresses;
   File? profilePicture;
 
   User({
@@ -17,6 +19,7 @@ class User {
     required this.password,
     required this.name,
     required this.lastName,
+    this.returnAddresses = const [],
     this.profilePicture,
   });
 
@@ -27,6 +30,11 @@ class User {
       lastName: json['lastName'] ?? '',
       email: json['email'] ?? '',
       password: json['password'] ?? '',
+      returnAddresses: (json['returnAddresses'] as List<dynamic>? ?? [])
+          .map((address) => ReturnAddress.fromJson(
+                address as Map<String, dynamic>,
+              ))
+          .toList(),
       profilePicture: _fileFromBase64(json['profilePicture']),
     );
   }
@@ -38,6 +46,7 @@ class User {
       lastName: formState.userLastName.value,
       email: formState.email.value,
       password: formState.password.value,
+      returnAddresses: const [],
       profilePicture: null,
     );
   }
@@ -49,6 +58,7 @@ class User {
       'lastName': lastName,
       'email': email,
       'password': password,
+      'returnAddresses': returnAddresses.map((ra) => ra.toMap()).toList(),
       'profilePicture': profilePicture?.path ?? '',
     };
   }
