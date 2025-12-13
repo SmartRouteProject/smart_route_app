@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:smart_route_app/domain/domain.dart';
 import 'package:smart_route_app/presentation/providers/providers.dart';
 import 'package:smart_route_app/presentation/widgets/widgets.dart';
 
@@ -12,6 +13,8 @@ class CreateRoute extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final formState = ref.watch(routeFormProvider);
     final formNotifier = ref.read(routeFormProvider.notifier);
+    final user = ref.watch(authProvider).user;
+    final returnAddresses = user?.returnAddresses ?? const <ReturnAddress>[];
 
     final dateLabel = MaterialLocalizations.of(context).formatMediumDate(
       formState.date.value,
@@ -80,6 +83,29 @@ class CreateRoute extends ConsumerWidget {
                               ],
                             ),
                           ),
+                        ),
+                        CustomDropdownButtonFormField<ReturnAddress?>(
+                          label: 'Direccion de retorno',
+                          hint: 'Seleccione una direccion',
+                          value: formState.returnAddress,
+                          items: [
+                            const DropdownMenuItem<ReturnAddress?>(
+                              value: null,
+                              child: Text('Sin direccion de retorno'),
+                            ),
+                            ...returnAddresses.map(
+                              (address) => DropdownMenuItem<ReturnAddress?>(
+                                value: address,
+                                child: Text(
+                                  address.nickname.isNotEmpty
+                                      ? address.nickname
+                                      : address.address,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ),
+                          ],
+                          onChanged: formNotifier.onReturnAddressChanged,
                         ),
                         const Expanded(child: SizedBox()),
                         SizedBox(

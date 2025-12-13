@@ -22,9 +22,10 @@ class RouteNotifier extends StateNotifier<RouteFormState> {
     state = state.copyWith(date: newDate, isValid: Formz.validate([newDate]));
   }
 
-  onReturnAddressChanged(ReturnAddress value) {
+  onReturnAddressChanged(ReturnAddress? value) {
     state = state.copyWith(
       returnAddress: value,
+      clearReturnAddress: value == null,
       isValid: Formz.validate([state.date]),
     );
   }
@@ -81,12 +82,14 @@ class RouteFormState {
     String? name,
     RouteDate? date,
     ReturnAddress? returnAddress,
+    bool clearReturnAddress = false,
   }) => RouteFormState(
     isPosting: isPosting ?? this.isPosting,
     isFormPosted: isFormPosted ?? this.isFormPosted,
     isValid: isValid ?? this.isValid,
     name: name ?? this.name,
     date: date ?? this.date,
-    returnAddress: returnAddress ?? this.returnAddress,
+    returnAddress:
+        clearReturnAddress ? null : returnAddress ?? this.returnAddress,
   );
 }
