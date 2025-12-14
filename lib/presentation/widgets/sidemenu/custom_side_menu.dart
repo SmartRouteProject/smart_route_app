@@ -56,13 +56,15 @@ class CustomSideMenu extends ConsumerWidget {
   }
 }
 
-class _CustomSideMenuRoutesList extends StatelessWidget {
+class _CustomSideMenuRoutesList extends ConsumerWidget {
   const _CustomSideMenuRoutesList({required this.dateFormat});
 
   final DateFormat dateFormat;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mapNotifier = ref.read(mapProvider.notifier);
+
     return Expanded(
       child: ListView.separated(
         itemCount: sampleRoutes.length,
@@ -80,6 +82,7 @@ class _CustomSideMenuRoutesList extends StatelessWidget {
             // Nombre de la ruta debajo
             subtitle: Text(route.name),
             onTap: () {
+              mapNotifier.selectRoute(route);
               Navigator.pop(context); // cierra el drawer
             },
           );
