@@ -31,9 +31,10 @@ class User {
       email: json['email'] ?? '',
       password: json['password'] ?? '',
       returnAddresses: (json['returnAddresses'] as List<dynamic>? ?? [])
-          .map((address) => ReturnAddress.fromJson(
-                address as Map<String, dynamic>,
-              ))
+          .map(
+            (address) =>
+                ReturnAddress.fromJson(address as Map<String, dynamic>),
+          )
           .toList(),
       profilePicture: _fileFromBase64(json['profilePicture']),
     );
@@ -59,7 +60,7 @@ class User {
       'email': email,
       'password': password,
       'returnAddresses': returnAddresses.map((ra) => ra.toMap()).toList(),
-      'profilePicture': profilePicture?.path ?? '',
+      'profilePicture': _fileToBase64(),
     };
   }
 
@@ -67,13 +68,22 @@ class User {
     if (value is! String || value.isEmpty) return null;
     try {
       final bytes = base64Decode(value);
-      final fileName =
-          'profile_${DateTime.now().microsecondsSinceEpoch}.png';
+      final fileName = 'profile_${DateTime.now().microsecondsSinceEpoch}.png';
       final file = File('${Directory.systemTemp.path}/$fileName');
       file.writeAsBytesSync(bytes);
       return file;
     } catch (_) {
       return null;
+    }
+  }
+
+  String _fileToBase64() {
+    try {
+      if (profilePicture == null) return '';
+      final bytes = profilePicture!.readAsBytesSync();
+      return base64Encode(bytes);
+    } catch (_) {
+      return '';
     }
   }
 }

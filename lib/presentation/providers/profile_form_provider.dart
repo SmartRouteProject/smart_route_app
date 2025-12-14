@@ -5,10 +5,13 @@ import 'package:image_picker/image_picker.dart';
 
 import 'package:smart_route_app/domain/domain.dart';
 import 'package:smart_route_app/infrastructure/inputs/inputs.dart';
+import 'package:smart_route_app/infrastructure/infrastructure.dart';
 import 'package:smart_route_app/presentation/providers/auth_provider.dart';
 
 final profileFormProvider =
     StateNotifierProvider<ProfileFormNotifier, ProfileFormState>((ref) {
+      final userRepository = UserRepositoryImpl();
+
       final user = ref.read(authProvider).user;
 
       final userName = UserName.dirty(user?.name ?? '');
@@ -21,13 +24,22 @@ final profileFormProvider =
         isValid: Formz.validate([userName, userLastName]),
       );
 
-      return ProfileFormNotifier(ref, initialState);
+      return ProfileFormNotifier(
+        ref,
+        initialState,
+        userRepository: userRepository,
+      );
     });
 
 class ProfileFormNotifier extends StateNotifier<ProfileFormState> {
+  final IUserRepository userRepository;
   final Ref<ProfileFormState> _ref;
 
-  ProfileFormNotifier(this._ref, super.initialState);
+  ProfileFormNotifier(
+    this._ref,
+    super.initialState, {
+    required this.userRepository,
+  });
 
   final ImagePicker _picker = ImagePicker();
 
@@ -39,7 +51,7 @@ class ProfileFormNotifier extends StateNotifier<ProfileFormState> {
 
       state = state.copyWith(isPosting: true);
 
-      _updateAuthUser();
+      await _updateAuthUser();
 
       state = state.copyWith(isPosting: false);
 
@@ -102,21 +114,27 @@ class ProfileFormNotifier extends StateNotifier<ProfileFormState> {
     );
   }
 
-  void _updateAuthUser() {
-    final currentUser = _ref.read(authProvider).user;
-    if (currentUser == null) return;
+  Future<void> _updateAuthUser() async {
+    try {
+      final currentUser = _ref.read(authProvider).user;
+      if (currentUser == null) return;
 
-    final updatedUser = User(
-      id: currentUser.id,
-      email: currentUser.email,
-      password: currentUser.password,
-      name: state.userName.value,
-      lastName: state.userLastName.value,
-      returnAddresses: currentUser.returnAddresses,
-      profilePicture: state.profilePicture ?? currentUser.profilePicture,
-    );
+      final updatedUser = User(
+        id: currentUser.id,
+        email: currentUser.email,
+        password: currentUser.password,
+        name: state.userName.value,
+        lastName: state.userLastName.value,
+        returnAddresses: currentUser.returnAddresses,
+        profilePicture: state.profilePicture ?? currentUser.profilePicture,
+      );
 
-    _ref.read(authProvider.notifier).updateUser(updatedUser);
+      final savedUser = await userRepository.editUser(updatedUser);
+
+      _ref.read(authProvider.notifier).updateUser(savedUser);
+    } catch (err) {
+      rethrow;
+    }
   }
 }
 
