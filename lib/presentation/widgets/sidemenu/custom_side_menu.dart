@@ -23,30 +23,8 @@ class CustomSideMenu extends ConsumerWidget {
             // Header
             _SideMenuHeader(),
 
-            // Opciones de menú
-            Expanded(
-              child: ListView.separated(
-                itemCount: sampleRoutes.length,
-                separatorBuilder: (_, __) => const Divider(height: 1),
-                itemBuilder: (context, index) {
-                  final route = sampleRoutes[index];
-
-                  return ListTile(
-                    leading: const Icon(Icons.route),
-                    // Fecha primero
-                    title: Text(
-                      dateFormat.format(route.creationDate),
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    // Nombre de la ruta debajo
-                    subtitle: Text(route.name),
-                    onTap: () {
-                      Navigator.pop(context); // cierra el drawer
-                    },
-                  );
-                },
-              ),
-            ),
+            // Lista de rutas
+            _CustomSideMenuRoutesList(dateFormat: dateFormat),
 
             Divider(),
 
@@ -73,6 +51,39 @@ class CustomSideMenu extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _CustomSideMenuRoutesList extends StatelessWidget {
+  const _CustomSideMenuRoutesList({required this.dateFormat});
+
+  final DateFormat dateFormat;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: ListView.separated(
+        itemCount: sampleRoutes.length,
+        separatorBuilder: (_, __) => const Divider(height: 1),
+        itemBuilder: (context, index) {
+          final route = sampleRoutes[index];
+
+          return ListTile(
+            leading: const Icon(Icons.route),
+            // Fecha primero
+            title: Text(
+              dateFormat.format(route.creationDate),
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+            // Nombre de la ruta debajo
+            subtitle: Text(route.name),
+            onTap: () {
+              Navigator.pop(context); // cierra el drawer
+            },
+          );
+        },
       ),
     );
   }
