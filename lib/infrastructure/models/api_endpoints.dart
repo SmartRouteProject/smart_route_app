@@ -4,4 +4,5 @@ abstract class ApiEndpoints {
   static String registerUser = "/auth/register";
   static String refreshToken = "/auth/refreshToken";
   static String logout = "/auth/logout";
+  static String editUserProfile = "/user/edit";
 }

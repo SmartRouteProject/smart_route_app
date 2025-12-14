@@ -10,3 +10,5 @@ export 'package:smart_route_app/domain/enums/route_state.dart';
 export 'package:smart_route_app/domain/enums/package_weight_type.dart';
 export 'datasources/i_auth_datasource.dart';
 export 'repositories/i_auth_repository.dart';
+export 'datasources/i_user_datasource.dart';
+export 'repositories/i_user_repository.dart';
