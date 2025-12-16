@@ -56,42 +56,6 @@ class CustomSideMenu extends ConsumerWidget {
   }
 }
 
-class _CustomSideMenuRoutesList extends ConsumerWidget {
-  const _CustomSideMenuRoutesList({required this.dateFormat});
-
-  final DateFormat dateFormat;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final mapNotifier = ref.read(mapProvider.notifier);
-
-    return Expanded(
-      child: ListView.separated(
-        itemCount: sampleRoutes.length,
-        separatorBuilder: (_, __) => const Divider(height: 1),
-        itemBuilder: (context, index) {
-          final route = sampleRoutes[index];
-
-          return ListTile(
-            leading: const Icon(Icons.route),
-            // Fecha primero
-            title: Text(
-              dateFormat.format(route.creationDate),
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
-            // Nombre de la ruta debajo
-            subtitle: Text(route.name),
-            onTap: () {
-              mapNotifier.selectRoute(route);
-              Navigator.pop(context); // cierra el drawer
-            },
-          );
-        },
-      ),
-    );
-  }
-}
-
 class _SideMenuHeader extends ConsumerWidget {
   const _SideMenuHeader();
 
@@ -116,24 +80,30 @@ class _SideMenuHeader extends ConsumerWidget {
                 child: profilePicture != null ? null : const Icon(Icons.person),
               ),
               SizedBox(width: 16),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "${user.name} ${user.lastName}",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "${user.name} ${user.lastName}",
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    user.email,
-                    style: TextStyle(color: Colors.white70, fontSize: 14),
-                  ),
-                ],
+                    SizedBox(height: 4),
+                    Text(
+                      user.email,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                      style: TextStyle(color: Colors.white70, fontSize: 14),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -176,6 +146,42 @@ class _SideMenuHeader extends ConsumerWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _CustomSideMenuRoutesList extends ConsumerWidget {
+  const _CustomSideMenuRoutesList({required this.dateFormat});
+
+  final DateFormat dateFormat;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mapNotifier = ref.read(mapProvider.notifier);
+
+    return Expanded(
+      child: ListView.separated(
+        itemCount: sampleRoutes.length,
+        separatorBuilder: (_, __) => const Divider(height: 1),
+        itemBuilder: (context, index) {
+          final route = sampleRoutes[index];
+
+          return ListTile(
+            leading: const Icon(Icons.route),
+            // Fecha primero
+            title: Text(
+              dateFormat.format(route.creationDate),
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+            // Nombre de la ruta debajo
+            subtitle: Text(route.name),
+            onTap: () {
+              mapNotifier.selectRoute(route);
+              Navigator.pop(context); // cierra el drawer
+            },
+          );
+        },
       ),
     );
   }
