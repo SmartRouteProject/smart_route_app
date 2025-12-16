@@ -83,6 +83,7 @@ class _LoginForm extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final loginForm = ref.watch(loginFormProvider);
+    final loginNotifier = ref.watch(loginFormProvider.notifier);
 
     ref.listen(authProvider, (previous, next) {
       if (next.errorMessage.isEmpty) return;
@@ -98,7 +99,7 @@ class _LoginForm extends ConsumerWidget {
               CustomTextFormField(
                 keyboardType: TextInputType.emailAddress,
                 label: 'Correo electronico',
-                onChanged: ref.read(loginFormProvider.notifier).onEmailChange,
+                onChanged: loginNotifier.onEmailChange,
                 errorMessage: loginForm.isFormPosted
                     ? loginForm.email.errorMessage
                     : null,
@@ -107,9 +108,7 @@ class _LoginForm extends ConsumerWidget {
               CustomTextFormField(
                 label: 'Contraseña',
                 isPassword: true,
-                onChanged: ref
-                    .read(loginFormProvider.notifier)
-                    .onPasswordChanged,
+                onChanged: loginNotifier.onPasswordChanged,
                 errorMessage: loginForm.isFormPosted
                     ? loginForm.password.errorMessage
                     : null,
