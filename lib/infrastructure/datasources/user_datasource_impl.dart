@@ -7,9 +7,11 @@ class UserDatasourceImpl extends IUserDatasource {
   @override
   Future<User> editUser(User user) async {
     try {
+      final userMap = user.toMap();
+
       final response = await DioRequestHandler.put(
         ApiEndpoints.editUserProfile,
-        data: {user.toMap()},
+        data: userMap,
         requestOptions: RequestOptionsModel(hasBearerToken: true),
       );
 
