@@ -36,12 +36,12 @@ class CreateReturnAdressForm extends StatelessWidget {
                     Expanded(child: SizedBox()),
                     SizedBox(
                       width: double.infinity,
-                      child: FloatingActionButton(
-                        heroTag: null,
+                      child: LoadingFloatingActionButton(
+                        label: 'Guardar',
+                        loader: false,
                         onPressed: () {
                           context.pop();
                         },
-                        child: const Text('Guardar'),
                       ),
                     ),
                   ],

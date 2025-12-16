@@ -118,15 +118,15 @@ class ProfileForm extends ConsumerWidget {
 
               SizedBox(
                 width: double.infinity,
-                child: FloatingActionButton(
-                  heroTag: null,
+                child: LoadingFloatingActionButton(
+                  label: 'Guardar',
+                  loader: profileForm.isPosting,
                   onPressed: () async {
-                    final isValidForm = await profileFormController
-                        .onFormSubmit();
+                    final isValidForm =
+                        await profileFormController.onFormSubmit();
                     // ignore: use_build_context_synchronously
                     if (isValidForm) context.pop();
                   },
-                  child: const Text('Guardar'),
                 ),
               ),
             ],

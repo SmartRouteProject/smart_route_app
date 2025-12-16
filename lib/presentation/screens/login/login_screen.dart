@@ -7,7 +7,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 import 'package:smart_route_app/presentation/providers/providers.dart';
 import 'package:smart_route_app/presentation/screens/screens.dart';
-import 'package:smart_route_app/presentation/widgets/shared/custom_text_form_field.dart';
+import 'package:smart_route_app/presentation/widgets/widgets.dart';
 
 class LoginScreen extends StatelessWidget {
   static const name = 'login-screen';
@@ -117,27 +117,15 @@ class _LoginForm extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 20),
-        FloatingActionButton.extended(
-          heroTag: null,
-          onPressed: loginForm.isPosting
-              ? null
-              : () async {
-                  final loginResp = await ref
-                      .read(loginFormProvider.notifier)
-                      .onFormSubmit();
-                  if (loginResp) context.goNamed(HomeScreen.name);
-                },
-          label: loginForm.isPosting
-              ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
-                )
-              : const Text("Ingresar"),
-          elevation: 0,
+        LoadingFloatingActionButton(
+          label: 'Ingresar',
+          loader: loginForm.isPosting,
+          onPressed: () async {
+            final loginResp = await ref
+                .read(loginFormProvider.notifier)
+                .onFormSubmit();
+            if (loginResp) context.goNamed(HomeScreen.name);
+          },
         ),
       ],
     );

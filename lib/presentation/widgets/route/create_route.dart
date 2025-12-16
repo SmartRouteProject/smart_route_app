@@ -110,20 +110,16 @@ class CreateRoute extends ConsumerWidget {
                         const Expanded(child: SizedBox()),
                         SizedBox(
                           width: double.infinity,
-                          child: FloatingActionButton(
-                            heroTag: null,
-                            onPressed: formState.isPosting
-                                ? null
-                                : () async {
-                                    final created =
-                                        await formNotifier.onFormSubmit();
-                                    if (created && context.mounted) {
-                                      context.pop();
-                                    }
-                                  },
-                            child: formState.isPosting
-                                ? const CircularProgressIndicator()
-                                : const Text('Crear ruta'),
+                          child: LoadingFloatingActionButton(
+                            label: 'Crear ruta',
+                            loader: formState.isPosting,
+                            onPressed: () async {
+                              final created =
+                                  await formNotifier.onFormSubmit();
+                              if (created && context.mounted) {
+                                context.pop();
+                              }
+                            },
                           ),
                         ),
                       ],
