@@ -66,7 +66,7 @@ class RouteDatasourceImpl extends IRouteDatasource {
   Future<RouteEnt?> updateRoute(RouteEnt route) async {
     try {
       final response = await DioRequestHandler.put(
-        ApiEndpoints.getRouteById("${route.id}"),
+        ApiEndpoints.getRouteById(route.id),
         data: {
           'name': route.name,
           'date': route.creationDate.toIso8601String(),

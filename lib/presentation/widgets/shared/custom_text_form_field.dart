@@ -55,7 +55,6 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
       obscureText: widget.isPassword ? _isObscure : widget.obscureText,
       keyboardType: widget.keyboardType,
       decoration: InputDecoration(
-        //TODO: Make the error message take up to two lines
         label: widget.label != null ? Text(widget.label!) : null,
         hintText: widget.hint,
         errorText: widget.errorMessage,
