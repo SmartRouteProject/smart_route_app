@@ -160,12 +160,14 @@ class _CustomSideMenuRoutesList extends ConsumerWidget {
     final user = ref.watch(authProvider).user!;
     final mapNotifier = ref.read(mapProvider.notifier);
 
+    final reversedRoutes = user.routes.reversed.toList();
+
     return Expanded(
       child: ListView.separated(
-        itemCount: user.routes.length,
+        itemCount: reversedRoutes.length,
         separatorBuilder: (_, __) => const Divider(height: 1),
         itemBuilder: (context, index) {
-          final route = user.routes[index];
+          final route = reversedRoutes[index];
 
           return ListTile(
             leading: const Icon(Icons.route),
