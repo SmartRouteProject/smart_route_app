@@ -1,6 +1,7 @@
 import 'package:smart_route_app/domain/domain.dart';
 
 class RouteEnt {
+  int? id;
   String name;
   int geometry;
   DateTime creationDate;
@@ -9,6 +10,7 @@ class RouteEnt {
   ReturnAddress returnAddress;
 
   RouteEnt({
+    this.id,
     required this.name,
     required this.geometry,
     required this.creationDate,
@@ -19,6 +21,7 @@ class RouteEnt {
 
   factory RouteEnt.fromJson(Map<String, dynamic> json) {
     return RouteEnt(
+      id: json['id'] as int?,
       name: json['name'] as String,
       geometry: json['geometry'] as int,
       creationDate: DateTime.parse(json['creationDate']),
@@ -35,6 +38,7 @@ class RouteEnt {
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'name': name,
       'geometry': geometry,
       'creationDate': creationDate.toIso8601String(),
