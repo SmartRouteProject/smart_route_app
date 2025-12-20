@@ -43,15 +43,11 @@ class RouteDatasourceImpl extends IRouteDatasource {
   }
 
   @override
-  Future<RouteEnt?> createRoute(RouteEnt route) async {
+  Future<RouteEnt?> createRoute(CreateRouteDto createRouteDto) async {
     try {
       final response = await DioRequestHandler.post(
         ApiEndpoints.createRoute,
-        data: {
-          'name': route.name,
-          'date': route.creationDate.toIso8601String(),
-          'returnAddress': route.returnAddress.toMap(),
-        },
+        data: createRouteDto.toMap(),
         requestOptions: RequestOptionsModel(hasBearerToken: true),
       );
 

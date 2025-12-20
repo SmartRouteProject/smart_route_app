@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import 'package:smart_route_app/infrastructure/mocks/route_sample.dart';
 import 'package:smart_route_app/presentation/providers/providers.dart';
 import 'package:smart_route_app/presentation/widgets/widgets.dart';
 
@@ -158,14 +157,15 @@ class _CustomSideMenuRoutesList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(authProvider).user!;
     final mapNotifier = ref.read(mapProvider.notifier);
 
     return Expanded(
       child: ListView.separated(
-        itemCount: sampleRoutes.length,
+        itemCount: user.routes.length,
         separatorBuilder: (_, __) => const Divider(height: 1),
         itemBuilder: (context, index) {
-          final route = sampleRoutes[index];
+          final route = user.routes[index];
 
           return ListTile(
             leading: const Icon(Icons.route),

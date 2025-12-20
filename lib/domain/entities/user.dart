@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:smart_route_app/domain/domain.dart';
 import 'package:smart_route_app/presentation/providers/providers.dart';
-import 'package:smart_route_app/domain/entities/return_adress.dart';
 
 class User {
   String? id;
@@ -11,6 +11,7 @@ class User {
   String email;
   String password;
   List<ReturnAddress> returnAddresses;
+  List<RouteEnt> routes;
   File? profilePicture;
 
   User({
@@ -20,6 +21,7 @@ class User {
     required this.name,
     required this.lastName,
     this.returnAddresses = const [],
+    this.routes = const [],
     this.profilePicture,
   });
 
@@ -36,6 +38,9 @@ class User {
                 ReturnAddress.fromJson(address as Map<String, dynamic>),
           )
           .toList(),
+      routes: (json['routes'] as List<dynamic>? ?? [])
+          .map((route) => RouteEnt.fromJson(route as Map<String, dynamic>))
+          .toList(),
       profilePicture: _fileFromBase64(json['profilePicture']),
     );
   }
@@ -48,6 +53,7 @@ class User {
       email: formState.email.value,
       password: formState.password.value,
       returnAddresses: const [],
+      routes: const [],
       profilePicture: null,
     );
   }
@@ -60,8 +66,32 @@ class User {
       'email': email,
       'password': password,
       'returnAddresses': returnAddresses.map((ra) => ra.toMap()).toList(),
+      'routes': routes.map((route) => route.toJson()).toList(),
       'profilePicture': _fileToBase64(),
     };
+  }
+
+  User copyWith({
+    String? id,
+    String? name,
+    String? lastName,
+    String? email,
+    String? password,
+    List<ReturnAddress>? returnAddresses,
+    List<RouteEnt>? routes,
+    File? profilePicture,
+    bool clearProfilePicture = false,
+  }) {
+    return User(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      lastName: lastName ?? this.lastName,
+      email: email ?? this.email,
+      password: password ?? this.password,
+      returnAddresses: returnAddresses ?? this.returnAddresses,
+      routes: routes ?? this.routes,
+      profilePicture: clearProfilePicture ? null : profilePicture ?? this.profilePicture,
+    );
   }
 
   static File? _fileFromBase64(dynamic value) {

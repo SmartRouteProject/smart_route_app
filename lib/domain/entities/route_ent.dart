@@ -1,30 +1,31 @@
 import 'package:smart_route_app/domain/domain.dart';
 
 class RouteEnt {
-  int? id;
+  String id;
   String name;
-  int geometry;
+  int? geometry;
   DateTime creationDate;
   RouteState state;
   List<Stop> stops;
-  ReturnAddress returnAddress;
+  ReturnAddress? returnAddress;
 
   RouteEnt({
-    this.id,
+    required this.id,
     required this.name,
     required this.geometry,
     required this.creationDate,
     required this.state,
     required this.stops,
-    required this.returnAddress,
+    this.returnAddress,
   });
 
   factory RouteEnt.fromJson(Map<String, dynamic> json) {
     return RouteEnt(
-      id: json['id'] as int?,
+      id: json['id']?.toString() ?? '',
       name: json['name'] as String,
-      geometry: json['geometry'] as int,
-      creationDate: DateTime.parse(json['creationDate']),
+      geometry: json['geometry'] as int?,
+      //TODO: cambiar a creationDate
+      creationDate: DateTime.parse(json['date']),
       state: RouteState.values.firstWhere(
         (e) => e.name == json['state'],
         orElse: () => RouteState.planned,
@@ -32,7 +33,9 @@ class RouteEnt {
       stops: (json['stops'] as List<dynamic>? ?? [])
           .map((e) => Stop.fromJson(e))
           .toList(),
-      returnAddress: ReturnAddress.fromJson(json['returnAddress']),
+      returnAddress: json['returnAddress'] != null
+          ? ReturnAddress.fromJson(json['returnAddress'])
+          : null,
     );
   }
 
@@ -44,7 +47,7 @@ class RouteEnt {
       'creationDate': creationDate.toIso8601String(),
       'state': state.name,
       'stops': stops.map((s) => s.toMap()).toList(),
-      'returnAddress': returnAddress.toMap(),
+      'returnAddress': returnAddress?.toMap(),
     };
   }
 }

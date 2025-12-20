@@ -1,11 +1,12 @@
 import 'package:smart_route_app/domain/domain.dart';
+import 'package:smart_route_app/infrastructure/infrastructure.dart';
 
 abstract class IRouteDatasource {
   Future<List<RouteEnt>> getRoutes();
 
   Future<RouteEnt?> getRoute(int id);
 
-  Future<RouteEnt?> createRoute(RouteEnt route);
+  Future<RouteEnt?> createRoute(CreateRouteDto createRouteDto);
 
   Future<RouteEnt?> updateRoute(RouteEnt route);
 

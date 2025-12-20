@@ -18,8 +18,8 @@ class RouteRepositoryImpl extends IRouteRepository {
   }
 
   @override
-  Future<RouteEnt?> createRoute(RouteEnt route) {
-    return routeDatasource.createRoute(route);
+  Future<RouteEnt?> createRoute(CreateRouteDto createRouteDto) {
+    return routeDatasource.createRoute(createRouteDto);
   }
 
   @override
