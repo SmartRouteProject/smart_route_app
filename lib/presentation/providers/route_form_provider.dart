@@ -6,13 +6,12 @@ import 'package:smart_route_app/infrastructure/infrastructure.dart';
 import 'package:smart_route_app/infrastructure/inputs/inputs.dart';
 import 'package:smart_route_app/presentation/providers/auth_provider.dart';
 
-final routeFormProvider = StateNotifierProvider<RouteNotifier, RouteFormState>((
-  ref,
-) {
-  final routeRepository = RouteRepositoryImpl();
+final routeFormProvider =
+    StateNotifierProvider.autoDispose<RouteNotifier, RouteFormState>((ref) {
+      final routeRepository = RouteRepositoryImpl();
 
-  return RouteNotifier(routeRepository: routeRepository, ref: ref);
-});
+      return RouteNotifier(routeRepository: routeRepository, ref: ref);
+    });
 
 class RouteNotifier extends StateNotifier<RouteFormState> {
   final IRouteRepository routeRepository;
