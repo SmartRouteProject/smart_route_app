@@ -87,10 +87,10 @@ class RouteDatasourceImpl extends IRouteDatasource {
   }
 
   @override
-  Future<bool> deleteRoute(int id) async {
+  Future<bool> deleteRoute(String id) async {
     try {
       final response = await DioRequestHandler.delete(
-        ApiEndpoints.getRouteById("$id"),
+        ApiEndpoints.getRouteById(id),
         requestOptions: RequestOptionsModel(hasBearerToken: true),
       );
 

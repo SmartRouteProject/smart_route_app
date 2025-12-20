@@ -28,7 +28,7 @@ class RouteRepositoryImpl extends IRouteRepository {
   }
 
   @override
-  Future<bool> deleteRoute(int id) {
+  Future<bool> deleteRoute(String id) {
     return routeDatasource.deleteRoute(id);
   }
 }

@@ -178,6 +178,20 @@ class _CustomSideMenuRoutesList extends ConsumerWidget {
             ),
             // Nombre de la ruta debajo
             subtitle: Text(route.name),
+            trailing: IconButton(
+              icon: const Icon(Icons.delete_outline),
+              onPressed: () {
+                showDialog<bool>(
+                  context: context,
+                  builder: (_) => ConfirmationDialog(
+                    title: 'Eliminar ruta',
+                    description: '¿Esta seguro que desea eliminar esta ruta?',
+                    onConfirmed: () =>
+                        ref.read(authProvider.notifier).deleteRoute(route.id),
+                  ),
+                );
+              },
+            ),
             onTap: () {
               mapNotifier.selectRoute(route);
               Navigator.pop(context); // cierra el drawer

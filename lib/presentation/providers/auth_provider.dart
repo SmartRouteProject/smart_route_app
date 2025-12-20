@@ -6,14 +6,22 @@ import 'package:smart_route_app/infrastructure/infrastructure.dart';
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   final authRepository = AuthRepositoryImpl();
+  final routeRepository = RouteRepositoryImpl();
 
-  return AuthNotifier(authRepository: authRepository);
+  return AuthNotifier(
+    authRepository: authRepository,
+    routeRepository: routeRepository,
+  );
 });
 
 class AuthNotifier extends StateNotifier<AuthState> {
   final IAuthRepository authRepository;
+  final IRouteRepository routeRepository;
 
-  AuthNotifier({required this.authRepository}) : super(AuthState());
+  AuthNotifier({
+    required this.authRepository,
+    required this.routeRepository,
+  }) : super(AuthState());
 
   Future<void> loginUser(String email, String password) async {
     try {
@@ -100,6 +108,26 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   void updateUser(User updatedUser) {
     state = state.copyWith(user: updatedUser);
+  }
+
+  Future<bool> deleteRoute(String routeId) async {
+    final currentUser = state.user;
+    if (currentUser == null) return false;
+
+    try {
+      final deleted = await routeRepository.deleteRoute(routeId);
+      if (deleted) {
+        final updatedUser = currentUser.copyWith(
+          routes: currentUser.routes
+              .where((route) => route.id != routeId)
+              .toList(),
+        );
+        state = state.copyWith(user: updatedUser, errorMessage: '');
+      }
+      return deleted;
+    } catch (err) {
+      rethrow;
+    }
   }
 }
 

@@ -10,5 +10,5 @@ abstract class IRouteDatasource {
 
   Future<RouteEnt?> updateRoute(RouteEnt route);
 
-  Future<bool> deleteRoute(int id);
+  Future<bool> deleteRoute(String id);
 }
