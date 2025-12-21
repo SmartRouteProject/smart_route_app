@@ -125,8 +125,9 @@ class ProfileFormNotifier extends StateNotifier<ProfileFormState> {
         password: currentUser.password,
         name: state.userName.value,
         lastName: state.userLastName.value,
-        returnAddresses: currentUser.returnAddresses,
         profilePicture: state.profilePicture ?? currentUser.profilePicture,
+        returnAddresses: currentUser.returnAddresses,
+        routes: currentUser.routes,
       );
 
       final savedUser = await userRepository.editUser(updatedUser);

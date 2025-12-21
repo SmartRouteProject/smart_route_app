@@ -157,6 +157,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           ),
                         ),
                       ),
+                      //Agregar indicador de la direccion de retorno de la ruta que sea editable
                       Expanded(child: StopsList()),
                     ],
                   ),

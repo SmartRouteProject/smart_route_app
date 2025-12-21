@@ -70,7 +70,7 @@ class RouteNotifier extends StateNotifier<RouteFormState> {
     try {
       final route = CreateRouteDto(
         name: state.name,
-        date: state.date.value,
+        creationDate: state.date.value,
         returnAddress: state.returnAddress,
       );
 

@@ -5,6 +5,7 @@ class RouteEnt {
   String name;
   int? geometry;
   DateTime creationDate;
+  //TODO: agregar completionDate
   RouteState state;
   List<Stop> stops;
   ReturnAddress? returnAddress;
@@ -24,8 +25,7 @@ class RouteEnt {
       id: json['id']?.toString() ?? '',
       name: json['name'] as String,
       geometry: json['geometry'] as int?,
-      //TODO: cambiar a creationDate
-      creationDate: DateTime.parse(json['date']),
+      creationDate: DateTime.parse(json['creationDate']),
       state: RouteState.values.firstWhere(
         (e) => e.name == json['state'],
         orElse: () => RouteState.planned,
