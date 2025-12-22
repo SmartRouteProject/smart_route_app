@@ -29,7 +29,9 @@ class VerifyEmailScreen extends StatelessWidget {
                     style: TextStyle(fontSize: 16),
                   ),
                   const SizedBox(height: 28),
-                  const OneTimePasswordInput(),
+                  OneTimePasswordInput(
+                    onChanged: (value) => debugPrint("ONTimePassword: $value"),
+                  ),
                   const SizedBox(height: 20),
                   TextButton(
                     onPressed: () {},
