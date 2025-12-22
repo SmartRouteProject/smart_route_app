@@ -38,12 +38,10 @@ class VerifyEmailScreen extends StatelessWidget {
                     child: const Text('Reenviar codigo'),
                   ),
                   const SizedBox(height: 24),
-                  ElevatedButton(
+                  LoadingFloatingActionButton(
+                    label: "Verificar",
+                    loader: false,
                     onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                    child: const Text('Verificar'),
                   ),
                 ],
               ),
