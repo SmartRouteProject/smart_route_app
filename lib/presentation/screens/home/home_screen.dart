@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-import 'package:smart_route_app/presentation/providers/auth_provider.dart';
+import 'package:smart_route_app/presentation/providers/providers.dart';
 import 'package:smart_route_app/presentation/screens/screens.dart';
 import 'package:smart_route_app/presentation/widgets/returnAdress/return_address_list.dart';
 import 'package:smart_route_app/presentation/widgets/widgets.dart';
@@ -30,7 +30,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   // Draggable persistent bottom sheet height state
   double? _sheetHeight;
-  static const double _minSheetHeight = 100;
+  static const double _minSheetHeight = 150;
   static const double _initialSheetHeight = 140;
 
   @override
@@ -38,16 +38,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final size = MediaQuery.of(context).size;
     final maxSheetHeight = size.height * 0.6;
     _sheetHeight ??= _initialSheetHeight.clamp(_minSheetHeight, maxSheetHeight);
+    final mapState = ref.watch(mapProvider);
+    final returnAddress = mapState.selectedRoute?.returnAddress;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("HomeScreen"),
+        title: Text("Mapa"),
         actions: [
           IconButton(
             icon: Icon(Icons.logout),
             onPressed: () async {
               final logoutResp = await ref.read(authProvider.notifier).logout();
               if (logoutResp) {
+                // ignore: use_build_context_synchronously
                 context.pushReplacementNamed(LoginScreen.name);
               }
             },
@@ -154,6 +157,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           decoration: InputDecoration(
                             hintText: "Excribe para añadir una parada",
                           ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: const Icon(Icons.home_outlined),
+                          title: const Text('Direccion de retorno'),
+                          subtitle: Text(
+                            returnAddress != null
+                                ? (returnAddress.nickname.isNotEmpty
+                                      ? returnAddress.nickname
+                                      : returnAddress.address)
+                                : 'Sin direccion de retorno',
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          onTap: () {},
                         ),
                       ),
                       Expanded(child: StopsList()),

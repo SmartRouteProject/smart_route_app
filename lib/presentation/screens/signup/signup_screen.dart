@@ -131,26 +131,15 @@ class _SignupForm extends ConsumerWidget {
 
         const SizedBox(height: 40),
 
-        FloatingActionButton.extended(
-          heroTag: null,
+        LoadingFloatingActionButton(
+          label: 'Registrarse',
+          loader: signupForm.isPosting,
           onPressed: () async {
-            final isValidForm = await ref
-                .read(signupFormProvider.notifier)
-                .onFormSubmit();
+            final isValidForm =
+                await ref.read(signupFormProvider.notifier).onFormSubmit();
             // ignore: use_build_context_synchronously
             if (isValidForm) context.goNamed(SuccesfulSignupScreen.name);
           },
-          label: signupForm.isPosting
-              ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
-                )
-              : const Text("Registrarse"),
-          elevation: 0,
         ),
       ],
     );
