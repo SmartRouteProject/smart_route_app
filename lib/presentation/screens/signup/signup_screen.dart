@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:smart_route_app/presentation/screens/signup/succesful_signup_screen.dart';
+import 'package:smart_route_app/presentation/screens/screens.dart';
 import 'package:smart_route_app/presentation/widgets/widgets.dart';
 
 import '../../providers/providers.dart';
@@ -135,10 +135,16 @@ class _SignupForm extends ConsumerWidget {
           label: 'Registrarse',
           loader: signupForm.isPosting,
           onPressed: () async {
-            final isValidForm =
-                await ref.read(signupFormProvider.notifier).onFormSubmit();
-            // ignore: use_build_context_synchronously
-            if (isValidForm) context.goNamed(SuccesfulSignupScreen.name);
+            final isValidForm = await ref
+                .read(signupFormProvider.notifier)
+                .onFormSubmit();
+            if (isValidForm) {
+              // ignore: use_build_context_synchronously
+              context.goNamed(
+                VerifyEmailScreen.name,
+                queryParameters: {'email': signupForm.email.value},
+              );
+            }
           },
         ),
       ],

@@ -30,7 +30,8 @@ final appRouter = GoRouter(
       path: '/verify-email',
       name: VerifyEmailScreen.name,
       builder: (context, state) {
-        return const VerifyEmailScreen();
+        final email = state.uri.queryParameters['email'] ?? '';
+        return VerifyEmailScreen(email: email);
       },
     ),
     GoRoute(

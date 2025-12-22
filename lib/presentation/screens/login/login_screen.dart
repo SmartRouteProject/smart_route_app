@@ -45,7 +45,7 @@ class LoginScreen extends StatelessWidget {
 
                 Expanded(child: SizedBox()),
 
-                Text("No tienes una cuenta?", textAlign: TextAlign.center),
+                Text("¿No tienes una cuenta?", textAlign: TextAlign.center),
 
                 const SizedBox(height: 10),
 
