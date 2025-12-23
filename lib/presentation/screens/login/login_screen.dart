@@ -45,7 +45,7 @@ class LoginScreen extends StatelessWidget {
 
                 Expanded(child: SizedBox()),
 
-                Text("No tienes una cuenta?", textAlign: TextAlign.center),
+                Text("¿No tienes una cuenta?", textAlign: TextAlign.center),
 
                 const SizedBox(height: 10),
 
@@ -124,7 +124,18 @@ class _LoginForm extends ConsumerWidget {
             final loginResp = await ref
                 .read(loginFormProvider.notifier)
                 .onFormSubmit();
-            if (loginResp) context.goNamed(HomeScreen.name);
+            if (!loginResp) return;
+
+            final user = ref.read(authProvider).user;
+            if (user != null && !user.validated) {
+              context.goNamed(
+                VerifyEmailScreen.name,
+                queryParameters: {'email': user.email},
+              );
+              return;
+            }
+
+            context.goNamed(HomeScreen.name);
           },
         ),
       ],
@@ -168,13 +179,19 @@ class GoogleSignInButton extends ConsumerWidget {
           return;
         }
 
-        debugPrint("idToken: $idToken");
-
         final success = await ref
             .read(authProvider.notifier)
             .loginWithGoogle(idToken);
 
         if (success) {
+          final user = ref.read(authProvider).user;
+          if (user != null && !user.validated) {
+            context.goNamed(
+              VerifyEmailScreen.name,
+              queryParameters: {'email': user.email},
+            );
+            return;
+          }
           context.goNamed(HomeScreen.name);
         } else {
           final errorMsg = ref.read(authProvider).errorMessage;

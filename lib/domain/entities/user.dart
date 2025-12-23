@@ -10,6 +10,7 @@ class User {
   String lastName;
   String email;
   String password;
+  bool validated;
   List<ReturnAddress> returnAddresses;
   List<RouteEnt> routes;
   File? profilePicture;
@@ -20,6 +21,7 @@ class User {
     required this.password,
     required this.name,
     required this.lastName,
+    this.validated = false,
     this.returnAddresses = const [],
     this.routes = const [],
     this.profilePicture,
@@ -32,6 +34,7 @@ class User {
       lastName: json['lastName'] ?? '',
       email: json['email'] ?? '',
       password: json['password'] ?? '',
+      validated: json['validated'] ?? false,
       returnAddresses: (json['returnAddresses'] as List<dynamic>? ?? [])
           .map(
             (address) =>
@@ -52,6 +55,7 @@ class User {
       lastName: formState.userLastName.value,
       email: formState.email.value,
       password: formState.password.value,
+      validated: false,
       returnAddresses: const [],
       routes: const [],
       profilePicture: null,
@@ -65,6 +69,7 @@ class User {
       'lastName': lastName,
       'email': email,
       'password': password,
+      'validated': validated,
       'returnAddresses': returnAddresses.map((ra) => ra.toMap()).toList(),
       'routes': routes.map((route) => route.toJson()).toList(),
       'profilePicture': _fileToBase64(),
@@ -77,10 +82,10 @@ class User {
     String? lastName,
     String? email,
     String? password,
+    bool? validated,
     List<ReturnAddress>? returnAddresses,
     List<RouteEnt>? routes,
     File? profilePicture,
-    bool clearProfilePicture = false,
   }) {
     return User(
       id: id ?? this.id,
@@ -88,9 +93,10 @@ class User {
       lastName: lastName ?? this.lastName,
       email: email ?? this.email,
       password: password ?? this.password,
+      validated: validated ?? this.validated,
       returnAddresses: returnAddresses ?? this.returnAddresses,
       routes: routes ?? this.routes,
-      profilePicture: clearProfilePicture ? null : profilePicture ?? this.profilePicture,
+      profilePicture: profilePicture ?? this.profilePicture,
     );
   }
 
