@@ -90,7 +90,7 @@ class ChangePasswordScreen extends ConsumerWidget {
                         ),
                       ),
                       Step(
-                        title: const Text('Nueva contraseAña'),
+                        title: const Text('Nueva contraseña'),
                         isActive: form.currentStep >= 2,
                         content: Column(
                           children: [
