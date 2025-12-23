@@ -17,7 +17,7 @@ class ChangePasswordScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Cambiar contraseAña'),
+        title: const Text('Cambiar contraseña'),
         centerTitle: true,
       ),
       body: SafeArea(
@@ -95,7 +95,7 @@ class ChangePasswordScreen extends ConsumerWidget {
                         content: Column(
                           children: [
                             CustomTextFormField(
-                              label: 'ContraseAña',
+                              label: 'Contraseña',
                               isPassword: true,
                               onChanged: notifier.onPasswordChange,
                               errorMessage: form.isFormPosted
@@ -104,7 +104,7 @@ class ChangePasswordScreen extends ConsumerWidget {
                             ),
                             const SizedBox(height: 16),
                             CustomTextFormField(
-                              label: 'Confirmar contraseAña',
+                              label: 'Confirmar contraseña',
                               isPassword: true,
                               onChanged: notifier.onConfirmPasswordChange,
                               errorMessage: form.isFormPosted
