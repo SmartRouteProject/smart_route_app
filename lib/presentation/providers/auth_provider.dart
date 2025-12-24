@@ -39,7 +39,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } on ArgumentError catch (err) {
       state = state.copyWith(errorMessage: err.message);
       rethrow;
-    } on WrongCredentials catch (_) {
+    } on AUTH002WrongCredentials catch (_) {
       state = state.copyWith(errorMessage: "Credenciales incorrectas");
       rethrow;
     }
@@ -64,7 +64,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } on ArgumentError catch (err) {
       state = state.copyWith(errorMessage: err.message);
       return false;
-    } on EmailAlreadyRegisterdManually catch (_) {
+    } on AUTH004EmailAlreadyRegisteredManually catch (_) {
       state = state.copyWith(
         errorMessage:
             "Email ya fue registrado con otro metodo de autenticacion",
@@ -81,7 +81,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> registerUser(User user) async {
     try {
       await authRepository.register(user);
-    } on DuplicatedEmail catch (_) {
+    } on USER003DuplicatedEmail catch (_) {
       state = state.copyWith(
         errorMessage: "Ya existe una cuenta con ese correo",
       );

@@ -24,7 +24,7 @@ class AuthDatasourceImpl extends IAuthDatasource {
         );
 
         if (apiResponse.error.code == 'AUTH002') {
-          throw WrongCredentials();
+          throw AUTH002WrongCredentials();
         }
         throw ArgumentError(
           'Error del servidor, consultar con el administrador',
@@ -59,7 +59,7 @@ class AuthDatasourceImpl extends IAuthDatasource {
         );
 
         if (apiResponse.error.code == "AUTH004") {
-          throw EmailAlreadyRegisterdManually();
+          throw AUTH004EmailAlreadyRegisteredManually();
         } else if (apiResponse.error.message.isNotEmpty) {
           throw ArgumentError(apiResponse.error.message);
         }
@@ -96,7 +96,7 @@ class AuthDatasourceImpl extends IAuthDatasource {
         );
 
         if (apiResponse.error.code == 'USER003') {
-          throw DuplicatedEmail();
+          throw USER003DuplicatedEmail();
         }
         throw ArgumentError(
           'Error del servidor, consultar con el administrador',
