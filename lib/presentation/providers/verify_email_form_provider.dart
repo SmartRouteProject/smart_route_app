@@ -1,15 +1,28 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:formz/formz.dart';
+import 'package:smart_route_app/domain/domain.dart';
 
 import 'package:smart_route_app/infrastructure/inputs/inputs.dart';
 
-final verifyEmailFormProvider = StateNotifierProvider.autoDispose.family<
-    VerifyEmailFormNotifier, VerifyEmailFormState, String>((ref, email) {
-  return VerifyEmailFormNotifier(email: email);
-});
+import '../../infrastructure/infrastructure.dart';
+
+final verifyEmailFormProvider = StateNotifierProvider.autoDispose
+    .family<VerifyEmailFormNotifier, VerifyEmailFormState, String>((
+      ref,
+      email,
+    ) {
+      final authRepository = AuthRepositoryImpl();
+
+      return VerifyEmailFormNotifier(
+        email: email,
+        authRepository: authRepository,
+      );
+    });
 
 class VerifyEmailFormNotifier extends StateNotifier<VerifyEmailFormState> {
-  VerifyEmailFormNotifier({required String email})
+  final IAuthRepository authRepository;
+
+  VerifyEmailFormNotifier({required String email, required this.authRepository})
     : super(VerifyEmailFormState(email: email));
 
   void onCodeChanged(String value) {
@@ -22,6 +35,9 @@ class VerifyEmailFormNotifier extends StateNotifier<VerifyEmailFormState> {
     if (!state.isValid) return false;
 
     state = state.copyWith(isPosting: true);
+
+    await authRepository.verifyEmail(state.email, state.code.value);
+
     state = state.copyWith(isPosting: false);
     return true;
   }
