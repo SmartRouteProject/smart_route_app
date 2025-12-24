@@ -96,6 +96,42 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  Future<bool> sendEmailVerification(String email) async {
+    try {
+      final sent = await authRepository.sendEmailVerification(email);
+      if (sent) {
+        state = state.copyWith(errorMessage: '');
+      }
+      return sent;
+    } on ArgumentError catch (err) {
+      state = state.copyWith(errorMessage: err.message);
+      return false;
+    } catch (_) {
+      state = state.copyWith(
+        errorMessage: "No se pudo enviar el codigo de verificacion",
+      );
+      return false;
+    }
+  }
+
+  Future<bool> verifyEmail(String email, String code) async {
+    try {
+      final verified = await authRepository.verifyEmail(email, code);
+      if (verified) {
+        state = state.copyWith(errorMessage: '');
+      }
+      return verified;
+    } on ArgumentError catch (err) {
+      state = state.copyWith(errorMessage: err.message);
+      return false;
+    } catch (_) {
+      state = state.copyWith(
+        errorMessage: "No se pudo verificar el correo",
+      );
+      return false;
+    }
+  }
+
   Future<bool> logout({String? errorMsg}) async {
     state = state.copyWith(
       user: null,

@@ -11,4 +11,8 @@ abstract class IAuthRepository {
   Future<String> refreshToken(String token);
 
   Future<bool> logout();
+
+  Future<bool> sendEmailVerification(String email);
+
+  Future<bool> verifyEmail(String email, String code);
 }

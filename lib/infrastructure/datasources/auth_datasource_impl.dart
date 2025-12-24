@@ -106,4 +106,62 @@ class AuthDatasourceImpl extends IAuthDatasource {
       rethrow;
     }
   }
+
+  @override
+  Future<bool> sendEmailVerification(String email) async {
+    try {
+      final response = await DioRequestHandler.post(
+        ApiEndpoints.sendEmailVerification,
+        data: {'email': email},
+        requestOptions: RequestOptionsModel(hasBearerToken: false),
+      );
+
+      if (response is SuccessResponseModel) {
+        return true;
+      } else {
+        final apiResponse = ApiResponse<Object?>.fromJson(
+          response.data,
+          (json) => json,
+        );
+
+        if (apiResponse.error.message.isNotEmpty) {
+          throw ArgumentError(apiResponse.error.message);
+        }
+        throw ArgumentError(
+          'Error del servidor, consultar con el administrador',
+        );
+      }
+    } catch (err) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<bool> verifyEmail(String email, String code) async {
+    try {
+      final response = await DioRequestHandler.post(
+        ApiEndpoints.verifyEmail,
+        data: {'email': email, 'code': code},
+        requestOptions: RequestOptionsModel(hasBearerToken: false),
+      );
+
+      if (response is SuccessResponseModel) {
+        return true;
+      } else {
+        final apiResponse = ApiResponse<Object?>.fromJson(
+          response.data,
+          (json) => json,
+        );
+
+        if (apiResponse.error.message.isNotEmpty) {
+          throw ArgumentError(apiResponse.error.message);
+        }
+        throw ArgumentError(
+          'Error del servidor, consultar con el administrador',
+        );
+      }
+    } catch (err) {
+      rethrow;
+    }
+  }
 }
