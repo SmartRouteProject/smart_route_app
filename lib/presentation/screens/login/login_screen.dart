@@ -127,10 +127,10 @@ class _LoginForm extends ConsumerWidget {
             if (!loginResp) return;
 
             final user = ref.read(authProvider).user;
-            if (user != null && !user.validated) {
+            if (user == null) {
               context.goNamed(
                 VerifyEmailScreen.name,
-                queryParameters: {'email': user.email},
+                queryParameters: {'email': loginForm.email.value},
               );
               return;
             }

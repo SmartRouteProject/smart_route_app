@@ -18,10 +18,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
   final IAuthRepository authRepository;
   final IRouteRepository routeRepository;
 
-  AuthNotifier({
-    required this.authRepository,
-    required this.routeRepository,
-  }) : super(AuthState());
+  AuthNotifier({required this.authRepository, required this.routeRepository})
+    : super(AuthState());
 
   Future<void> loginUser(String email, String password) async {
     try {
@@ -125,9 +123,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = state.copyWith(errorMessage: err.message);
       return false;
     } catch (_) {
-      state = state.copyWith(
-        errorMessage: "No se pudo verificar el correo",
-      );
+      state = state.copyWith(errorMessage: "No se pudo verificar el correo");
       return false;
     }
   }
