@@ -119,6 +119,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
         state = state.copyWith(errorMessage: '');
       }
       return verified;
+    } on AUTH007InvalidVerificationCode catch (_) {
+      state = state.copyWith(errorMessage: "Codigo de verificacion invalido");
+      return false;
     } on ArgumentError catch (err) {
       state = state.copyWith(errorMessage: err.message);
       return false;

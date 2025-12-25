@@ -24,6 +24,17 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
     });
   }
 
+  void _showSnackbar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red.shade400,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final email = widget.email;
@@ -35,6 +46,11 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
     final emailText = email.isEmpty
         ? 'Ingresa el codigo de 6 digitos que enviamos a tu correo.'
         : 'Ingresa el codigo de 6 digitos que enviamos a $email.';
+
+    ref.listen(authProvider, (previous, next) {
+      if (next.errorMessage.isEmpty) return;
+      _showSnackbar(context, next.errorMessage);
+    });
 
     return Scaffold(
       appBar: AppBar(
