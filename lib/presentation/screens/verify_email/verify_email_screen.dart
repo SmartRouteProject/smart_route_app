@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:smart_route_app/presentation/providers/providers.dart';
+import 'package:smart_route_app/presentation/screens/screens.dart';
 import 'package:smart_route_app/presentation/widgets/widgets.dart';
 
 class VerifyEmailScreen extends ConsumerStatefulWidget {
@@ -99,7 +101,13 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
                   LoadingFloatingActionButton(
                     label: "Verificar",
                     loader: verifyEmailForm.isPosting,
-                    onPressed: () => verifyEmailFormNotifier.onFormSubmit(),
+                    onPressed: () async {
+                      final verified = await verifyEmailFormNotifier
+                          .onFormSubmit();
+                      if (!mounted || !verified) return;
+                      // ignore: use_build_context_synchronously
+                      context.goNamed(SuccesfulSignupScreen.name);
+                    },
                   ),
                 ],
               ),
