@@ -110,15 +110,9 @@ class AuthDatasourceImpl extends IAuthDatasource {
   @override
   Future<bool> sendEmailVerification(String email) async {
     try {
-      final trimmedEmail = email.trim();
-      if (trimmedEmail.isEmpty) {
-        throw ArgumentError('Email requerido');
-      }
-      final endpoint =
-          '${ApiEndpoints.sendEmailVerification}?email=${Uri.encodeQueryComponent(trimmedEmail)}';
       final response = await DioRequestHandler.post(
-        endpoint,
-        data: {'email': trimmedEmail},
+        ApiEndpoints.sendEmailVerification,
+        data: {'email': email},
         requestOptions: RequestOptionsModel(hasBearerToken: false),
       );
 
@@ -159,7 +153,7 @@ class AuthDatasourceImpl extends IAuthDatasource {
           (json) => json,
         );
 
-        if (apiResponse.error.message == "AUTH007") {
+        if (apiResponse.error.code == "AUTH007") {
           throw AUTH007InvalidVerificationCode();
         }
         throw ArgumentError(
