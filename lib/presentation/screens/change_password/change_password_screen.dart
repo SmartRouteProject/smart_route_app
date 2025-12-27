@@ -28,7 +28,6 @@ class ChangePasswordScreen extends ConsumerWidget {
               builder: (context, constraints) {
                 return SizedBox(
                   height: constraints.maxHeight,
-                  //TODO: las labels de los inputs estan cortadas
                   child: Stepper(
                     currentStep: form.currentStep,
                     onStepContinue: notifier.onStepContinue,
@@ -85,6 +84,11 @@ class ChangePasswordScreen extends ConsumerWidget {
                             const SizedBox(height: 20),
                             OneTimePasswordInput(
                               onChanged: notifier.onCodeChange,
+                            ),
+                            const SizedBox(height: 12),
+                            TextButton(
+                              onPressed: () {},
+                              child: const Text('Reenviar codigo'),
                             ),
                             if (form.isFormPosted &&
                                 form.code.errorMessage != null) ...[
