@@ -1,1 +1,1 @@
-class DuplicatedEmail implements Exception {}
+class USER003DuplicatedEmail implements Exception {}

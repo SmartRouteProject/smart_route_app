@@ -18,10 +18,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
   final IAuthRepository authRepository;
   final IRouteRepository routeRepository;
 
-  AuthNotifier({
-    required this.authRepository,
-    required this.routeRepository,
-  }) : super(AuthState());
+  AuthNotifier({required this.authRepository, required this.routeRepository})
+    : super(AuthState());
 
   Future<void> loginUser(String email, String password) async {
     try {
@@ -41,7 +39,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } on ArgumentError catch (err) {
       state = state.copyWith(errorMessage: err.message);
       rethrow;
-    } on WrongCredentials catch (_) {
+    } on AUTH002WrongCredentials catch (_) {
       state = state.copyWith(errorMessage: "Credenciales incorrectas");
       rethrow;
     }
@@ -66,7 +64,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } on ArgumentError catch (err) {
       state = state.copyWith(errorMessage: err.message);
       return false;
-    } on EmailAlreadyRegisterdManually catch (_) {
+    } on AUTH004EmailAlreadyRegisteredManually catch (_) {
       state = state.copyWith(
         errorMessage:
             "Email ya fue registrado con otro metodo de autenticacion",
@@ -83,7 +81,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> registerUser(User user) async {
     try {
       await authRepository.register(user);
-    } on DuplicatedEmail catch (_) {
+    } on USER003DuplicatedEmail catch (_) {
       state = state.copyWith(
         errorMessage: "Ya existe una cuenta con ese correo",
       );
@@ -93,6 +91,43 @@ class AuthNotifier extends StateNotifier<AuthState> {
       rethrow;
     } catch (err) {
       rethrow;
+    }
+  }
+
+  Future<bool> sendEmailVerification(String email) async {
+    try {
+      final sent = await authRepository.sendEmailVerification(email);
+      if (sent) {
+        state = state.copyWith(errorMessage: '');
+      }
+      return sent;
+    } on ArgumentError catch (err) {
+      state = state.copyWith(errorMessage: err.message);
+      return false;
+    } catch (_) {
+      state = state.copyWith(
+        errorMessage: "No se pudo enviar el codigo de verificacion",
+      );
+      return false;
+    }
+  }
+
+  Future<bool> verifyEmail(String email, String code) async {
+    try {
+      final verified = await authRepository.verifyEmail(email, code);
+      if (verified) {
+        state = state.copyWith(errorMessage: '');
+      }
+      return verified;
+    } on AUTH007InvalidVerificationCode catch (_) {
+      state = state.copyWith(errorMessage: "Codigo de verificacion invalido");
+      return false;
+    } on ArgumentError catch (err) {
+      state = state.copyWith(errorMessage: err.message);
+      return false;
+    } catch (_) {
+      state = state.copyWith(errorMessage: "No se pudo verificar el correo");
+      return false;
     }
   }
 
