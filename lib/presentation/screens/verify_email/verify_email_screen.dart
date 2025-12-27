@@ -87,6 +87,7 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
                       final sent = await authProviderNotifier
                           .sendEmailVerification(email);
                       if (sent && mounted) {
+                        // ignore: use_build_context_synchronously
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text('Codigo de verificacion reenviado'),

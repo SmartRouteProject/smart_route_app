@@ -28,13 +28,16 @@ class ChangePasswordScreen extends ConsumerWidget {
               builder: (context, constraints) {
                 return SizedBox(
                   height: constraints.maxHeight,
-                  //TODO: que los pasos no sean navegables si no son validos
                   //TODO: las labels de los inputs estan cortadas
                   child: Stepper(
                     currentStep: form.currentStep,
                     onStepContinue: notifier.onStepContinue,
                     onStepCancel: notifier.onStepCancel,
-                    onStepTapped: notifier.onStepTapped,
+                    onStepTapped: (index) {
+                      if (index <= form.currentStep) {
+                        notifier.onStepTapped(index);
+                      }
+                    },
                     controlsBuilder: (context, details) {
                       return Row(
                         children: [
@@ -55,13 +58,18 @@ class ChangePasswordScreen extends ConsumerWidget {
                       Step(
                         title: const Text('Correo'),
                         isActive: form.currentStep >= 0,
-                        content: CustomTextFormField(
-                          label: 'Correo electronico',
-                          keyboardType: TextInputType.emailAddress,
-                          onChanged: notifier.onEmailChange,
-                          errorMessage: form.isFormPosted
-                              ? form.email.errorMessage
-                              : null,
+                        content: Column(
+                          children: [
+                            SizedBox(height: 5),
+                            CustomTextFormField(
+                              label: 'Correo electronico',
+                              keyboardType: TextInputType.emailAddress,
+                              onChanged: notifier.onEmailChange,
+                              errorMessage: form.isFormPosted
+                                  ? form.email.errorMessage
+                                  : null,
+                            ),
+                          ],
                         ),
                       ),
                       Step(
@@ -96,6 +104,7 @@ class ChangePasswordScreen extends ConsumerWidget {
                         isActive: form.currentStep >= 2,
                         content: Column(
                           children: [
+                            SizedBox(height: 5),
                             CustomTextFormField(
                               label: 'Contraseña',
                               isPassword: true,
