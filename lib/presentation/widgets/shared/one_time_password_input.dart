@@ -5,12 +5,14 @@ class OneTimePasswordInput extends StatefulWidget {
   final int length;
   final double boxSize;
   final ValueChanged<String>? onChanged;
+  final String? errorMessage;
 
   const OneTimePasswordInput({
     super.key,
     this.length = 6,
     this.boxSize = 48,
     this.onChanged,
+    this.errorMessage,
   });
 
   @override
@@ -59,45 +61,66 @@ class _OneTimePasswordInputState extends State<OneTimePasswordInput> {
     final borderRadius = BorderRadius.circular(10);
     final outlineColor = Theme.of(context).colorScheme.outlineVariant;
     final focusColor = Theme.of(context).colorScheme.primary;
+    final errorColor = Theme.of(context).colorScheme.error;
+    final hasError = widget.errorMessage != null &&
+        widget.errorMessage!.trim().isNotEmpty;
+    final enabledBorderColor = hasError ? errorColor : outlineColor;
+    final focusedBorderColor = hasError ? errorColor : focusColor;
 
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
-      alignment: WrapAlignment.center,
-      children: List.generate(
-        widget.length,
-        (index) => SizedBox(
-          width: widget.boxSize,
-          height: widget.boxSize,
-          child: TextField(
-            controller: _controllers[index],
-            focusNode: _focusNodes[index],
-            textAlign: TextAlign.center,
-            keyboardType: TextInputType.number,
-            maxLength: 1,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            onChanged: (value) => _handleChanged(index, value),
-            decoration: InputDecoration(
-              contentPadding: EdgeInsets.symmetric(
-                vertical: (widget.boxSize - 20) / 2,
-                horizontal: 0,
-              ),
-              counterText: '',
-              filled: true,
-              fillColor: Theme.of(context).colorScheme.surface,
-              enabledBorder: OutlineInputBorder(
-                borderRadius: borderRadius,
-                borderSide: BorderSide(color: outlineColor),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: borderRadius,
-                borderSide: BorderSide(color: focusColor, width: 1.5),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          alignment: WrapAlignment.center,
+          children: List.generate(
+            widget.length,
+            (index) => SizedBox(
+              width: widget.boxSize,
+              height: widget.boxSize,
+              child: TextField(
+                controller: _controllers[index],
+                focusNode: _focusNodes[index],
+                textAlign: TextAlign.center,
+                keyboardType: TextInputType.number,
+                maxLength: 1,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                onChanged: (value) => _handleChanged(index, value),
+                decoration: InputDecoration(
+                  contentPadding: EdgeInsets.symmetric(
+                    vertical: (widget.boxSize - 20) / 2,
+                    horizontal: 0,
+                  ),
+                  counterText: '',
+                  filled: true,
+                  fillColor: Theme.of(context).colorScheme.surface,
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: borderRadius,
+                    borderSide: BorderSide(color: enabledBorderColor),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: borderRadius,
+                    borderSide: BorderSide(color: focusedBorderColor, width: 1.5),
+                  ),
+                ),
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
           ),
         ),
-      ),
+        if (hasError) ...[
+          const SizedBox(height: 8),
+          Text(
+            widget.errorMessage!,
+            textAlign: TextAlign.center,
+            style: TextStyle(color: errorColor, fontSize: 12),
+          ),
+        ],
+      ],
     );
   }
 }
