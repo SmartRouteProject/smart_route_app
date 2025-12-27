@@ -43,10 +43,11 @@ class VerifyEmailFormNotifier extends StateNotifier<VerifyEmailFormState> {
 
       state = state.copyWith(isPosting: true);
 
-      await verifyEmailCallback(state.email, state.code.value);
+      final isValid = await verifyEmailCallback(state.email, state.code.value);
 
       state = state.copyWith(isPosting: false);
-      return true;
+
+      return isValid;
     } catch (err) {
       state = state.copyWith(isPosting: false);
       return false;
