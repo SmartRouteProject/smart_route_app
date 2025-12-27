@@ -28,6 +28,8 @@ class ChangePasswordScreen extends ConsumerWidget {
               builder: (context, constraints) {
                 return SizedBox(
                   height: constraints.maxHeight,
+                  //TODO: que los pasos no sean navegables si no son validos
+                  //TODO: las labels de los inputs estan cortadas
                   child: Stepper(
                     currentStep: form.currentStep,
                     onStepContinue: notifier.onStepContinue,
