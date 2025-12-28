@@ -1,34 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:smart_route_app/domain/domain.dart';
+import 'package:smart_route_app/presentation/providers/providers.dart';
 
-class StopDetailPage extends StatelessWidget {
+class StopDetailPage extends ConsumerWidget {
   final Stop stop;
 
   const StopDetailPage({super.key, required this.stop});
 
-  String get _typeLabel {
-    if (stop is DeliveryStop) return 'Entrega';
-    if (stop is PickupStop) return 'Recogida';
-    return 'Parada';
-  }
-
-  String get _statusLabel {
-    switch (stop.status) {
-      case StopStatus.pending:
-        return 'Pendiente';
-      case StopStatus.failed:
-        return 'Fallida';
-      case StopStatus.succeded:
-        return 'Completada';
-    }
-  }
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
+    final stopForm = ref.watch(stopFormProvider(stop));
+    final stopFormNotifier = ref.read(stopFormProvider(stop).notifier);
+    final infoTitleStyle = textTheme.bodySmall?.copyWith(
+      color: textTheme.bodySmall?.color?.withValues(alpha: 0.8),
+    );
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface, // similar a fondo oscuro
@@ -68,18 +58,9 @@ class StopDetailPage extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          stop.address,
+                          stopForm.address,
                           style: textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Montevideo, Uruguay', // mock, podés cambiarlo
-                          style: textTheme.bodySmall?.copyWith(
-                            color: textTheme.bodySmall?.color?.withValues(
-                              alpha: 0.7,
-                            ),
                           ),
                         ),
                       ],
@@ -99,29 +80,102 @@ class StopDetailPage extends StatelessWidget {
               ),
               const SizedBox(height: 8),
 
-              _InfoTile(
-                icon: Icons.local_shipping_outlined,
-                title: 'Tipo',
-                subtitle: _typeLabel,
-              ),
-              _InfoTile(
-                icon: Icons.flag_outlined,
-                title: 'Estado',
-                subtitle: _statusLabel,
+              Card(
+                elevation: 0,
+                margin: const EdgeInsets.symmetric(vertical: 4),
+                color: theme.colorScheme.surfaceContainerHighest.withValues(
+                  alpha: 0.25,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.local_shipping_outlined),
+                      const SizedBox(width: 12),
+                      Expanded(child: Text('Tipo', style: infoTitleStyle)),
+                      SegmentedButton<StopType>(
+                        style: SegmentedButton.styleFrom(
+                          selectedForegroundColor: Colors.white,
+                          selectedBackgroundColor: theme.colorScheme.primary,
+                        ),
+                        segments: const [
+                          ButtonSegment(
+                            value: StopType.delivery,
+                            label: Text('Entrega'),
+                          ),
+                          ButtonSegment(
+                            value: StopType.pickup,
+                            label: Text('Recogida'),
+                          ),
+                        ],
+                        selected: {stopForm.selectedType},
+                        showSelectedIcon: false,
+                        onSelectionChanged: (selection) {
+                          if (selection.isEmpty) return;
+                          stopFormNotifier.onTypeChanged(selection.first);
+                        },
+                      ),
+                    ],
+                  ),
+                ),
               ),
               _InfoTile(
                 icon: Icons.schedule,
                 title: 'Hora de llegada',
-                subtitle: 'Cualquier hora',
+                subtitle: stopForm.arrivalTimeLabel,
                 trailingText: 'Editar',
               ),
-              _InfoTile(
-                icon: Icons.timer_outlined,
-                title: 'Tiempo estimado en parada',
-                subtitle: 'Predeterminado (1 min)',
+              const SizedBox(height: 16),
+              Text(
+                'Descripción',
+                style: textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-
+              const SizedBox(height: 8),
+              TextFormField(
+                initialValue: stopForm.description,
+                minLines: 3,
+                maxLines: 5,
+                onChanged: stopFormNotifier.onDescriptionChanged,
+                decoration: InputDecoration(
+                  hintText: 'Agrega una descripción para esta parada',
+                  filled: true,
+                  fillColor: theme.colorScheme.surfaceContainerHighest
+                      .withValues(alpha: 0.25),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
               const SizedBox(height: 32),
+
+              if (stopForm.selectedType == StopType.delivery) ...[
+                Text(
+                  'Paquetes',
+                  style: textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Card(
+                  elevation: 0,
+                  color: theme.colorScheme.surfaceContainerHighest.withValues(
+                    alpha: 0.3,
+                  ),
+                  child: ListTile(
+                    leading: Icon(Icons.inventory_2_outlined),
+                    title: Text('Paquetes asignados'),
+                    trailing: Icon(Icons.chevron_right),
+                    onTap: () {},
+                  ),
+                ),
+                const SizedBox(height: 32),
+              ],
 
               // Acciones (solo Cambiar / Eliminar)
               Text(
