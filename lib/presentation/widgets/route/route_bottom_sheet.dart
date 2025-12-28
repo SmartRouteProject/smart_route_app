@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:smart_route_app/domain/domain.dart';
 import 'package:smart_route_app/presentation/widgets/widgets.dart';
+import '../../providers/providers.dart';
 
-class RouteBottomSheet extends StatelessWidget {
+class RouteBottomSheet extends ConsumerWidget {
   final double height;
-  final ReturnAddress? returnAddress;
 
-  const RouteBottomSheet({
-    super.key,
-    required this.height,
-    required this.returnAddress,
-  });
+  const RouteBottomSheet({super.key, required this.height});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mapState = ref.watch(mapProvider);
+    final returnAddress = mapState.selectedRoute?.returnAddress;
+    final routeName = mapState.selectedRoute?.name ?? 'Ruta sin nombre';
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 120),
       curve: Curves.easeOut,
@@ -63,12 +63,23 @@ class RouteBottomSheet extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: ListTile(
                 contentPadding: EdgeInsets.zero,
+                title: Text(
+                  routeName,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                onTap: () {},
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: ListTile(
+                contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.home_outlined),
                 title: Text(
                   returnAddress != null
-                      ? (returnAddress!.nickname.isNotEmpty
-                            ? returnAddress!.nickname
-                            : returnAddress!.address)
+                      ? (returnAddress.nickname.isNotEmpty
+                            ? returnAddress.nickname
+                            : returnAddress.address)
                       : 'Sin direccion de retorno',
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,

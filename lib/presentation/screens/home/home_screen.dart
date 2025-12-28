@@ -27,8 +27,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final size = MediaQuery.of(context).size;
     final maxSheetHeight = size.height * 0.6;
     _sheetHeight ??= _initialSheetHeight.clamp(_minSheetHeight, maxSheetHeight);
-    final mapState = ref.watch(mapProvider);
-    final returnAddress = mapState.selectedRoute?.returnAddress;
 
     return Scaffold(
       appBar: AppBar(
@@ -93,7 +91,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               },
               child: RouteBottomSheet(
                 height: (_sheetHeight ?? _initialSheetHeight),
-                returnAddress: returnAddress,
               ),
             ),
           ),
