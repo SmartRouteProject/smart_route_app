@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:smart_route_app/infrastructure/mocks/stops_sample.dart';
 import 'package:smart_route_app/presentation/widgets/widgets.dart';
 
-class AddressSearchDelegate extends SearchDelegate {
+class AddressSearchDelegate extends SearchDelegate<String?> {
+  final ValueChanged<String>? onSelectedAddress;
+
+  AddressSearchDelegate({this.onSelectedAddress});
   @override
   List<Widget>? buildActions(BuildContext context) {
     return [
@@ -46,6 +49,12 @@ class AddressSearchDelegate extends SearchDelegate {
           leading: const Icon(Icons.place_outlined),
           title: Text(stop.address),
           onTap: () {
+            if (onSelectedAddress != null) {
+              onSelectedAddress!(stop.address);
+              close(context, stop.address);
+              return;
+            }
+
             final navigator = Navigator.of(context, rootNavigator: true);
             close(context, null);
             Future.microtask(() {

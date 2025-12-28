@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:smart_route_app/domain/domain.dart';
 import 'package:smart_route_app/presentation/providers/providers.dart';
+import 'package:smart_route_app/presentation/widgets/shared/address_search_delegate.dart';
 
 class StopDetailPage extends ConsumerWidget {
   final Stop stop;
@@ -193,7 +194,14 @@ class StopDetailPage extends ConsumerWidget {
                   alpha: 0.3,
                 ),
                 child: ListTile(
-                  onTap: () {},
+                  onTap: () async {
+                    await showSearch<String?>(
+                      context: context,
+                      delegate: AddressSearchDelegate(
+                        onSelectedAddress: stopFormNotifier.onAddressChanged,
+                      ),
+                    );
+                  },
                   leading: const Icon(Icons.edit_location_alt_outlined),
                   title: const Text('Cambiar dirección'),
                   trailing: const Icon(Icons.chevron_right),
