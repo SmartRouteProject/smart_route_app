@@ -37,8 +37,8 @@ class StopDetailPage extends ConsumerWidget {
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            return Padding(
-              padding: const EdgeInsets.all(8.0),
+            return SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
               child: ConstrainedBox(
                 constraints: BoxConstraints(minHeight: constraints.maxHeight),
                 child: IntrinsicHeight(
@@ -245,7 +245,8 @@ class StopDetailPage extends ConsumerWidget {
                         ),
                       ),
 
-                      const Spacer(),
+                      const SizedBox(height: 4),
+
                       // Botón guardar cambios
                       SizedBox(
                         width: double.infinity,
