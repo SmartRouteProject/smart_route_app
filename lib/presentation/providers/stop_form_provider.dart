@@ -16,7 +16,7 @@ class StopFormNotifier extends StateNotifier<StopFormState> {
     : super(
         StopFormState(
           address: stop.address,
-          arrivalTimeLabel: 'Cualquier hora',
+          arrivalTime: 'Cualquier hora',
           description: '',
           packageList: stop is DeliveryStop ? const [] : null,
           selectedType: stop is DeliveryStop
@@ -36,8 +36,8 @@ class StopFormNotifier extends StateNotifier<StopFormState> {
     );
   }
 
-  void onArrivalTimeLabelChanged(String value) {
-    state = state.copyWith(arrivalTimeLabel: value);
+  void onArrivalTimeChanged(String value) {
+    state = state.copyWith(arrivalTime: value);
   }
 
   void onDescriptionChanged(String value) {
@@ -47,14 +47,14 @@ class StopFormNotifier extends StateNotifier<StopFormState> {
 
 class StopFormState {
   final String address;
-  final String arrivalTimeLabel;
+  final String arrivalTime;
   final String description;
   final List<Package>? packageList;
   final StopType selectedType;
 
   StopFormState({
     required this.address,
-    required this.arrivalTimeLabel,
+    required this.arrivalTime,
     required this.description,
     required this.packageList,
     required this.selectedType,
@@ -68,13 +68,13 @@ class StopFormState {
 
   StopFormState copyWith({
     String? address,
-    String? arrivalTimeLabel,
+    String? arrivalTime,
     String? description,
     List<Package>? packageList,
     StopType? selectedType,
   }) => StopFormState(
     address: address ?? this.address,
-    arrivalTimeLabel: arrivalTimeLabel ?? this.arrivalTimeLabel,
+    arrivalTime: arrivalTime ?? this.arrivalTime,
     description: description ?? this.description,
     packageList: packageList ?? this.packageList,
     selectedType: selectedType ?? this.selectedType,

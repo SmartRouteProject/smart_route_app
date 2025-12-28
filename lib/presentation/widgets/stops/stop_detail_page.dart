@@ -126,8 +126,17 @@ class StopDetailPage extends ConsumerWidget {
               _InfoTile(
                 icon: Icons.schedule,
                 title: 'Hora de llegada',
-                subtitle: stopForm.arrivalTimeLabel,
+                subtitle: stopForm.arrivalTime,
                 trailingText: 'Editar',
+                onTap: () async {
+                  final picked = await showTimePicker(
+                    context: context,
+                    initialTime: TimeOfDay.now(),
+                  );
+                  if (picked == null) return;
+                  final formatted = _formatTime(picked);
+                  stopFormNotifier.onArrivalTimeChanged(formatted);
+                },
               ),
               const SizedBox(height: 16),
               Text(
@@ -241,12 +250,14 @@ class _InfoTile extends StatelessWidget {
   final String title;
   final String subtitle;
   final String? trailingText;
+  final VoidCallback? onTap;
 
   const _InfoTile({
     required this.icon,
     required this.title,
     required this.subtitle,
     this.trailingText,
+    this.onTap,
   });
 
   @override
@@ -276,8 +287,14 @@ class _InfoTile extends StatelessWidget {
                 ),
               )
             : null,
-        onTap: () {}, // solo visual
+        onTap: onTap, // solo visual
       ),
     );
   }
+}
+
+String _formatTime(TimeOfDay time) {
+  final hour = time.hour.toString().padLeft(2, '0');
+  final minute = time.minute.toString().padLeft(2, '0');
+  return '$hour:$minute';
 }
