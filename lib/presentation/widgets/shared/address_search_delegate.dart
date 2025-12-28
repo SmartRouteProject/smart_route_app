@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:smart_route_app/infrastructure/mocks/stops_sample.dart';
+import 'package:smart_route_app/presentation/widgets/widgets.dart';
 
 class AddressSearchDelegate extends SearchDelegate {
   @override
@@ -44,6 +45,15 @@ class AddressSearchDelegate extends SearchDelegate {
         return ListTile(
           leading: const Icon(Icons.place_outlined),
           title: Text(stop.address),
+          onTap: () {
+            final navigator = Navigator.of(context, rootNavigator: true);
+            close(context, null);
+            Future.microtask(() {
+              navigator.push(
+                MaterialPageRoute(builder: (_) => StopDetailPage(stop: stop)),
+              );
+            });
+          },
         );
       },
     );
