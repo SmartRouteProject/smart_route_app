@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:smart_route_app/infrastructure/mocks/stops_sample.dart';
+
 class AddressSearchDelegate extends SearchDelegate {
   @override
   List<Widget>? buildActions(BuildContext context) {
@@ -18,14 +20,33 @@ class AddressSearchDelegate extends SearchDelegate {
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    // TODO: implement buildSuggestions
+    final emptySearch = Center(
+      child: Icon(Icons.add_location_alt, color: Colors.black38, size: 100),
+    );
+
     if (query.isEmpty) {
-      return const Center(
-        child: Icon(Icons.add_location_alt, color: Colors.black38, size: 100),
-      );
+      return emptySearch;
     }
 
-    return Center(child: Text(query));
+    final normalizedQuery = query.toLowerCase();
+    final matches = stopsSample
+        .where((stop) => stop.address.toLowerCase().contains(normalizedQuery))
+        .toList();
+
+    if (matches.isEmpty) {
+      return emptySearch;
+    }
+
+    return ListView.builder(
+      itemCount: matches.length,
+      itemBuilder: (context, index) {
+        final stop = matches[index];
+        return ListTile(
+          leading: const Icon(Icons.place_outlined),
+          title: Text(stop.address),
+        );
+      },
+    );
   }
 
   @override
