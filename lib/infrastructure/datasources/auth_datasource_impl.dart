@@ -164,4 +164,69 @@ class AuthDatasourceImpl extends IAuthDatasource {
       rethrow;
     }
   }
+
+  @override
+  Future<bool> requestPasswordChange(String email) async {
+    try {
+      final response = await DioRequestHandler.post(
+        ApiEndpoints.requestPasswordChange,
+        data: {'email': email},
+        requestOptions: RequestOptionsModel(hasBearerToken: false),
+      );
+
+      if (response is SuccessResponseModel) {
+        return true;
+      } else {
+        final apiResponse = ApiResponse<Object?>.fromJson(
+          response.data,
+          (json) => json,
+        );
+
+        if (apiResponse.error.message.isNotEmpty) {
+          throw ArgumentError(apiResponse.error.message);
+        }
+        throw ArgumentError(
+          'Error del servidor, consultar con el administrador',
+        );
+      }
+    } catch (err) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<bool> verifyPasswordChange(
+    String email,
+    String code,
+    String newPassword,
+  ) async {
+    try {
+      final response = await DioRequestHandler.post(
+        ApiEndpoints.verifyPasswordChange,
+        data: {'email': email, 'code': code, 'newPassword': newPassword},
+        requestOptions: RequestOptionsModel(hasBearerToken: false),
+      );
+
+      if (response is SuccessResponseModel) {
+        return true;
+      } else {
+        final apiResponse = ApiResponse<Object?>.fromJson(
+          response.data,
+          (json) => json,
+        );
+
+        if (apiResponse.error.code == "AUTH007") {
+          throw AUTH007InvalidVerificationCode();
+        }
+        if (apiResponse.error.message.isNotEmpty) {
+          throw ArgumentError(apiResponse.error.message);
+        }
+        throw ArgumentError(
+          'Error del servidor, consultar con el administrador',
+        );
+      }
+    } catch (err) {
+      rethrow;
+    }
+  }
 }

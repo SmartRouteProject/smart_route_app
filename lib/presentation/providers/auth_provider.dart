@@ -131,6 +131,53 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  Future<bool> requestPasswordChange(String email) async {
+    try {
+      final sent = await authRepository.requestPasswordChange(email);
+      if (sent) {
+        state = state.copyWith(errorMessage: '');
+      }
+      return sent;
+    } on ArgumentError catch (err) {
+      state = state.copyWith(errorMessage: err.message);
+      return false;
+    } catch (_) {
+      state = state.copyWith(
+        errorMessage: "No se pudo solicitar el cambio de contraseña",
+      );
+      return false;
+    }
+  }
+
+  Future<bool> verifyPasswordChange(
+    String email,
+    String code,
+    String newPassword,
+  ) async {
+    try {
+      final verified = await authRepository.verifyPasswordChange(
+        email,
+        code,
+        newPassword,
+      );
+      if (verified) {
+        state = state.copyWith(errorMessage: '');
+      }
+      return verified;
+    } on AUTH007InvalidVerificationCode catch (_) {
+      state = state.copyWith(errorMessage: "Codigo de verificacion invalido");
+      return false;
+    } on ArgumentError catch (err) {
+      state = state.copyWith(errorMessage: err.message);
+      return false;
+    } catch (_) {
+      state = state.copyWith(
+        errorMessage: "No se pudo actualizar la contraseña",
+      );
+      return false;
+    }
+  }
+
   Future<bool> logout({String? errorMsg}) async {
     state = state.copyWith(
       user: null,
