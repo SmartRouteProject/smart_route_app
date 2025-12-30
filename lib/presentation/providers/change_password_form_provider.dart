@@ -2,18 +2,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:formz/formz.dart';
 
 import 'package:smart_route_app/infrastructure/inputs/inputs.dart';
+import 'package:smart_route_app/presentation/providers/auth_provider.dart';
 
 final changePasswordFormProvider =
     StateNotifierProvider.autoDispose<
       ChangePasswordFormNotifier,
       ChangePasswordFormState
     >((ref) {
-      return ChangePasswordFormNotifier();
+      return ChangePasswordFormNotifier(ref);
     });
 
 class ChangePasswordFormNotifier
     extends StateNotifier<ChangePasswordFormState> {
-  ChangePasswordFormNotifier() : super(ChangePasswordFormState());
+  final Ref _ref;
+
+  ChangePasswordFormNotifier(this._ref) : super(ChangePasswordFormState());
 
   void onEmailChange(String value) {
     final email = Email.dirty(value);
@@ -62,7 +65,7 @@ class ChangePasswordFormNotifier
     state = state.copyWith(currentStep: index);
   }
 
-  void onStepContinue() {
+  Future<void> onStepContinue() async {
     if (state.currentStep == 0) {
       final email = Email.dirty(state.email.value);
       final isStepValid = Formz.validate([email]);
@@ -72,7 +75,9 @@ class ChangePasswordFormNotifier
         isValid: _validateAll(email: email),
       );
       if (!isStepValid) return;
-      state = state.copyWith(currentStep: 1);
+      final sent = await _requestPasswordChange(email.value);
+      if (!sent) return;
+      state = state.copyWith(currentStep: 1, isFormPosted: false);
       return;
     }
 
@@ -90,25 +95,8 @@ class ChangePasswordFormNotifier
     }
 
     if (state.currentStep == 2) {
-      _submitForm();
+      await onSubmit();
     }
-
-    final password = Password.dirty(state.password.value);
-    final confirmPassword = ConfirmPassword.dirty(
-      password: password.value,
-      value: state.confirmPassword.value,
-    );
-    final isStepValid = Formz.validate([password, confirmPassword]);
-    state = state.copyWith(
-      isFormPosted: true,
-      password: password,
-      confirmPassword: confirmPassword,
-      isValid: _validateAll(
-        password: password,
-        confirmPassword: confirmPassword,
-      ),
-    );
-    if (!isStepValid) return;
   }
 
   void onStepCancel() {
@@ -130,7 +118,58 @@ class ChangePasswordFormNotifier
     ]);
   }
 
-  void _submitForm() {}
+  Future<void> onResendCode() async {
+    final email = Email.dirty(state.email.value);
+    state = state.copyWith(
+      isFormPosted: true,
+      email: email,
+      isValid: _validateAll(email: email),
+    );
+    final isStepValid = Formz.validate([email]);
+    if (!isStepValid) return;
+    await _requestPasswordChange(email.value);
+  }
+
+  Future<bool> onSubmit() async {
+    final password = Password.dirty(state.password.value);
+    final confirmPassword = ConfirmPassword.dirty(
+      password: password.value,
+      value: state.confirmPassword.value,
+    );
+    final isStepValid = Formz.validate([password, confirmPassword]);
+    state = state.copyWith(
+      isFormPosted: true,
+      password: password,
+      confirmPassword: confirmPassword,
+      isValid: _validateAll(
+        password: password,
+        confirmPassword: confirmPassword,
+      ),
+    );
+    if (!isStepValid) return false;
+
+    if (state.isPosting) return false;
+    state = state.copyWith(isPosting: true);
+    final verified = await _ref
+        .read(authProvider.notifier)
+        .verifyPasswordChange(
+          state.email.value,
+          state.code.value,
+          password.value,
+        );
+    state = state.copyWith(isPosting: false);
+    return verified;
+  }
+
+  Future<bool> _requestPasswordChange(String email) async {
+    if (state.isPosting) return false;
+    state = state.copyWith(isPosting: true);
+    final sent = await _ref
+        .read(authProvider.notifier)
+        .requestPasswordChange(email);
+    state = state.copyWith(isPosting: false);
+    return sent;
+  }
 }
 
 class ChangePasswordFormState {

@@ -141,6 +141,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } on ArgumentError catch (err) {
       state = state.copyWith(errorMessage: err.message);
       return false;
+    } on USER005UnexistentUser catch (_) {
+      state = state.copyWith(
+        errorMessage: "No existe un usuario con ese correo",
+      );
+      return false;
     } catch (_) {
       state = state.copyWith(
         errorMessage: "No se pudo solicitar el cambio de contraseña",

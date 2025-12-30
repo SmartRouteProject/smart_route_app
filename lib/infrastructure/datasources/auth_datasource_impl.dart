@@ -182,9 +182,10 @@ class AuthDatasourceImpl extends IAuthDatasource {
           (json) => json,
         );
 
-        if (apiResponse.error.message.isNotEmpty) {
-          throw ArgumentError(apiResponse.error.message);
+        if (apiResponse.error.code == "USER005") {
+          throw USER005UnexistentUser();
         }
+
         throw ArgumentError(
           'Error del servidor, consultar con el administrador',
         );

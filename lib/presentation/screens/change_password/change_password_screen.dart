@@ -41,13 +41,18 @@ class ChangePasswordScreen extends ConsumerWidget {
                       return Row(
                         children: [
                           ElevatedButton(
-                            onPressed: details.onStepContinue,
+                            onPressed: form.isPosting
+                                ? null
+                                : isLastStep
+                                ? notifier.onSubmit
+                                : details.onStepContinue,
                             child: Text(isLastStep ? 'Guardar' : 'Continuar'),
                           ),
                           const SizedBox(width: 12),
                           if (form.currentStep > 0)
                             TextButton(
-                              onPressed: details.onStepCancel,
+                              onPressed:
+                                  form.isPosting ? null : details.onStepCancel,
                               child: const Text('Atras'),
                             ),
                         ],
@@ -87,7 +92,8 @@ class ChangePasswordScreen extends ConsumerWidget {
                             ),
                             const SizedBox(height: 12),
                             TextButton(
-                              onPressed: () {},
+                              onPressed:
+                                  form.isPosting ? null : notifier.onResendCode,
                               child: const Text('Reenviar codigo'),
                             ),
                             if (form.isFormPosted &&
