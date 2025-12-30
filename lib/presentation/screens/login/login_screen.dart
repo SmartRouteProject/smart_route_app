@@ -43,6 +43,10 @@ class LoginScreen extends StatelessWidget {
 
                 const GoogleSignInButton(),
 
+                const SizedBox(height: 16),
+
+                _ForgotPasswordLink(),
+
                 Expanded(child: SizedBox()),
 
                 Text("¿No tienes una cuenta?", textAlign: TextAlign.center),
@@ -61,6 +65,21 @@ class LoginScreen extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _ForgotPasswordLink extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.center,
+      child: TextButton(
+        onPressed: () {
+          context.pushNamed(ChangePasswordScreen.name);
+        },
+        child: const Text('¿Olvidaste tu contraseña?'),
       ),
     );
   }
@@ -116,7 +135,7 @@ class _LoginForm extends ConsumerWidget {
             ],
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 8),
         LoadingFloatingActionButton(
           label: 'Ingresar',
           loader: loginForm.isPosting,
