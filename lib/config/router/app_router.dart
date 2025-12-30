@@ -42,6 +42,13 @@ final appRouter = GoRouter(
       },
     ),
     GoRoute(
+      path: '/change-password-success',
+      name: SuccesfulPasswordChangeScreen.name,
+      builder: (context, state) {
+        return const SuccesfulPasswordChangeScreen();
+      },
+    ),
+    GoRoute(
       path: '/',
       name: HomeScreen.name,
       builder: (context, state) => const HomeScreen(),

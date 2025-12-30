@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:smart_route_app/presentation/providers/providers.dart';
+import 'package:smart_route_app/presentation/screens/screens.dart';
 import 'package:smart_route_app/presentation/widgets/widgets.dart';
 
 class ChangePasswordScreen extends ConsumerWidget {
@@ -44,15 +46,23 @@ class ChangePasswordScreen extends ConsumerWidget {
                             onPressed: form.isPosting
                                 ? null
                                 : isLastStep
-                                ? notifier.onSubmit
+                                ? () async {
+                                    final saved = await notifier.onSubmit();
+                                    if (saved && context.mounted) {
+                                      context.goNamed(
+                                        SuccesfulPasswordChangeScreen.name,
+                                      );
+                                    }
+                                  }
                                 : details.onStepContinue,
                             child: Text(isLastStep ? 'Guardar' : 'Continuar'),
                           ),
                           const SizedBox(width: 12),
                           if (form.currentStep > 0)
                             TextButton(
-                              onPressed:
-                                  form.isPosting ? null : details.onStepCancel,
+                              onPressed: form.isPosting
+                                  ? null
+                                  : details.onStepCancel,
                               child: const Text('Atras'),
                             ),
                         ],
@@ -92,8 +102,9 @@ class ChangePasswordScreen extends ConsumerWidget {
                             ),
                             const SizedBox(height: 12),
                             TextButton(
-                              onPressed:
-                                  form.isPosting ? null : notifier.onResendCode,
+                              onPressed: form.isPosting
+                                  ? null
+                                  : notifier.onResendCode,
                               child: const Text('Reenviar codigo'),
                             ),
                             if (form.isFormPosted &&
