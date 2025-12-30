@@ -5,4 +5,5 @@ export 'auth_provider.dart';
 export 'route_form_provider.dart';
 export 'map_provider.dart';
 export 'verify_email_form_provider.dart';
+export 'change_password_form_provider.dart';
 export 'stop_form_provider.dart';

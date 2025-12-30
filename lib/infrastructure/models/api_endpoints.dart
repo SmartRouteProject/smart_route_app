@@ -2,6 +2,8 @@ abstract class ApiEndpoints {
   static String login = "/auth/login";
   static String authGoogle = "/auth/google/mobile";
   static String registerUser = "/auth/register";
+  static String requestPasswordChange = "/auth/password-reset/request";
+  static String verifyPasswordChange = "/auth/password-reset/confirm";
   static String sendEmailVerification = "/email/send-verification";
   static String verifyEmail = "/email/verify";
   static String refreshToken = "/auth/refreshToken";
