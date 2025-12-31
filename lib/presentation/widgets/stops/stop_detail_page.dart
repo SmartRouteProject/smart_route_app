@@ -35,11 +35,11 @@ class StopDetailPage extends ConsumerWidget {
         ],
       ),
       body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-              child: ConstrainedBox(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+            child: ConstrainedBox(
                 constraints: BoxConstraints(minHeight: constraints.maxHeight),
                 child: IntrinsicHeight(
                   child: Column(
@@ -253,7 +253,19 @@ class StopDetailPage extends ConsumerWidget {
                         child: LoadingFloatingActionButton(
                           label: 'Guardar',
                           loader: false,
-                          onPressed: () {},
+                          onPressed: () {
+                            final updatedStop = _buildUpdatedStop(
+                              stop,
+                              stopForm,
+                            );
+                            ref
+                                .read(mapProvider.notifier)
+                                .upsertStop(
+                                  originalStop: stop,
+                                  updatedStop: updatedStop,
+                                );
+                            context.pop();
+                          },
                         ),
                       ),
                     ],
@@ -320,4 +332,24 @@ String _formatTime(TimeOfDay time) {
   final hour = time.hour.toString().padLeft(2, '0');
   final minute = time.minute.toString().padLeft(2, '0');
   return '$hour:$minute';
+}
+
+Stop _buildUpdatedStop(Stop original, StopFormState form) {
+  final address = form.address;
+
+  if (form.selectedType == StopType.delivery) {
+    return DeliveryStop(
+      latitude: form.latitude,
+      longitude: form.longitude,
+      address: address,
+      status: original.status,
+    );
+  }
+
+  return PickupStop(
+    latitude: form.latitude,
+    longitude: form.longitude,
+    address: address,
+    status: original.status,
+  );
 }

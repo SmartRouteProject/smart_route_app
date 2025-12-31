@@ -38,6 +38,51 @@ class MapNotifier extends StateNotifier<MapState> {
     state = state.copyWith(routes: [...state.routes, route]);
   }
 
+  void upsertStop({required Stop originalStop, required Stop updatedStop}) {
+    final selectedRoute = state.selectedRoute;
+    if (selectedRoute == null) return;
+
+    final updatedStops = List<Stop>.from(selectedRoute.stops);
+    var index = updatedStops.indexWhere((stop) => identical(stop, originalStop));
+    if (index == -1) {
+      index = updatedStops.indexWhere((stop) => _isSameStop(stop, originalStop));
+    }
+
+    if (index == -1) {
+      updatedStops.add(updatedStop);
+    } else {
+      updatedStops[index] = updatedStop;
+    }
+
+    final updatedRoute = _copyRouteWithStops(selectedRoute, updatedStops);
+    final updatedRoutes = state.routes
+        .map((route) => route.id == updatedRoute.id ? updatedRoute : route)
+        .toList();
+
+    state = state.copyWith(
+      selectedRoute: updatedRoute,
+      routes: List<RouteEnt>.unmodifiable(updatedRoutes),
+    );
+  }
+
+  RouteEnt _copyRouteWithStops(RouteEnt route, List<Stop> stops) {
+    return RouteEnt(
+      id: route.id,
+      name: route.name,
+      geometry: route.geometry,
+      creationDate: route.creationDate,
+      state: route.state,
+      stops: stops,
+      returnAddress: route.returnAddress,
+    );
+  }
+
+  bool _isSameStop(Stop a, Stop b) {
+    return a.latitude == b.latitude &&
+        a.longitude == b.longitude &&
+        a.address == b.address;
+  }
+
   Future<void> setCurrentPosition() async {
     try {
       final position = await Geolocator.getCurrentPosition(

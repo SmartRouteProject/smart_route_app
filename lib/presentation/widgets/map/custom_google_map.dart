@@ -10,6 +10,16 @@ class CustomGoogleMap extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final mapState = ref.watch(mapProvider);
+    final stops = mapState.selectedRoute?.stops ?? [];
+    final markers = stops.asMap().entries.map((entry) {
+      final index = entry.key;
+      final stop = entry.value;
+      return Marker(
+        markerId: MarkerId('stop-$index-${stop.latitude}-${stop.longitude}'),
+        position: LatLng(stop.latitude, stop.longitude),
+        infoWindow: InfoWindow(title: stop.address),
+      );
+    }).toSet();
 
     return GoogleMap(
       mapType: MapType.normal,
@@ -19,6 +29,7 @@ class CustomGoogleMap extends ConsumerWidget {
       myLocationButtonEnabled: false,
       zoomControlsEnabled: false,
       compassEnabled: true,
+      markers: markers,
     );
   }
 }

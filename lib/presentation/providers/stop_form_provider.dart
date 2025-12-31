@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:smart_route_app/domain/domain.dart';
+import 'package:smart_route_app/infrastructure/mocks/stops_sample.dart';
 
 enum StopType { delivery, pickup }
 
@@ -16,6 +17,8 @@ class StopFormNotifier extends StateNotifier<StopFormState> {
     : super(
         StopFormState(
           address: stop.address,
+          latitude: stop.latitude,
+          longitude: stop.longitude,
           arrivalTime: 'Cualquier hora',
           description: '',
           packageList: stop is DeliveryStop ? const [] : null,
@@ -26,7 +29,13 @@ class StopFormNotifier extends StateNotifier<StopFormState> {
       );
 
   void onAddressChanged(String value) {
-    state = state.copyWith(address: value);
+    final matched = stopsSample.where((stop) => stop.address == value);
+    final coords = matched.isNotEmpty ? matched.first : null;
+    state = state.copyWith(
+      address: value,
+      latitude: coords?.latitude ?? state.latitude,
+      longitude: coords?.longitude ?? state.longitude,
+    );
   }
 
   void onTypeChanged(StopType type) {
@@ -47,6 +56,8 @@ class StopFormNotifier extends StateNotifier<StopFormState> {
 
 class StopFormState {
   final String address;
+  final double latitude;
+  final double longitude;
   final String arrivalTime;
   final String description;
   final List<Package>? packageList;
@@ -54,6 +65,8 @@ class StopFormState {
 
   StopFormState({
     required this.address,
+    required this.latitude,
+    required this.longitude,
     required this.arrivalTime,
     required this.description,
     required this.packageList,
@@ -68,12 +81,16 @@ class StopFormState {
 
   StopFormState copyWith({
     String? address,
+    double? latitude,
+    double? longitude,
     String? arrivalTime,
     String? description,
     List<Package>? packageList,
     StopType? selectedType,
   }) => StopFormState(
     address: address ?? this.address,
+    latitude: latitude ?? this.latitude,
+    longitude: longitude ?? this.longitude,
     arrivalTime: arrivalTime ?? this.arrivalTime,
     description: description ?? this.description,
     packageList: packageList ?? this.packageList,
