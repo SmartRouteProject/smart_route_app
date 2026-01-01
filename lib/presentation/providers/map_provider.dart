@@ -27,7 +27,15 @@ class MapNotifier extends StateNotifier<MapState> {
   }
 
   void clearSelectedRoute() {
-    state = state.copyWith(clearSelection: true);
+    state = state.copyWith(selectedRoute: null);
+  }
+
+  void selectStop(Stop? stop) {
+    state = state.copyWith(selectedStop: stop);
+  }
+
+  void clearSelectedStop() {
+    state = state.copyWith(selectedStop: null);
   }
 
   void setRoutes(List<RouteEnt> routes) {
@@ -43,9 +51,13 @@ class MapNotifier extends StateNotifier<MapState> {
     if (selectedRoute == null) return;
 
     final updatedStops = List<Stop>.from(selectedRoute.stops);
-    var index = updatedStops.indexWhere((stop) => identical(stop, originalStop));
+    var index = updatedStops.indexWhere(
+      (stop) => identical(stop, originalStop),
+    );
     if (index == -1) {
-      index = updatedStops.indexWhere((stop) => _isSameStop(stop, originalStop));
+      index = updatedStops.indexWhere(
+        (stop) => _isSameStop(stop, originalStop),
+      );
     }
 
     if (index == -1) {
@@ -59,8 +71,17 @@ class MapNotifier extends StateNotifier<MapState> {
         .map((route) => route.id == updatedRoute.id ? updatedRoute : route)
         .toList();
 
+    final selectedStop = state.selectedStop;
+    final updatedSelectedStop =
+        selectedStop != null &&
+            (identical(selectedStop, originalStop) ||
+                _isSameStop(selectedStop, originalStop))
+        ? updatedStop
+        : selectedStop;
+
     state = state.copyWith(
       selectedRoute: updatedRoute,
+      selectedStop: updatedSelectedStop,
       routes: List<RouteEnt>.unmodifiable(updatedRoutes),
     );
   }
@@ -103,24 +124,25 @@ class MapNotifier extends StateNotifier<MapState> {
 class MapState {
   final List<RouteEnt> routes;
   final RouteEnt? selectedRoute;
+  final Stop? selectedStop;
   final CameraPosition cameraPosition;
 
   MapState({
     this.routes = const [],
     this.selectedRoute,
+    this.selectedStop,
     required this.cameraPosition,
   });
 
   MapState copyWith({
     List<RouteEnt>? routes,
     RouteEnt? selectedRoute,
+    Stop? selectedStop,
     CameraPosition? cameraPosition,
-    bool clearSelection = false,
   }) => MapState(
     routes: routes ?? this.routes,
-    selectedRoute: clearSelection
-        ? null
-        : (selectedRoute ?? this.selectedRoute),
+    selectedRoute: selectedRoute ?? this.selectedRoute,
+    selectedStop: selectedStop ?? this.selectedStop,
     cameraPosition: cameraPosition ?? this.cameraPosition,
   );
 }

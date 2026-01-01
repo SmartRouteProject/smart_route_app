@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:smart_route_app/presentation/providers/providers.dart';
 import 'package:smart_route_app/presentation/widgets/widgets.dart';
 
 class RouteBottomSheet extends ConsumerWidget {
@@ -10,6 +11,8 @@ class RouteBottomSheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final selectedStop = ref.watch(mapProvider).selectedStop;
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 120),
       curve: Curves.easeOut,
@@ -26,7 +29,7 @@ class RouteBottomSheet extends ConsumerWidget {
         ],
         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      child: StopsList(),
+      child: selectedStop == null ? const StopsList() : const ActiveStop(),
     );
   }
 }

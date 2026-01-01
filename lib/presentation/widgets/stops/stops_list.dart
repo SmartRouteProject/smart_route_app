@@ -10,6 +10,7 @@ class StopsList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final mapState = ref.watch(mapProvider);
+    final mapNotifier = ref.read(mapProvider.notifier);
     final returnAddress = mapState.selectedRoute?.returnAddress;
     final selectedRoute = mapState.selectedRoute;
     final routeName = selectedRoute?.name ?? 'Ruta sin nombre';
@@ -82,16 +83,7 @@ class StopsList extends ConsumerWidget {
                   subtitle: Text(stops[index].address),
                   trailing: Icon(Icons.chevron_right),
                   onTap: () {
-                    showGeneralDialog(
-                      context: context,
-                      barrierColor: Colors.black54,
-                      barrierDismissible: true,
-                      barrierLabel: 'close-stop-details',
-                      transitionDuration: const Duration(milliseconds: 250),
-                      pageBuilder: (_, __, ___) {
-                        return StopDetailPage(stop: stops[index]);
-                      },
-                    );
+                    mapNotifier.selectStop(stops[index]);
                   },
                 ),
               ),
