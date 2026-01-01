@@ -1,12 +1,14 @@
 import 'package:smart_route_app/domain/domain.dart';
 
 abstract class Stop {
+  String? id;
   double latitude;
   double longitude;
   String address;
   StopStatus status;
 
   Stop({
+    this.id,
     required this.latitude,
     required this.longitude,
     required this.address,

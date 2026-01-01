@@ -16,4 +16,10 @@ abstract class ApiEndpoints {
   static String getRouteById(String id) => "/route/$id";
   static String updateRouteById(String id) => "/route/$id";
   static String deleteRouteById(String id) => "/route/$id";
+  static String getStopsByRoute(String routeId) => "/stop/$routeId";
+  static String createStop(String id) => "/stop/$id";
+  static String updateStop({required String routeId, required String stopId}) =>
+      "/stop/$routeId/$stopId";
+  static String deleteStop({required String routeId, required String stopId}) =>
+      "/stop/$routeId/$stopId";
 }

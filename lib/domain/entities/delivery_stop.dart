@@ -7,6 +7,7 @@ class DeliveryStop extends Stop {
   // List<Package> packages;
 
   DeliveryStop({
+    super.id,
     required super.latitude,
     required super.longitude,
     required super.address,
@@ -16,6 +17,7 @@ class DeliveryStop extends Stop {
 
   factory DeliveryStop.fromJson(Map<String, dynamic> json) {
     return DeliveryStop(
+      id: json['id']?.toString(),
       latitude: (json['latitude'] as num).toDouble(),
       longitude: (json['longitude'] as num).toDouble(),
       address: json['address'] ?? '',
@@ -30,6 +32,7 @@ class DeliveryStop extends Stop {
   @override
   Map<String, dynamic> toMap() {
     return {
+      'id': id,
       'latitude': latitude,
       'longitude': longitude,
       'address': address,
