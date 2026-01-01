@@ -66,26 +66,53 @@ class ActiveStop extends ConsumerWidget {
           Row(
             children: [
               Expanded(
-                child: ElevatedButton.icon(
+                child: ElevatedButton(
                   onPressed: () {},
-                  icon: const Icon(Icons.navigation),
-                  label: const Text('Navegar'),
+                  child: Padding(
+                    padding: const EdgeInsetsGeometry.symmetric(vertical: 8),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Icon(Icons.navigation),
+                        SizedBox(height: 6),
+                        Text('Navegar'),
+                      ],
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: OutlinedButton.icon(
+                child: OutlinedButton(
                   onPressed: () {},
-                  icon: const Icon(Icons.close),
-                  label: const Text('Fallida'),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Icon(Icons.close),
+                        SizedBox(height: 6),
+                        Text('Fallida'),
+                      ],
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: OutlinedButton.icon(
+                child: OutlinedButton(
                   onPressed: () {},
-                  icon: const Icon(Icons.check_circle_outline),
-                  label: const Text('Entregada'),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Icon(Icons.check_circle_outline),
+                        SizedBox(height: 6),
+                        Text('Entregada'),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ],
