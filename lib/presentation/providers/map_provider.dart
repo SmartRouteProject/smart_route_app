@@ -23,11 +23,11 @@ class MapNotifier extends StateNotifier<MapState> {
   }
 
   void selectRoute(RouteEnt? route) {
-    state = state.copyWith(selectedRoute: route);
+    state = state.copyWith(selectedRoute: route, clearSelectedStop: true);
   }
 
   void clearSelectedRoute() {
-    state = state.copyWith(selectedRoute: null);
+    state = state.copyWith(clearSelectedRoute: true, clearSelectedStop: true);
   }
 
   void selectStop(Stop? stop) {
@@ -35,7 +35,7 @@ class MapNotifier extends StateNotifier<MapState> {
   }
 
   void clearSelectedStop() {
-    state = state.copyWith(selectedStop: null);
+    state = state.copyWith(clearSelectedStop: true);
   }
 
   void setRoutes(List<RouteEnt> routes) {
@@ -139,10 +139,16 @@ class MapState {
     RouteEnt? selectedRoute,
     Stop? selectedStop,
     CameraPosition? cameraPosition,
+    bool clearSelectedRoute = false,
+    bool clearSelectedStop = false,
   }) => MapState(
     routes: routes ?? this.routes,
-    selectedRoute: selectedRoute ?? this.selectedRoute,
-    selectedStop: selectedStop ?? this.selectedStop,
+    selectedRoute: clearSelectedRoute
+        ? null
+        : (selectedRoute ?? this.selectedRoute),
+    selectedStop: clearSelectedStop
+        ? null
+        : (selectedStop ?? this.selectedStop),
     cameraPosition: cameraPosition ?? this.cameraPosition,
   );
 }
