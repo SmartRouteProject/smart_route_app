@@ -1,12 +1,15 @@
 export 'datasources/auth_datasource_impl.dart';
 export 'datasources/user_datasource_impl.dart';
 export 'datasources/route_datasource_impl.dart';
+export 'datasources/maps_datasource_impl.dart';
 export 'repositories/auth_repository_impl.dart';
 export 'repositories/user_repository_impl.dart';
 export 'repositories/route_repository_impl.dart';
+export 'repositories/maps_repository_impl.dart';
 export 'errors/auth_errors.dart';
 export 'models/api_endpoints.dart';
 export 'models/api_response.dart';
 export 'models/create_route_dto.dart';
+export 'models/address_search.dart';
 export 'models/login_response.dart';
 export 'errors/signup_errors.dart';

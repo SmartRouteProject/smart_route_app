@@ -11,6 +11,7 @@ abstract class ApiEndpoints {
   static String editUserProfile = "/user/edit";
   static String getUserRoutes = "/route";
   static String createRoute = "/route";
+  static String searchAddress = "/maps/findPlace";
 
   static String getRouteById(String id) => "/route/$id";
   static String updateRouteById(String id) => "/route/$id";

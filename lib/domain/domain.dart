@@ -14,3 +14,5 @@ export 'datasources/i_user_datasource.dart';
 export 'repositories/i_user_repository.dart';
 export 'datasources/i_route_datasource.dart';
 export 'repositories/i_route_repository.dart';
+export 'datasources/i_maps_datasource.dart';
+export 'repositories/i_maps_repository.dart';
