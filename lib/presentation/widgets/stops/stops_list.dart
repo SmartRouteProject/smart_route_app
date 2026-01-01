@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:smart_route_app/domain/domain.dart';
 import 'package:smart_route_app/presentation/providers/map_provider.dart';
 import 'package:smart_route_app/presentation/widgets/widgets.dart';
 
@@ -83,7 +84,20 @@ class StopsList extends ConsumerWidget {
                   subtitle: Text(stops[index].address),
                   trailing: Icon(Icons.chevron_right),
                   onTap: () {
-                    mapNotifier.selectStop(stops[index]);
+                    if (selectedRoute?.state == RouteState.started) {
+                      mapNotifier.selectStop(stops[index]);
+                      return;
+                    }
+                    showGeneralDialog(
+                      context: context,
+                      barrierColor: Colors.black54,
+                      barrierDismissible: true,
+                      barrierLabel: 'close-stop-details',
+                      transitionDuration: const Duration(milliseconds: 250),
+                      pageBuilder: (_, __, ___) {
+                        return StopDetailPage(stop: stops[index]);
+                      },
+                    );
                   },
                 ),
               ),
