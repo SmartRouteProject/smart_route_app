@@ -7,8 +7,9 @@ class MapsDatasourceImpl extends IMapsDatasource {
   @override
   Future<List<AddressSearch>> findPlace(String query) async {
     try {
-      final response = await DioRequestHandler.get(
+      final response = await DioRequestHandler.post(
         ApiEndpoints.searchAddress,
+        data: '"$query"',
         requestOptions: RequestOptionsModel(hasBearerToken: true),
       );
 
