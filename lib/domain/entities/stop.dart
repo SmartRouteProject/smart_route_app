@@ -19,9 +19,9 @@ abstract class Stop {
     final type = json['type'];
 
     switch (type) {
-      case 'delivery':
+      case 'Delivery':
         return DeliveryStop.fromJson(json);
-      case 'pickup':
+      case 'Pickup':
         return PickupStop.fromJson(json);
       default:
         throw Exception("Tipo de Stop desconocido: $type");

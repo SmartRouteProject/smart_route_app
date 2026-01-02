@@ -13,5 +13,6 @@ export 'models/api_endpoints.dart';
 export 'models/api_response.dart';
 export 'models/create_route_dto.dart';
 export 'models/address_search.dart';
+export 'models/stop_request_dto.dart';
 export 'models/login_response.dart';
 export 'errors/signup_errors.dart';

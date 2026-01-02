@@ -8,6 +8,7 @@ import 'package:smart_route_app/presentation/widgets/widgets.dart';
 
 class AddressSearchDelegate extends SearchDelegate<String?> {
   final ValueChanged<String>? onSelectedAddress;
+  final ValueChanged<AddressSearch>? onSelectedResult;
   final IMapsRepository _mapsRepository;
   Timer? _debounce;
   final ValueNotifier<_AddressSearchState> _stateNotifier = ValueNotifier(
@@ -17,6 +18,7 @@ class AddressSearchDelegate extends SearchDelegate<String?> {
 
   AddressSearchDelegate({
     this.onSelectedAddress,
+    this.onSelectedResult,
     IMapsRepository? mapsRepository,
   }) : _mapsRepository = mapsRepository ?? MapsRepositoryImpl();
 
@@ -88,6 +90,11 @@ class AddressSearchDelegate extends SearchDelegate<String?> {
               title: Text(result.displayName),
               subtitle: Text(result.formattedAddress),
               onTap: () {
+                if (onSelectedResult != null) {
+                  onSelectedResult!(result);
+                  close(context, result.formattedAddress);
+                  return;
+                }
                 if (onSelectedAddress != null) {
                   onSelectedAddress!(result.formattedAddress);
                   close(context, result.formattedAddress);

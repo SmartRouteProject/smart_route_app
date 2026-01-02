@@ -1,20 +1,29 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:smart_route_app/domain/domain.dart';
+import 'package:smart_route_app/infrastructure/infrastructure.dart';
 import 'package:smart_route_app/infrastructure/mocks/stops_sample.dart';
+import 'package:smart_route_app/presentation/providers/map_provider.dart';
 
 enum StopType { delivery, pickup }
 
 final stopFormProvider =
     StateNotifierProvider.autoDispose.family<StopFormNotifier, StopFormState, Stop>(
       (ref, stop) {
-        return StopFormNotifier(stop: stop);
+        return StopFormNotifier(ref: ref, stop: stop);
       },
     );
 
 class StopFormNotifier extends StateNotifier<StopFormState> {
-  StopFormNotifier({required Stop stop})
-    : super(
+  final Ref _ref;
+  final Stop _originalStop;
+  final IStopRepository _stopRepository;
+
+  StopFormNotifier({required Ref ref, required Stop stop})
+    : _ref = ref,
+      _originalStop = stop,
+      _stopRepository = StopRepositoryImpl(),
+      super(
         StopFormState(
           address: stop.address,
           latitude: stop.latitude,
@@ -38,6 +47,14 @@ class StopFormNotifier extends StateNotifier<StopFormState> {
     );
   }
 
+  void onAddressSelected(AddressSearch result) {
+    state = state.copyWith(
+      address: result.formattedAddress,
+      latitude: result.latitude,
+      longitude: result.longitude,
+    );
+  }
+
   void onTypeChanged(StopType type) {
     state = state.copyWith(
       selectedType: type,
@@ -52,6 +69,53 @@ class StopFormNotifier extends StateNotifier<StopFormState> {
   void onDescriptionChanged(String value) {
     state = state.copyWith(description: value);
   }
+
+  Future<bool> onSubmit() async {
+    final routeId = _ref.read(mapProvider).selectedRoute?.id;
+    if (routeId == null || routeId.isEmpty) return false;
+    if (state.isPosting) return false;
+
+    state = state.copyWith(isPosting: true);
+    final updatedStop = _buildUpdatedStop();
+    final isNewStop = _originalStop.id == null || _originalStop.id!.isEmpty;
+    final Stop? response = isNewStop
+        ? await _stopRepository.createStop(routeId, updatedStop)
+        : await _stopRepository.editStop(routeId, updatedStop);
+
+    if (response == null) {
+      state = state.copyWith(isPosting: false);
+      return false;
+    }
+
+    _ref.read(mapProvider.notifier).upsertStop(
+      originalStop: _originalStop,
+      updatedStop: response,
+    );
+    state = state.copyWith(isPosting: false);
+    return true;
+  }
+
+  Stop _buildUpdatedStop() {
+    final address = state.address;
+
+    if (state.selectedType == StopType.delivery) {
+      return DeliveryStop(
+        id: _originalStop.id,
+        latitude: state.latitude,
+        longitude: state.longitude,
+        address: address,
+        status: _originalStop.status,
+      );
+    }
+
+    return PickupStop(
+      id: _originalStop.id,
+      latitude: state.latitude,
+      longitude: state.longitude,
+      address: address,
+      status: _originalStop.status,
+    );
+  }
 }
 
 class StopFormState {
@@ -62,6 +126,7 @@ class StopFormState {
   final String description;
   final List<Package>? packageList;
   final StopType selectedType;
+  final bool isPosting;
 
   StopFormState({
     required this.address,
@@ -71,6 +136,7 @@ class StopFormState {
     required this.description,
     required this.packageList,
     required this.selectedType,
+    this.isPosting = false,
   });
 
   String get typeLabel {
@@ -87,6 +153,7 @@ class StopFormState {
     String? description,
     List<Package>? packageList,
     StopType? selectedType,
+    bool? isPosting,
   }) => StopFormState(
     address: address ?? this.address,
     latitude: latitude ?? this.latitude,
@@ -95,5 +162,6 @@ class StopFormState {
     description: description ?? this.description,
     packageList: packageList ?? this.packageList,
     selectedType: selectedType ?? this.selectedType,
+    isPosting: isPosting ?? this.isPosting,
   );
 }

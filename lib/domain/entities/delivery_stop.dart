@@ -21,7 +21,7 @@ class DeliveryStop extends Stop {
       latitude: (json['latitude'] as num).toDouble(),
       longitude: (json['longitude'] as num).toDouble(),
       address: json['address'] ?? '',
-      status: json['status'] ?? '',
+      status: StopStatus.fromString(json['status'] ?? ''),
       // packages: (json['packages'] as List<dynamic>?)
       //         ?.map((e) => Package.fromJson(e as Map<String, dynamic>))
       //         .toList() ??

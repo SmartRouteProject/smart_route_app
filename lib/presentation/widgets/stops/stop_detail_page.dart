@@ -214,8 +214,8 @@ class StopDetailPage extends ConsumerWidget {
                             await showSearch<String?>(
                               context: context,
                               delegate: AddressSearchDelegate(
-                                onSelectedAddress:
-                                    stopFormNotifier.onAddressChanged,
+                                onSelectedResult:
+                                    stopFormNotifier.onAddressSelected,
                               ),
                             );
                           },
@@ -252,19 +252,12 @@ class StopDetailPage extends ConsumerWidget {
                         width: double.infinity,
                         child: LoadingFloatingActionButton(
                           label: 'Guardar',
-                          loader: false,
-                          onPressed: () {
-                            final updatedStop = _buildUpdatedStop(
-                              stop,
-                              stopForm,
-                            );
-                            ref
-                                .read(mapProvider.notifier)
-                                .upsertStop(
-                                  originalStop: stop,
-                                  updatedStop: updatedStop,
-                                );
-                            context.pop();
+                          loader: stopForm.isPosting,
+                          onPressed: () async {
+                            final saved = await stopFormNotifier.onSubmit();
+                            if (saved && context.mounted) {
+                              context.pop();
+                            }
                           },
                         ),
                       ),
@@ -332,24 +325,4 @@ String _formatTime(TimeOfDay time) {
   final hour = time.hour.toString().padLeft(2, '0');
   final minute = time.minute.toString().padLeft(2, '0');
   return '$hour:$minute';
-}
-
-Stop _buildUpdatedStop(Stop original, StopFormState form) {
-  final address = form.address;
-
-  if (form.selectedType == StopType.delivery) {
-    return DeliveryStop(
-      latitude: form.latitude,
-      longitude: form.longitude,
-      address: address,
-      status: original.status,
-    );
-  }
-
-  return PickupStop(
-    latitude: form.latitude,
-    longitude: form.longitude,
-    address: address,
-    status: original.status,
-  );
 }

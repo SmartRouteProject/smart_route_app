@@ -15,7 +15,7 @@ class PickupStop extends Stop {
       latitude: (json['latitude'] as num).toDouble(),
       longitude: (json['longitude'] as num).toDouble(),
       address: json['address'] ?? '',
-      status: json['status'] ?? '',
+      status: StopStatus.fromString(json['status'] ?? ''),
     );
   }
 
