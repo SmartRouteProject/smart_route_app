@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 import 'package:smart_route_app/domain/domain.dart';
 
 import 'package:smart_route_app/infrastructure/infrastructure.dart';
@@ -10,6 +11,11 @@ class AddressSearchDelegate extends SearchDelegate<String?> {
   final ValueChanged<String>? onSelectedAddress;
   final ValueChanged<AddressSearch>? onSelectedResult;
   final IMapsRepository _mapsRepository;
+  final SpeechToText _speech = SpeechToText();
+  bool _isListening = false;
+  bool _isDialogOpen = false;
+  bool _isFinishing = false;
+  String _lastWords = '';
   Timer? _debounce;
   final ValueNotifier<_AddressSearchState> _stateNotifier = ValueNotifier(
     _AddressSearchState.initial(),
@@ -46,6 +52,10 @@ class AddressSearchDelegate extends SearchDelegate<String?> {
   @override
   List<Widget>? buildActions(BuildContext context) {
     return [
+      IconButton(
+        icon: const Icon(Icons.mic),
+        onPressed: _isListening ? null : () => _startVoiceSearch(context),
+      ),
       IconButton(onPressed: () => query = '', icon: const Icon(Icons.clear)),
     ];
   }
@@ -133,8 +143,67 @@ class AddressSearchDelegate extends SearchDelegate<String?> {
   @override
   void close(BuildContext context, String? result) {
     _debounce?.cancel();
+    _speech.stop();
     _stateNotifier.dispose();
     super.close(context, result);
+  }
+
+  void _showListeningDialog(BuildContext context) {
+    if (_isDialogOpen) return;
+    _isDialogOpen = true;
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return AlertDialog(
+          content: Row(
+            children: const [
+              CircularProgressIndicator(),
+              SizedBox(width: 16),
+              Expanded(child: Text('Escuchando...')),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _closeListeningDialog(BuildContext context) {
+    if (!_isDialogOpen) return;
+    _isDialogOpen = false;
+    Navigator.of(context, rootNavigator: true).pop();
+  }
+
+  Future<void> _finishListening(BuildContext context) async {
+    if (_isFinishing) return;
+    _isFinishing = true;
+    await _speech.stop();
+    _isListening = false;
+    _closeListeningDialog(context);
+    final words = _lastWords.trim();
+    _isFinishing = false;
+    if (words.isEmpty) return;
+    query = words;
+    showSuggestions(context);
+  }
+
+  Future<void> _startVoiceSearch(BuildContext context) async {
+    if (_isListening) return;
+    final available = await _speech.initialize();
+    if (!available) return;
+
+    _lastWords = '';
+    _isListening = true;
+    _showListeningDialog(context);
+
+    await _speech.listen(
+      pauseFor: const Duration(seconds: 3),
+      onResult: (result) async {
+        _lastWords = result.recognizedWords;
+        if (!result.finalResult) return;
+        await _finishListening(context);
+      },
+    );
   }
 }
 
