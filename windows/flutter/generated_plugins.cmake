@@ -6,6 +6,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   file_selector_windows
   geolocator_windows
   isar_community_flutter_libs
+  speech_to_text_windows
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST

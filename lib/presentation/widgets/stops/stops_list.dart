@@ -1,15 +1,96 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 
 import 'package:smart_route_app/domain/domain.dart';
 import 'package:smart_route_app/presentation/providers/map_provider.dart';
 import 'package:smart_route_app/presentation/widgets/widgets.dart';
 
-class StopsList extends ConsumerWidget {
+class StopsList extends ConsumerStatefulWidget {
   const StopsList({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<StopsList> createState() => _StopsListState();
+}
+
+class _StopsListState extends ConsumerState<StopsList> {
+  final SpeechToText _speech = SpeechToText();
+  bool _isListening = false;
+  bool _isDialogOpen = false;
+  bool _isFinishing = false;
+  String _lastWords = '';
+
+  @override
+  void dispose() {
+    _speech.stop();
+    super.dispose();
+  }
+
+  void _showListeningDialog(BuildContext context) {
+    if (_isDialogOpen) return;
+    _isDialogOpen = true;
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return AlertDialog(
+          content: Row(
+            children: const [
+              CircularProgressIndicator(),
+              SizedBox(width: 16),
+              Expanded(child: Text('Escuchando...')),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _closeListeningDialog(BuildContext context) {
+    if (!_isDialogOpen) return;
+    _isDialogOpen = false;
+    Navigator.of(context, rootNavigator: true).pop();
+  }
+
+  Future<void> _finishListening(BuildContext context) async {
+    if (_isFinishing) return;
+    _isFinishing = true;
+    await _speech.stop();
+    if (!mounted) return;
+    setState(() => _isListening = false);
+    _closeListeningDialog(context);
+    final words = _lastWords.trim();
+    _isFinishing = false;
+    if (words.isEmpty) return;
+    await showSearch(
+      context: context,
+      delegate: AddressSearchDelegate(),
+      query: words,
+    );
+  }
+
+  Future<void> _startVoiceSearch(BuildContext context) async {
+    if (_isListening) return;
+    final available = await _speech.initialize();
+    if (!available) return;
+
+    if (!mounted) return;
+    _lastWords = '';
+    setState(() => _isListening = true);
+    _showListeningDialog(context);
+
+    await _speech.listen(
+      pauseFor: const Duration(seconds: 3),
+      onResult: (result) async {
+        _lastWords = result.recognizedWords;
+        if (!result.finalResult) return;
+        await _finishListening(context);
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final mapState = ref.watch(mapProvider);
     final mapNotifier = ref.read(mapProvider.notifier);
     final returnAddress = mapState.selectedRoute?.returnAddress;
@@ -40,8 +121,15 @@ class StopsList extends ConsumerWidget {
                   delegate: AddressSearchDelegate(),
                 );
               },
-              decoration: const InputDecoration(
+              readOnly: true,
+              decoration: InputDecoration(
                 hintText: "Excribe para añadir una parada",
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.mic),
+                  onPressed: _isListening
+                      ? null
+                      : () => _startVoiceSearch(context),
+                ),
               ),
             ),
           ),
