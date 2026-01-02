@@ -35,11 +35,11 @@ class StopDetailPage extends ConsumerWidget {
         ],
       ),
       body: SafeArea(
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          return SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-            child: ConstrainedBox(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+              child: ConstrainedBox(
                 constraints: BoxConstraints(minHeight: constraints.maxHeight),
                 child: IntrinsicHeight(
                   child: Column(
@@ -233,7 +233,25 @@ class StopDetailPage extends ConsumerWidget {
                         color: theme.colorScheme.surfaceContainerHighest
                             .withValues(alpha: 0.3),
                         child: ListTile(
-                          onTap: () {},
+                          onTap: () async {
+                            final confirmed = await showDialog<bool>(
+                              context: context,
+                              builder: (_) => ConfirmationDialog(
+                                title: 'Eliminar parada',
+                                description:
+                                    '¿Está seguro que desea eliminar la parada?',
+                                onConfirmed: () {},
+                              ),
+                            );
+                            if (confirmed != true) return;
+
+                            final deleted = await ref
+                                .read(mapProvider.notifier)
+                                .deleteStop(stop);
+                            if (deleted && context.mounted) {
+                              context.pop();
+                            }
+                          },
                           leading: Icon(
                             Icons.delete_outline,
                             color: theme.colorScheme.error,

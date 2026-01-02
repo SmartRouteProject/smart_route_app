@@ -3,6 +3,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import 'package:smart_route_app/domain/domain.dart';
+import 'package:smart_route_app/infrastructure/infrastructure.dart';
 import 'package:smart_route_app/infrastructure/mocks/route_sample.dart';
 
 final mapProvider = StateNotifierProvider<MapNotifier, MapState>((ref) {
@@ -15,8 +16,11 @@ class MapNotifier extends StateNotifier<MapState> {
     zoom: 6.0,
   );
 
+  final IStopRepository _stopRepository;
+
   MapNotifier()
-    : super(
+    : _stopRepository = StopRepositoryImpl(),
+      super(
         MapState(routes: sampleRoutes, cameraPosition: defaultCameraPosition),
       ) {
     setCurrentPosition();
@@ -86,6 +90,42 @@ class MapNotifier extends StateNotifier<MapState> {
     );
   }
 
+  Future<bool> deleteStop(Stop stop) async {
+    final selectedRoute = state.selectedRoute;
+    final routeId = selectedRoute?.id ?? '';
+    final stopId = stop.id ?? '';
+    if (selectedRoute == null || routeId.isEmpty || stopId.isEmpty) {
+      return false;
+    }
+
+    try {
+      final deleted = await _stopRepository.deleteStop(routeId, stopId);
+      if (!deleted) return false;
+
+      final updatedStops = selectedRoute.stops
+          .where((candidate) => !_isSameStopByIdOrFallback(candidate, stop))
+          .toList();
+      final updatedRoute = _copyRouteWithStops(selectedRoute, updatedStops);
+      final updatedRoutes = state.routes
+          .map((route) => route.id == updatedRoute.id ? updatedRoute : route)
+          .toList();
+
+      final selectedStop = state.selectedStop;
+      final shouldClearSelected =
+          selectedStop != null &&
+          _isSameStopByIdOrFallback(selectedStop, stop);
+
+      state = state.copyWith(
+        selectedRoute: updatedRoute,
+        selectedStop: shouldClearSelected ? null : selectedStop,
+        routes: List<RouteEnt>.unmodifiable(updatedRoutes),
+      );
+      return true;
+    } catch (err) {
+      rethrow;
+    }
+  }
+
   RouteEnt _copyRouteWithStops(RouteEnt route, List<Stop> stops) {
     return RouteEnt(
       id: route.id,
@@ -102,6 +142,13 @@ class MapNotifier extends StateNotifier<MapState> {
     return a.latitude == b.latitude &&
         a.longitude == b.longitude &&
         a.address == b.address;
+  }
+
+  bool _isSameStopByIdOrFallback(Stop a, Stop b) {
+    if (a.id != null && b.id != null) {
+      return a.id == b.id;
+    }
+    return _isSameStop(a, b);
   }
 
   Future<void> setCurrentPosition() async {
