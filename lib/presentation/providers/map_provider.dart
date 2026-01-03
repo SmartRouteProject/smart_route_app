@@ -46,6 +46,10 @@ class MapNotifier extends StateNotifier<MapState> {
     state = state.copyWith(routes: List<RouteEnt>.unmodifiable(routes));
   }
 
+  void setMapController(GoogleMapController controller) {
+    state = state.copyWith(mapController: controller);
+  }
+
   void addRoute(RouteEnt route) {
     state = state.copyWith(routes: [...state.routes, route]);
   }
@@ -112,8 +116,7 @@ class MapNotifier extends StateNotifier<MapState> {
 
       final selectedStop = state.selectedStop;
       final shouldClearSelected =
-          selectedStop != null &&
-          _isSameStopByIdOrFallback(selectedStop, stop);
+          selectedStop != null && _isSameStopByIdOrFallback(selectedStop, stop);
 
       state = state.copyWith(
         selectedRoute: updatedRoute,
@@ -164,6 +167,10 @@ class MapNotifier extends StateNotifier<MapState> {
           zoom: 14.4746,
         ),
       );
+
+      state.mapController?.animateCamera(
+        CameraUpdate.newCameraPosition(state.cameraPosition),
+      );
     } catch (_) {}
   }
 }
@@ -173,12 +180,14 @@ class MapState {
   final RouteEnt? selectedRoute;
   final Stop? selectedStop;
   final CameraPosition cameraPosition;
+  final GoogleMapController? mapController;
 
   MapState({
     this.routes = const [],
     this.selectedRoute,
     this.selectedStop,
     required this.cameraPosition,
+    this.mapController,
   });
 
   MapState copyWith({
@@ -186,6 +195,7 @@ class MapState {
     RouteEnt? selectedRoute,
     Stop? selectedStop,
     CameraPosition? cameraPosition,
+    GoogleMapController? mapController,
     bool clearSelectedRoute = false,
     bool clearSelectedStop = false,
   }) => MapState(
@@ -197,5 +207,6 @@ class MapState {
         ? null
         : (selectedStop ?? this.selectedStop),
     cameraPosition: cameraPosition ?? this.cameraPosition,
+    mapController: mapController ?? this.mapController,
   );
 }

@@ -30,6 +30,9 @@ class CustomGoogleMap extends ConsumerWidget {
       zoomControlsEnabled: false,
       compassEnabled: true,
       markers: markers,
+      onMapCreated:
+          (controller) =>
+              ref.read(mapProvider.notifier).setMapController(controller),
     );
   }
 }
