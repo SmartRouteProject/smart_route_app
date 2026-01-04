@@ -7,6 +7,7 @@ import 'package:smart_route_app/presentation/widgets/widgets.dart';
 
 class StopDetailPage extends ConsumerWidget {
   const StopDetailPage({super.key});
+  //TODO: Al abrir el modal de editar parada el tipo de parada se abre en entrega y no tiene la hora de llegada
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

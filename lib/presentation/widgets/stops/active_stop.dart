@@ -57,6 +57,7 @@ class ActiveStop extends ConsumerWidget {
                 ),
               ),
               const SizedBox(width: 8),
+              //TODO : Reemplazar texto hardcodeado por datos reales
               Text(
                 '1/3, 21:22',
                 style: textTheme.bodySmall?.copyWith(
