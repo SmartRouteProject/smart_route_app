@@ -131,8 +131,6 @@ class ActiveStop extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 16),
-          _InfoTile(icon: Icons.place_outlined, title: stop.address),
-          const SizedBox(height: 8),
           _ActionTile(
             icon: Icons.edit_location_alt_outlined,
             title: 'Editar parada',
