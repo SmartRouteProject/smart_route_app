@@ -153,6 +153,24 @@ class ActiveStop extends ConsumerWidget {
             icon: Icons.delete_outline,
             title: 'Eliminar parada',
             color: theme.colorScheme.error,
+            onTap: () async {
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder: (_) => ConfirmationDialog(
+                  title: 'Eliminar parada',
+                  description: '¿Estás seguro que desea eliminar la parada?',
+                  onConfirmed: () {},
+                ),
+              );
+              if (confirmed != true) return;
+
+              final deleted = await ref
+                  .read(mapProvider.notifier)
+                  .deleteStop(stop);
+              if (deleted && context.mounted) {
+                ref.read(mapProvider.notifier).clearSelectedStop();
+              }
+            },
           ),
         ],
       ),
