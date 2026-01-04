@@ -3,14 +3,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_custom_marker/google_maps_custom_marker.dart';
 
+import 'package:smart_route_app/domain/domain.dart';
 import 'package:smart_route_app/presentation/providers/providers.dart';
 
 class CustomGoogleMap extends ConsumerWidget {
   const CustomGoogleMap({super.key});
 
   Future<Set<Marker>> _buildMarkers(
-    List<dynamic> stops,
+    List<Stop> stops,
     double devicePixelRatio,
+    void Function(Stop stop) onStopTap,
   ) async {
     final futures = stops.asMap().entries.map((entry) async {
       final index = entry.key + 1;
@@ -20,6 +22,7 @@ class CustomGoogleMap extends ConsumerWidget {
           'stop-${index - 1}-${stop.latitude}-${stop.longitude}',
         ),
         position: LatLng(stop.latitude, stop.longitude),
+        onTap: () => onStopTap(stop),
       );
       return GoogleMapsCustomMarker.createCustomMarker(
         marker: baseMarker,
@@ -42,7 +45,9 @@ class CustomGoogleMap extends ConsumerWidget {
     final mapState = ref.watch(mapProvider);
     final stops = mapState.selectedRoute?.stops ?? [];
     final devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
-    final markersFuture = _buildMarkers(stops, devicePixelRatio);
+    final markersFuture = _buildMarkers(stops, devicePixelRatio, (stop) {
+      ref.read(mapProvider.notifier).selectStop(stop);
+    });
 
     return FutureBuilder<Set<Marker>>(
       future: markersFuture,
