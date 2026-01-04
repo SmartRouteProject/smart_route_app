@@ -2,21 +2,39 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:smart_route_app/domain/domain.dart';
 import 'package:smart_route_app/presentation/providers/providers.dart';
 import 'package:smart_route_app/presentation/widgets/widgets.dart';
 
 class StopDetailPage extends ConsumerWidget {
-  final Stop stop;
-
-  const StopDetailPage({super.key, required this.stop});
+  const StopDetailPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
-    final stopForm = ref.watch(stopFormProvider(stop));
-    final stopFormNotifier = ref.read(stopFormProvider(stop).notifier);
+    final selectedStop = ref.watch(
+      mapProvider.select((state) => state.selectedStop),
+    );
+    if (selectedStop == null) {
+      return Scaffold(
+        backgroundColor: theme.colorScheme.surface,
+        appBar: AppBar(
+          title: const Text('Editar parada'),
+          centerTitle: false,
+          automaticallyImplyLeading: false,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () => context.pop(),
+            ),
+          ],
+        ),
+        body: const Center(child: Text('Sin parada seleccionada.')),
+      );
+    }
+
+    final stopForm = ref.watch(stopFormProvider(selectedStop));
+    final stopFormNotifier = ref.read(stopFormProvider(selectedStop).notifier);
     final infoTitleStyle = textTheme.bodySmall?.copyWith(
       color: textTheme.bodySmall?.color?.withValues(alpha: 0.8),
     );
@@ -247,7 +265,7 @@ class StopDetailPage extends ConsumerWidget {
 
                             final deleted = await ref
                                 .read(mapProvider.notifier)
-                                .deleteStop(stop);
+                                .deleteStop(selectedStop);
                             if (deleted && context.mounted) {
                               context.pop();
                             }

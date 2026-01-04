@@ -176,6 +176,7 @@ class _StopsListState extends ConsumerState<StopsList> {
                       mapNotifier.selectStop(stops[index]);
                       return;
                     }
+                    mapNotifier.selectStop(stops[index]);
                     showGeneralDialog(
                       context: context,
                       barrierColor: Colors.black54,
@@ -183,7 +184,7 @@ class _StopsListState extends ConsumerState<StopsList> {
                       barrierLabel: 'close-stop-details',
                       transitionDuration: const Duration(milliseconds: 250),
                       pageBuilder: (_, __, ___) {
-                        return StopDetailPage(stop: stops[index]);
+                        return const StopDetailPage();
                       },
                     );
                   },

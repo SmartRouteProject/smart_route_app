@@ -1,10 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:smart_route_app/domain/domain.dart';
 
 import 'package:smart_route_app/infrastructure/infrastructure.dart';
+import 'package:smart_route_app/presentation/providers/map_provider.dart';
 import 'package:smart_route_app/presentation/widgets/widgets.dart';
 
 class AddressSearchDelegate extends SearchDelegate<String?> {
@@ -112,17 +114,18 @@ class AddressSearchDelegate extends SearchDelegate<String?> {
                 }
 
                 final navigator = Navigator.of(context, rootNavigator: true);
+                final container = ProviderScope.containerOf(context);
+                final stop = PickupStop(
+                  latitude: result.latitude,
+                  longitude: result.longitude,
+                  address: result.formattedAddress,
+                );
                 close(context, null);
                 Future.microtask(() {
+                  container.read(mapProvider.notifier).selectStop(stop);
                   navigator.push(
                     MaterialPageRoute(
-                      builder: (_) => StopDetailPage(
-                        stop: PickupStop(
-                          latitude: result.latitude,
-                          longitude: result.longitude,
-                          address: result.formattedAddress,
-                        ),
-                      ),
+                      builder: (_) => const StopDetailPage(),
                     ),
                   );
                 });
