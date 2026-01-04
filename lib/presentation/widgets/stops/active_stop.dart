@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:map_launcher/map_launcher.dart';
 
+import 'package:smart_route_app/domain/domain.dart';
 import 'package:smart_route_app/presentation/providers/providers.dart';
 
 class ActiveStop extends ConsumerWidget {
@@ -69,7 +71,7 @@ class ActiveStop extends ConsumerWidget {
                 child: SizedBox(
                   height: 56,
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () => _openMaps(context, stop),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: theme.colorScheme.primary,
                       foregroundColor: Colors.white,
@@ -143,6 +145,42 @@ class ActiveStop extends ConsumerWidget {
       ),
     );
   }
+}
+
+Future<void> _openMaps(BuildContext context, Stop stop) async {
+  final availableMaps = await MapLauncher.installedMaps;
+  if (!context.mounted) return;
+  if (availableMaps.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('No hay apps de mapas instaladas.')),
+    );
+    return;
+  }
+
+  await showModalBottomSheet<void>(
+    context: context,
+    builder: (bottomSheetContext) {
+      return SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final map in availableMaps)
+              ListTile(
+                leading: const Icon(Icons.map_outlined),
+                title: Text(map.mapName),
+                onTap: () {
+                  Navigator.of(bottomSheetContext).pop();
+                  map.showMarker(
+                    coords: Coords(stop.latitude, stop.longitude),
+                    title: stop.address,
+                  );
+                },
+              ),
+          ],
+        ),
+      );
+    },
+  );
 }
 
 class _InfoTile extends StatelessWidget {
