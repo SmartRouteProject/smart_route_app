@@ -4,6 +4,7 @@ import 'package:map_launcher/map_launcher.dart';
 
 import 'package:smart_route_app/domain/domain.dart';
 import 'package:smart_route_app/presentation/providers/providers.dart';
+import 'package:smart_route_app/presentation/widgets/widgets.dart';
 
 class ActiveStop extends ConsumerWidget {
   const ActiveStop({super.key});
@@ -135,6 +136,18 @@ class ActiveStop extends ConsumerWidget {
           _ActionTile(
             icon: Icons.edit_location_alt_outlined,
             title: 'Editar parada',
+            onTap: () {
+              showGeneralDialog(
+                context: context,
+                barrierColor: Colors.black54,
+                barrierDismissible: true,
+                barrierLabel: 'close-stop-details',
+                transitionDuration: const Duration(milliseconds: 250),
+                pageBuilder: (_, __, ___) {
+                  return const StopDetailPage();
+                },
+              );
+            },
           ),
           _ActionTile(
             icon: Icons.delete_outline,
@@ -209,8 +222,14 @@ class _ActionTile extends StatelessWidget {
   final IconData icon;
   final String title;
   final Color? color;
+  final VoidCallback? onTap;
 
-  const _ActionTile({required this.icon, required this.title, this.color});
+  const _ActionTile({
+    required this.icon,
+    required this.title,
+    this.color,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -227,7 +246,7 @@ class _ActionTile extends StatelessWidget {
         ).textTheme.bodyMedium?.copyWith(color: tileColor),
       ),
       trailing: const Icon(Icons.chevron_right),
-      onTap: () {},
+      onTap: onTap,
       dense: true,
       visualDensity: VisualDensity.compact,
     );
