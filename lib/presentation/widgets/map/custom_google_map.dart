@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_custom_marker/google_maps_custom_marker.dart';
 
@@ -75,13 +76,57 @@ class _CustomGoogleMapState extends ConsumerState<CustomGoogleMap> {
     setState(() => _markers = markers);
   }
 
+  Future<void> _moveCameraForStops(List<Stop> stops) async {
+    if (stops.isEmpty) {
+      await ref.read(mapProvider.notifier).setCurrentPosition();
+      return;
+    }
+
+    final controller = ref.read(mapProvider).mapController;
+    if (controller == null) return;
+
+    var minLat = stops.first.latitude;
+    var maxLat = stops.first.latitude;
+    var minLng = stops.first.longitude;
+    var maxLng = stops.first.longitude;
+
+    for (final stop in stops.skip(1)) {
+      if (stop.latitude < minLat) minLat = stop.latitude;
+      if (stop.latitude > maxLat) maxLat = stop.latitude;
+      if (stop.longitude < minLng) minLng = stop.longitude;
+      if (stop.longitude > maxLng) maxLng = stop.longitude;
+    }
+
+    try {
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
+      );
+      if (position.latitude < minLat) minLat = position.latitude;
+      if (position.latitude > maxLat) maxLat = position.latitude;
+      if (position.longitude < minLng) minLng = position.longitude;
+      if (position.longitude > maxLng) maxLng = position.longitude;
+    } catch (_) {}
+
+    final bounds = LatLngBounds(
+      southwest: LatLng(minLat, minLng),
+      northeast: LatLng(maxLat, maxLng),
+    );
+    await controller.animateCamera(CameraUpdate.newLatLngBounds(bounds, 72));
+  }
+
   @override
   Widget build(BuildContext context) {
     final mapState = ref.watch(mapProvider);
-    ref.listen<RouteEnt?>(
-      mapProvider.select((state) => state.selectedRoute),
-      (_, next) => _refreshMarkers(next?.stops ?? []),
-    );
+    ref.listen<RouteEnt?>(mapProvider.select((state) => state.selectedRoute), (
+      _,
+      next,
+    ) {
+      final stops = next?.stops ?? [];
+      _refreshMarkers(stops);
+      _moveCameraForStops(stops);
+    });
     return GoogleMap(
       mapType: MapType.normal,
       initialCameraPosition: mapState.cameraPosition,
