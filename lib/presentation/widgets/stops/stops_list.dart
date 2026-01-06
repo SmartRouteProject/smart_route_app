@@ -13,7 +13,6 @@ class StopsList extends ConsumerStatefulWidget {
   ConsumerState<StopsList> createState() => _StopsListState();
 }
 
-//TODO: Desaparecen las paradas del mapa al cambiar de ruta
 class _StopsListState extends ConsumerState<StopsList> {
   final SpeechToText _speech = SpeechToText();
   bool _isListening = false;
