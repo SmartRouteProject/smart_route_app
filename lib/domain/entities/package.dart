@@ -8,18 +8,14 @@ class Package {
   PackageWeightType weight;
   File? picture;
 
-  Package({
-    required this.description,
-    required this.weight,
-    this.picture,
-  });
+  Package({required this.description, required this.weight, this.picture});
 
   factory Package.fromJson(Map<String, dynamic> json) {
     return Package(
       description: json['description'] ?? '',
       weight: PackageWeightType.values.firstWhere(
         (e) => e.name == json['weight'],
-        orElse: () => PackageWeightType.under25,
+        orElse: () => PackageWeightType.under_25kg,
       ),
       picture: _fileFromBase64(json['picture']),
     );
