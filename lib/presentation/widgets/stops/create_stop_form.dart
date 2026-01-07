@@ -8,13 +8,26 @@ import 'package:smart_route_app/presentation/widgets/widgets.dart';
 
 class CreatePackageForm extends ConsumerWidget {
   final Stop stop;
+  final Package? initialPackage;
+  final int? packageIndex;
 
-  const CreatePackageForm({super.key, required this.stop});
+  const CreatePackageForm({
+    super.key,
+    required this.stop,
+    this.initialPackage,
+    this.packageIndex,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final formState = ref.watch(packageFormProvider(stop));
-    final formNotifier = ref.read(packageFormProvider(stop).notifier);
+    final formArgs = PackageFormArgs(
+      stop: stop,
+      initialPackage: initialPackage,
+      packageIndex: packageIndex,
+    );
+    final formState = ref.watch(packageFormProvider(formArgs));
+    final formNotifier = ref.read(packageFormProvider(formArgs).notifier);
+    final isEditing = packageIndex != null;
 
     Future<void> chooseImageSource() async {
       showModalBottomSheet(
@@ -52,7 +65,7 @@ class CreatePackageForm extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Nuevo paquete'),
+        title: Text(isEditing ? 'Editar paquete' : 'Nuevo paquete'),
         automaticallyImplyLeading: false,
         actions: [
           IconButton(
@@ -140,7 +153,9 @@ class CreatePackageForm extends ConsumerWidget {
                         SizedBox(
                           width: double.infinity,
                           child: LoadingFloatingActionButton(
-                            label: 'Agregar paquete',
+                            label: isEditing
+                                ? 'Guardar cambios'
+                                : 'Agregar paquete',
                             loader: formState.isPosting,
                             onPressed: () async {
                               final created = await formNotifier.onFormSubmit();

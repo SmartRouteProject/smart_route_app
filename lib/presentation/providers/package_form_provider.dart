@@ -6,20 +6,55 @@ import 'package:image_picker/image_picker.dart';
 import 'package:smart_route_app/domain/domain.dart';
 import 'package:smart_route_app/presentation/providers/stop_form_provider.dart';
 
+class PackageFormArgs {
+  final Stop stop;
+  final Package? initialPackage;
+  final int? packageIndex;
+
+  const PackageFormArgs({
+    required this.stop,
+    this.initialPackage,
+    this.packageIndex,
+  });
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is PackageFormArgs &&
+        other.stop == stop &&
+        other.initialPackage == initialPackage &&
+        other.packageIndex == packageIndex;
+  }
+
+  @override
+  int get hashCode => Object.hash(stop, initialPackage, packageIndex);
+}
+
 final packageFormProvider = StateNotifierProvider.autoDispose
-    .family<PackageFormNotifier, PackageFormState, Stop>((ref, stop) {
-      return PackageFormNotifier(ref: ref, stop: stop);
+    .family<PackageFormNotifier, PackageFormState, PackageFormArgs>((
+      ref,
+      args,
+    ) {
+      return PackageFormNotifier(ref: ref, args: args);
     });
 
 class PackageFormNotifier extends StateNotifier<PackageFormState> {
   final Ref _ref;
   final ImagePicker _picker = ImagePicker();
   final Stop _stop;
+  final int? _editingIndex;
 
-  PackageFormNotifier({required Ref ref, required Stop stop})
+  PackageFormNotifier({required Ref ref, required PackageFormArgs args})
     : _ref = ref,
-      _stop = stop,
-      super(PackageFormState());
+      _stop = args.stop,
+      _editingIndex = args.packageIndex,
+      super(
+        PackageFormState(
+          description: args.initialPackage?.description ?? '',
+          weight: args.initialPackage?.weight ?? PackageWeightType.under_25kg,
+          picture: args.initialPackage?.picture,
+        ),
+      );
 
   void onDescriptionChanged(String value) {
     state = state.copyWith(description: value);
@@ -64,7 +99,12 @@ class PackageFormNotifier extends StateNotifier<PackageFormState> {
       picture: state.picture,
     );
 
-    _ref.read(stopFormProvider(_stop).notifier).addPackage(package);
+    final stopForm = _ref.read(stopFormProvider(_stop).notifier);
+    if (_editingIndex != null) {
+      stopForm.updatePackage(_editingIndex!, package);
+    } else {
+      stopForm.addPackage(package);
+    }
 
     state = state.copyWith(isPosting: false);
     return true;

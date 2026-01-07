@@ -66,7 +66,23 @@ class AssignedPackagesList extends ConsumerWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            showGeneralDialog(
+                              context: context,
+                              barrierColor: Colors.black54,
+                              barrierDismissible: true,
+                              barrierLabel: 'close-edit-package-form',
+                              transitionDuration:
+                                  const Duration(milliseconds: 250),
+                              pageBuilder: (_, __, ___) {
+                                return CreatePackageForm(
+                                  stop: selectedStop,
+                                  initialPackage: package,
+                                  packageIndex: index,
+                                );
+                              },
+                            );
+                          },
                           icon: const Icon(Icons.edit_outlined),
                         ),
                         IconButton(
