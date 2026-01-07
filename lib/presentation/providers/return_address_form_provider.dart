@@ -18,13 +18,11 @@ final returnAddressFormProvider =
 
 class ReturnAddressFormNotifier extends StateNotifier<ReturnAddressFormState> {
   final Ref _ref;
-  final IUserRepository _userRepository;
 
   ReturnAddressFormNotifier({
     required Ref ref,
     required IUserRepository userRepository,
   }) : _ref = ref,
-       _userRepository = userRepository,
        super(ReturnAddressFormState());
 
   void initializeForEdit(ReturnAddress address, int index) {
