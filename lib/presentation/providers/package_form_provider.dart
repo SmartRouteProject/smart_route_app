@@ -101,7 +101,7 @@ class PackageFormNotifier extends StateNotifier<PackageFormState> {
 
     final stopForm = _ref.read(stopFormProvider(_stop).notifier);
     if (_editingIndex != null) {
-      stopForm.updatePackage(_editingIndex!, package);
+      stopForm.updatePackage(_editingIndex, package);
     } else {
       stopForm.addPackage(package);
     }
