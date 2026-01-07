@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:smart_route_app/infrastructure/mocks/return_adresses_sample.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'package:smart_route_app/presentation/providers/providers.dart';
 import 'package:smart_route_app/presentation/widgets/widgets.dart';
 
-class ReturnAdressList extends StatelessWidget {
+class ReturnAdressList extends ConsumerWidget {
   const ReturnAdressList({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final returnAddresses =
+        ref.watch(authProvider).user?.returnAddresses ?? const [];
+
     return Scaffold(
       appBar: AppBar(
         title: Text("Mis direcciones de retorno"),
@@ -23,29 +28,29 @@ class ReturnAdressList extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
-              child: ListView.separated(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                itemCount: 8,
-                separatorBuilder: (_, __) => const Divider(height: 1),
-                itemBuilder: (context, index) {
-                  final ra = returnAddressesSample[index];
+              child: returnAddresses.isEmpty
+                  ? const Center(child: Text('Sin direcciones de retorno'))
+                  : ListView.separated(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                      itemCount: returnAddresses.length,
+                      separatorBuilder: (_, __) => const Divider(height: 1),
+                      itemBuilder: (context, index) {
+                        final ra = returnAddresses[index];
 
-                  return ListTile(
-                    leading: const Icon(Icons.route),
-                    // Fecha primero
-                    title: Text(ra.nickname),
-                    // Nombre de la ruta debajo
-                    subtitle: Text(ra.address),
-                    trailing: IconButton(
-                      onPressed: () {},
-                      icon: Icon(Icons.delete_outline),
+                        return ListTile(
+                          leading: const Icon(Icons.route),
+                          title: Text(ra.nickname),
+                          subtitle: Text(ra.address),
+                          trailing: IconButton(
+                            onPressed: () {},
+                            icon: Icon(Icons.delete_outline),
+                          ),
+                          onTap: () {
+                            Navigator.pop(context); // cierra el drawer
+                          },
+                        );
+                      },
                     ),
-                    onTap: () {
-                      Navigator.pop(context); // cierra el drawer
-                    },
-                  );
-                },
-              ),
             ),
 
             Divider(),
