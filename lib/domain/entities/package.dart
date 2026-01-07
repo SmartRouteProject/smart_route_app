@@ -1,16 +1,17 @@
-import 'dart:typed_data';
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:smart_route_app/domain/domain.dart';
 
 class Package {
   String description;
   PackageWeightType weight;
-  Uint8List picture;
+  File? picture;
 
   Package({
     required this.description,
     required this.weight,
-    required this.picture,
+    this.picture,
   });
 
   factory Package.fromJson(Map<String, dynamic> json) {
@@ -20,7 +21,7 @@ class Package {
         (e) => e.name == json['weight'],
         orElse: () => PackageWeightType.under25,
       ),
-      picture: Uint8List.fromList(List<int>.from(json['picture'] ?? [])),
+      picture: _fileFromBase64(json['picture']),
     );
   }
 
@@ -28,7 +29,30 @@ class Package {
     return {
       'description': description,
       'weight': weight.name,
-      'picture': picture,
+      'picture': _fileToBase64(),
     };
+  }
+
+  static File? _fileFromBase64(dynamic value) {
+    if (value is! String || value.isEmpty) return null;
+    try {
+      final bytes = base64Decode(value);
+      final fileName = 'package_${DateTime.now().microsecondsSinceEpoch}.png';
+      final file = File('${Directory.systemTemp.path}/$fileName');
+      file.writeAsBytesSync(bytes);
+      return file;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  String _fileToBase64() {
+    try {
+      if (picture == null) return '';
+      final bytes = picture!.readAsBytesSync();
+      return base64Encode(bytes);
+    } catch (_) {
+      return '';
+    }
   }
 }
