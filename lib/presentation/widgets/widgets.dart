@@ -2,7 +2,8 @@ export 'package:smart_route_app/presentation/widgets/stops/stop_detail_page.dart
 export 'package:smart_route_app/presentation/widgets/stops/stops_list.dart';
 export 'package:smart_route_app/presentation/widgets/stops/active_stop.dart';
 export 'package:smart_route_app/presentation/widgets/stops/assigned_packages_list.dart';
-export 'package:smart_route_app/presentation/widgets/stops/create_stop_form.dart';
+export 'package:smart_route_app/presentation/widgets/stops/create_package_form.dart';
+export 'package:smart_route_app/presentation/widgets/stops/package_detail_page.dart';
 export 'package:smart_route_app/presentation/widgets/shared/address_search_delegate.dart';
 export 'package:smart_route_app/presentation/widgets/shared/custom_dropdown_button_form_field.dart';
 export 'package:smart_route_app/presentation/widgets/shared/one_time_password_input.dart';

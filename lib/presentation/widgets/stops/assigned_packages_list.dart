@@ -72,8 +72,9 @@ class AssignedPackagesList extends ConsumerWidget {
                               barrierColor: Colors.black54,
                               barrierDismissible: true,
                               barrierLabel: 'close-edit-package-form',
-                              transitionDuration:
-                                  const Duration(milliseconds: 250),
+                              transitionDuration: const Duration(
+                                milliseconds: 250,
+                              ),
                               pageBuilder: (_, __, ___) {
                                 return CreatePackageForm(
                                   stop: selectedStop,
@@ -92,7 +93,16 @@ class AssignedPackagesList extends ConsumerWidget {
                       ],
                     ),
                     onTap: () {
-                      Navigator.pop(context);
+                      showGeneralDialog(
+                        context: context,
+                        barrierColor: Colors.black54,
+                        barrierDismissible: true,
+                        barrierLabel: 'close-package-detail',
+                        transitionDuration: const Duration(milliseconds: 250),
+                        pageBuilder: (_, __, ___) {
+                          return PackageDetailPage(package: package);
+                        },
+                      );
                     },
                   );
                 },
