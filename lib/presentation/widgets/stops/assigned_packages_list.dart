@@ -87,7 +87,21 @@ class AssignedPackagesList extends ConsumerWidget {
                           icon: const Icon(Icons.edit_outlined),
                         ),
                         IconButton(
-                          onPressed: () {},
+                          onPressed: () async {
+                            final confirmed = await showDialog<bool>(
+                              context: context,
+                              builder: (_) => ConfirmationDialog(
+                                title: 'Eliminar paquete',
+                                description:
+                                    '¿Estás seguro que desea eliminar el paquete?',
+                                onConfirmed: () {},
+                              ),
+                            );
+                            if (confirmed != true) return;
+                            ref
+                                .read(stopFormProvider(selectedStop).notifier)
+                                .removePackage(index);
+                          },
                           icon: const Icon(Icons.delete_outline),
                         ),
                       ],

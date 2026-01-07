@@ -90,6 +90,16 @@ class StopFormNotifier extends StateNotifier<StopFormState> {
     state = state.copyWith(packageList: currentPackages);
   }
 
+  void removePackage(int index) {
+    if (state.selectedType != StopType.delivery) return;
+    final currentPackages = List<Package>.from(
+      state.packageList ?? const <Package>[],
+    );
+    if (index < 0 || index >= currentPackages.length) return;
+    currentPackages.removeAt(index);
+    state = state.copyWith(packageList: currentPackages);
+  }
+
   Future<bool> onSubmit() async {
     final routeId = _ref.read(mapProvider).selectedRoute?.id;
     if (routeId == null || routeId.isEmpty) return false;
