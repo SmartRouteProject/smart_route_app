@@ -69,7 +69,21 @@ class ReturnAdressList extends ConsumerWidget {
                                 icon: const Icon(Icons.edit_outlined),
                               ),
                               IconButton(
-                                onPressed: () {},
+                                onPressed: () {
+                                  showDialog<bool>(
+                                    context: context,
+                                    builder: (_) => ConfirmationDialog(
+                                      title: 'Eliminar direccion de retorno',
+                                      description:
+                                          '¿Esta seguro que desea eliminar esta direccion?',
+                                      onConfirmed: () => ref
+                                          .read(
+                                            returnAddressFormProvider.notifier,
+                                          )
+                                          .deleteReturnAddress(index),
+                                    ),
+                                  );
+                                },
                                 icon: const Icon(Icons.delete_outline),
                               ),
                             ],

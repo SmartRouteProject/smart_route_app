@@ -65,6 +65,30 @@ class ReturnAddressFormNotifier extends StateNotifier<ReturnAddressFormState> {
     return saved;
   }
 
+  Future<bool> deleteReturnAddress(int index) async {
+    if (state.isPosting) return false;
+    final currentUser = _ref.read(authProvider).user;
+    if (currentUser == null) return false;
+    if (index < 0 || index >= currentUser.returnAddresses.length) return false;
+
+    state = state.copyWith(isPosting: true);
+    try {
+      final updatedAddresses = List<ReturnAddress>.from(
+        currentUser.returnAddresses,
+      )..removeAt(index);
+      final updatedUser = currentUser.copyWith(
+        returnAddresses: updatedAddresses,
+      );
+      // final savedUser = await _userRepository.editUser(updatedUser);
+      _ref.read(authProvider.notifier).updateUser(updatedUser);
+      return true;
+    } catch (_) {
+      return false;
+    } finally {
+      state = state.copyWith(isPosting: false);
+    }
+  }
+
   void _touchEveryField() {
     state = state.copyWith(isFormPosted: true, isValid: _isValid());
   }
@@ -97,9 +121,7 @@ class ReturnAddressFormNotifier extends StateNotifier<ReturnAddressFormState> {
       updatedAddresses.add(newAddress);
     }
 
-    final updatedUser = currentUser.copyWith(
-      returnAddresses: updatedAddresses,
-    );
+    final updatedUser = currentUser.copyWith(returnAddresses: updatedAddresses);
 
     // final savedUser = await _userRepository.editUser(updatedUser);
     _ref.read(authProvider.notifier).updateUser(updatedUser);
