@@ -40,10 +40,39 @@ class ReturnAdressList extends ConsumerWidget {
                         return ListTile(
                           leading: const Icon(Icons.route),
                           title: Text(ra.nickname),
-                          subtitle: Text(ra.address),
-                          trailing: IconButton(
-                            onPressed: () {},
-                            icon: Icon(Icons.delete_outline),
+                          subtitle: Text(
+                            ra.address,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                onPressed: () {
+                                  showGeneralDialog(
+                                    context: context,
+                                    barrierColor: Colors.black54,
+                                    barrierDismissible: true,
+                                    barrierLabel:
+                                        'close-return-address-form-edit',
+                                    transitionDuration:
+                                        const Duration(milliseconds: 250),
+                                    pageBuilder: (_, __, ___) {
+                                      return CreateReturnAdressForm(
+                                        returnAddress: ra,
+                                        returnAddressIndex: index,
+                                      );
+                                    },
+                                  );
+                                },
+                                icon: const Icon(Icons.edit_outlined),
+                              ),
+                              IconButton(
+                                onPressed: () {},
+                                icon: const Icon(Icons.delete_outline),
+                              ),
+                            ],
                           ),
                           onTap: () {
                             Navigator.pop(context); // cierra el drawer

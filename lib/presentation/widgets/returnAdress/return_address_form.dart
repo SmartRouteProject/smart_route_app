@@ -2,11 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:smart_route_app/domain/domain.dart';
 import 'package:smart_route_app/presentation/providers/providers.dart';
 import 'package:smart_route_app/presentation/widgets/widgets.dart';
 
 class CreateReturnAdressForm extends ConsumerStatefulWidget {
-  const CreateReturnAdressForm({super.key});
+  final ReturnAddress? returnAddress;
+  final int? returnAddressIndex;
+
+  const CreateReturnAdressForm({
+    super.key,
+    this.returnAddress,
+    this.returnAddressIndex,
+  });
 
   @override
   ConsumerState<CreateReturnAdressForm> createState() =>
@@ -16,10 +24,27 @@ class CreateReturnAdressForm extends ConsumerStatefulWidget {
 class _CreateReturnAdressFormState
     extends ConsumerState<CreateReturnAdressForm> {
   final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _nicknameController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    final initialAddress = widget.returnAddress;
+    final initialIndex = widget.returnAddressIndex;
+    if (initialAddress != null && initialIndex != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ref
+            .read(returnAddressFormProvider.notifier)
+            .initializeForEdit(initialAddress, initialIndex);
+      });
+    }
+  }
 
   @override
   void dispose() {
     _addressController.dispose();
+    _nicknameController.dispose();
     super.dispose();
   }
 
@@ -33,6 +58,9 @@ class _CreateReturnAdressFormState
     ) {
       if (_addressController.text == next.address) return;
       _addressController.text = next.address;
+      if (_nicknameController.text != next.nickname) {
+        _nicknameController.text = next.nickname;
+      }
     });
 
     return Scaffold(
@@ -76,11 +104,13 @@ class _CreateReturnAdressFormState
                         errorText: formState.addressErrorMessage,
                       ),
                     ),
-                    CustomTextFormField(
-                      label: 'Nombre',
-                      initialValue: formState.nickname,
-                      errorMessage: formState.nicknameErrorMessage,
+                    TextFormField(
+                      controller: _nicknameController,
                       onChanged: formNotifier.onNicknameChanged,
+                      decoration: InputDecoration(
+                        label: const Text('Nombre'),
+                        errorText: formState.nicknameErrorMessage,
+                      ),
                     ),
                     Expanded(child: SizedBox()),
                     SizedBox(

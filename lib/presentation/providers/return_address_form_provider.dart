@@ -27,6 +27,17 @@ class ReturnAddressFormNotifier extends StateNotifier<ReturnAddressFormState> {
        _userRepository = userRepository,
        super(ReturnAddressFormState());
 
+  void initializeForEdit(ReturnAddress address, int index) {
+    state = state.copyWith(
+      address: address.address,
+      latitude: address.latitude,
+      longitude: address.longitude,
+      nickname: address.nickname,
+      editingIndex: index,
+      isValid: _isValid(address: address.address, nickname: address.nickname),
+    );
+  }
+
   void onNicknameChanged(String value) {
     state = state.copyWith(
       nickname: value,
@@ -75,8 +86,19 @@ class ReturnAddressFormNotifier extends StateNotifier<ReturnAddressFormState> {
       address: state.address.trim(),
     );
 
+    final updatedAddresses = List<ReturnAddress>.from(
+      currentUser.returnAddresses,
+    );
+    if (state.editingIndex != null &&
+        state.editingIndex! >= 0 &&
+        state.editingIndex! < updatedAddresses.length) {
+      updatedAddresses[state.editingIndex!] = newAddress;
+    } else {
+      updatedAddresses.add(newAddress);
+    }
+
     final updatedUser = currentUser.copyWith(
-      returnAddresses: [...currentUser.returnAddresses, newAddress],
+      returnAddresses: updatedAddresses,
     );
 
     // final savedUser = await _userRepository.editUser(updatedUser);
@@ -93,6 +115,7 @@ class ReturnAddressFormState {
   final double latitude;
   final double longitude;
   final String nickname;
+  final int? editingIndex;
 
   ReturnAddressFormState({
     this.isPosting = false,
@@ -102,6 +125,7 @@ class ReturnAddressFormState {
     this.latitude = 0,
     this.longitude = 0,
     this.nickname = '',
+    this.editingIndex,
   });
 
   String? get addressErrorMessage {
@@ -124,6 +148,7 @@ class ReturnAddressFormState {
     double? latitude,
     double? longitude,
     String? nickname,
+    int? editingIndex,
   }) => ReturnAddressFormState(
     isPosting: isPosting ?? this.isPosting,
     isFormPosted: isFormPosted ?? this.isFormPosted,
@@ -132,5 +157,6 @@ class ReturnAddressFormState {
     latitude: latitude ?? this.latitude,
     longitude: longitude ?? this.longitude,
     nickname: nickname ?? this.nickname,
+    editingIndex: editingIndex ?? this.editingIndex,
   );
 }
