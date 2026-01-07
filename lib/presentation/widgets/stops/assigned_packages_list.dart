@@ -13,9 +13,24 @@ class AssignedPackagesList extends ConsumerWidget {
     final selectedStop = ref.watch(
       mapProvider.select((state) => state.selectedStop),
     );
-    final packages = selectedStop is DeliveryStop
-        ? selectedStop.packages
-        : const <Package>[];
+    if (selectedStop == null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Paquetes asignados'),
+          automaticallyImplyLeading: false,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
+        ),
+        body: const Center(child: Text('Sin parada seleccionada.')),
+      );
+    }
+
+    final stopForm = ref.watch(stopFormProvider(selectedStop));
+    final packages = stopForm.packageList ?? const <Package>[];
 
     return Scaffold(
       appBar: AppBar(
@@ -46,7 +61,7 @@ class AssignedPackagesList extends ConsumerWidget {
                   return ListTile(
                     leading: const Icon(Icons.inventory_2_outlined),
                     title: Text(description),
-                    subtitle: Text('Peso: ${package.weight.name}'),
+                    subtitle: Text('Peso: ${package.weight.label}'),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -81,7 +96,7 @@ class AssignedPackagesList extends ConsumerWidget {
                     barrierLabel: 'close-create-package-form',
                     transitionDuration: const Duration(milliseconds: 250),
                     pageBuilder: (_, __, ___) {
-                      return const CreatePackageForm();
+                      return CreatePackageForm(stop: selectedStop);
                     },
                   );
                 },

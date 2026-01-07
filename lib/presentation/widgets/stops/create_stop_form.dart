@@ -7,12 +7,14 @@ import 'package:smart_route_app/presentation/providers/providers.dart';
 import 'package:smart_route_app/presentation/widgets/widgets.dart';
 
 class CreatePackageForm extends ConsumerWidget {
-  const CreatePackageForm({super.key});
+  final Stop stop;
+
+  const CreatePackageForm({super.key, required this.stop});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final formState = ref.watch(packageFormProvider);
-    final formNotifier = ref.read(packageFormProvider.notifier);
+    final formState = ref.watch(packageFormProvider(stop));
+    final formNotifier = ref.read(packageFormProvider(stop).notifier);
 
     Future<void> chooseImageSource() async {
       showModalBottomSheet(

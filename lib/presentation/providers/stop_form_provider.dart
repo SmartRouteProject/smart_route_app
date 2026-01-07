@@ -30,7 +30,9 @@ class StopFormNotifier extends StateNotifier<StopFormState> {
           longitude: stop.longitude,
           arrivalTime: 'Cualquier hora',
           description: '',
-          packageList: stop is DeliveryStop ? const [] : null,
+          packageList: stop is DeliveryStop
+              ? List<Package>.from(stop.packages)
+              : null,
           selectedType: stop is DeliveryStop
               ? StopType.delivery
               : StopType.pickup,
@@ -70,6 +72,14 @@ class StopFormNotifier extends StateNotifier<StopFormState> {
     state = state.copyWith(description: value);
   }
 
+  void addPackage(Package package) {
+    if (state.selectedType != StopType.delivery) return;
+    final currentPackages = state.packageList ?? const <Package>[];
+    state = state.copyWith(
+      packageList: List<Package>.from([...currentPackages, package]),
+    );
+  }
+
   Future<bool> onSubmit() async {
     final routeId = _ref.read(mapProvider).selectedRoute?.id;
     if (routeId == null || routeId.isEmpty) return false;
@@ -105,6 +115,7 @@ class StopFormNotifier extends StateNotifier<StopFormState> {
         longitude: state.longitude,
         address: address,
         status: _originalStop.status,
+        packages: state.packageList ?? const [],
       );
     }
 

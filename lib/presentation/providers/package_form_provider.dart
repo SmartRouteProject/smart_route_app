@@ -4,21 +4,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'package:smart_route_app/domain/domain.dart';
-import 'package:smart_route_app/presentation/providers/map_provider.dart';
+import 'package:smart_route_app/presentation/providers/stop_form_provider.dart';
 
-final packageFormProvider =
-    StateNotifierProvider.autoDispose<PackageFormNotifier, PackageFormState>((
-      ref,
-    ) {
-      return PackageFormNotifier(ref: ref);
+final packageFormProvider = StateNotifierProvider.autoDispose
+    .family<PackageFormNotifier, PackageFormState, Stop>((ref, stop) {
+      return PackageFormNotifier(ref: ref, stop: stop);
     });
 
 class PackageFormNotifier extends StateNotifier<PackageFormState> {
   final Ref _ref;
   final ImagePicker _picker = ImagePicker();
+  final Stop _stop;
 
-  PackageFormNotifier({required Ref ref})
+  PackageFormNotifier({required Ref ref, required Stop stop})
     : _ref = ref,
+      _stop = stop,
       super(PackageFormState());
 
   void onDescriptionChanged(String value) {
@@ -64,12 +64,10 @@ class PackageFormNotifier extends StateNotifier<PackageFormState> {
       picture: state.picture,
     );
 
-    final added = _ref
-        .read(mapProvider.notifier)
-        .addPackageToSelectedStop(package);
+    _ref.read(stopFormProvider(_stop).notifier).addPackage(package);
 
     state = state.copyWith(isPosting: false);
-    return added;
+    return true;
   }
 }
 
