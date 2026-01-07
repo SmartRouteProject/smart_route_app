@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:smart_route_app/domain/domain.dart';
 import 'package:smart_route_app/presentation/providers/providers.dart';
+import 'package:smart_route_app/presentation/widgets/widgets.dart';
 
 class AssignedPackagesList extends ConsumerWidget {
   const AssignedPackagesList({super.key});
@@ -72,7 +73,18 @@ class AssignedPackagesList extends ConsumerWidget {
               child: FloatingActionButton.extended(
                 icon: const Icon(Icons.add),
                 heroTag: null,
-                onPressed: () {},
+                onPressed: () {
+                  showGeneralDialog(
+                    context: context,
+                    barrierColor: Colors.black54,
+                    barrierDismissible: true,
+                    barrierLabel: 'close-create-package-form',
+                    transitionDuration: const Duration(milliseconds: 250),
+                    pageBuilder: (_, __, ___) {
+                      return const CreatePackageForm();
+                    },
+                  );
+                },
                 label: const Text('Agregar Paquete'),
                 elevation: 0,
               ),
