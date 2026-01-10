@@ -28,8 +28,8 @@ class StopFormNotifier extends StateNotifier<StopFormState> {
           address: stop.address,
           latitude: stop.latitude,
           longitude: stop.longitude,
-          arrivalTime: 'Cualquier hora',
-          description: '',
+          arrivalTime: _formatArrivalTime(stop.arrivalTime),
+          description: stop.description,
           packageList: stop is DeliveryStop
               ? List<Package>.from(stop.packages)
               : null,
@@ -127,6 +127,8 @@ class StopFormNotifier extends StateNotifier<StopFormState> {
 
   Stop _buildUpdatedStop() {
     final address = state.address;
+    final arrivalTime = _parseArrivalTime(state.arrivalTime);
+    final description = state.description;
 
     if (state.selectedType == StopType.delivery) {
       return DeliveryStop(
@@ -135,6 +137,8 @@ class StopFormNotifier extends StateNotifier<StopFormState> {
         longitude: state.longitude,
         address: address,
         status: _originalStop.status,
+        arrivalTime: arrivalTime,
+        description: description,
         packages: state.packageList ?? const [],
       );
     }
@@ -145,8 +149,28 @@ class StopFormNotifier extends StateNotifier<StopFormState> {
       longitude: state.longitude,
       address: address,
       status: _originalStop.status,
+      arrivalTime: arrivalTime,
+      description: description,
     );
   }
+}
+
+String _formatArrivalTime(DateTime? value) {
+  if (value == null) return 'Cualquier hora';
+  final hour = value.hour.toString().padLeft(2, '0');
+  final minute = value.minute.toString().padLeft(2, '0');
+  return '$hour:$minute';
+}
+
+DateTime? _parseArrivalTime(String value) {
+  if (value.trim().isEmpty || value == 'Cualquier hora') return null;
+  final parts = value.split(':');
+  if (parts.length != 2) return null;
+  final hour = int.tryParse(parts[0]);
+  final minute = int.tryParse(parts[1]);
+  if (hour == null || minute == null) return null;
+  final now = DateTime.now();
+  return DateTime(now.year, now.month, now.day, hour, minute);
 }
 
 class StopFormState {
