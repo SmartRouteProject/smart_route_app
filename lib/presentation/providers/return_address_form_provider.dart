@@ -9,20 +9,22 @@ final returnAddressFormProvider =
       ReturnAddressFormNotifier,
       ReturnAddressFormState
     >((ref) {
-      final userRepository = UserRepositoryImpl();
+      final returnAddressRepository = ReturnAddressRepositoryImpl();
       return ReturnAddressFormNotifier(
         ref: ref,
-        userRepository: userRepository,
+        returnAddressRepository: returnAddressRepository,
       );
     });
 
 class ReturnAddressFormNotifier extends StateNotifier<ReturnAddressFormState> {
   final Ref _ref;
+  final IReturnAddressRepository _returnAddressRepository;
 
   ReturnAddressFormNotifier({
     required Ref ref,
-    required IUserRepository userRepository,
+    required IReturnAddressRepository returnAddressRepository,
   }) : _ref = ref,
+       _returnAddressRepository = returnAddressRepository,
        super(ReturnAddressFormState());
 
   void initializeForEdit(ReturnAddress address, int index) {
@@ -59,7 +61,9 @@ class ReturnAddressFormNotifier extends StateNotifier<ReturnAddressFormState> {
 
     state = state.copyWith(isPosting: true);
     final saved = await _saveReturnAddress();
-    state = state.copyWith(isPosting: false);
+    if (mounted) {
+      state = state.copyWith(isPosting: false);
+    }
     return saved;
   }
 
@@ -71,6 +75,14 @@ class ReturnAddressFormNotifier extends StateNotifier<ReturnAddressFormState> {
 
     state = state.copyWith(isPosting: true);
     try {
+      final addressToDelete = currentUser.returnAddresses[index];
+      final addressId = addressToDelete.id;
+      if (addressId != null && addressId.isNotEmpty) {
+        final deleted = await _returnAddressRepository.deleteReturnAddress(
+          addressId,
+        );
+        if (!deleted) return false;
+      }
       final updatedAddresses = List<ReturnAddress>.from(
         currentUser.returnAddresses,
       )..removeAt(index);
@@ -83,7 +95,9 @@ class ReturnAddressFormNotifier extends StateNotifier<ReturnAddressFormState> {
     } catch (_) {
       return false;
     } finally {
-      state = state.copyWith(isPosting: false);
+      if (mounted) {
+        state = state.copyWith(isPosting: false);
+      }
     }
   }
 
@@ -101,22 +115,46 @@ class ReturnAddressFormNotifier extends StateNotifier<ReturnAddressFormState> {
     final currentUser = _ref.read(authProvider).user;
     if (currentUser == null) return false;
 
-    final newAddress = ReturnAddress(
+    final updatedAddresses = List<ReturnAddress>.from(
+      currentUser.returnAddresses,
+    );
+    ReturnAddress? savedAddress;
+    final hasEditingIndex =
+        state.editingIndex != null &&
+        state.editingIndex! >= 0 &&
+        state.editingIndex! < updatedAddresses.length;
+    final addressId = hasEditingIndex
+        ? updatedAddresses[state.editingIndex!].id
+        : null;
+    final updatedAddress = ReturnAddress(
+      id: addressId,
       nickname: state.nickname.trim(),
       latitude: state.latitude,
       longitude: state.longitude,
       address: state.address.trim(),
     );
 
-    final updatedAddresses = List<ReturnAddress>.from(
-      currentUser.returnAddresses,
-    );
-    if (state.editingIndex != null &&
-        state.editingIndex! >= 0 &&
-        state.editingIndex! < updatedAddresses.length) {
-      updatedAddresses[state.editingIndex!] = newAddress;
+    if (hasEditingIndex) {
+      if (addressId != null && addressId.isNotEmpty) {
+        savedAddress = await _returnAddressRepository.editReturnAddress(
+          addressId,
+          updatedAddress,
+        );
+        if (savedAddress == null) return false;
+        updatedAddresses[state.editingIndex!] = savedAddress;
+      } else {
+        updatedAddresses[state.editingIndex!] = updatedAddress;
+      }
     } else {
-      updatedAddresses.add(newAddress);
+      savedAddress = await _returnAddressRepository.createReturnAddress(
+        updatedAddress,
+      );
+      if (savedAddress == null) return false;
+      updatedAddresses.add(savedAddress);
+    }
+
+    if (savedAddress == null) {
+      return false;
     }
 
     final updatedUser = currentUser.copyWith(returnAddresses: updatedAddresses);
