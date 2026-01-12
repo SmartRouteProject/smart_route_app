@@ -5,7 +5,7 @@ class RouteEnt {
   String name;
   int? geometry;
   DateTime creationDate;
-  //TODO: agregar completionDate
+  DateTime? completionDate;
   RouteState state;
   List<Stop> stops;
   ReturnAddress? returnAddress;
@@ -15,6 +15,7 @@ class RouteEnt {
     required this.name,
     required this.geometry,
     required this.creationDate,
+    this.completionDate,
     required this.state,
     required this.stops,
     this.returnAddress,
@@ -26,6 +27,9 @@ class RouteEnt {
       name: json['name'] as String,
       geometry: json['geometry'] as int?,
       creationDate: DateTime.parse(json['creationDate']),
+      completionDate: json['completionDate'] != null
+          ? DateTime.parse(json['completionDate'])
+          : null,
       state: RouteState.values.firstWhere(
         (e) => e.name == json['state'],
         orElse: () => RouteState.planned,
@@ -45,6 +49,7 @@ class RouteEnt {
       'name': name,
       'geometry': geometry,
       'creationDate': creationDate.toIso8601String(),
+      'completionDate': completionDate?.toIso8601String(),
       'state': state.name,
       'stops': stops.map((s) => s.toMap()).toList(),
       'returnAddress': returnAddress?.toMap(),
