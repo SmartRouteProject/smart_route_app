@@ -17,12 +17,15 @@ class StopRequestDto {
 
   factory StopRequestDto.fromStop(Stop stop, {List<Package>? packages}) {
     final stopType = stop is DeliveryStop ? 'Delivery' : 'Pickup';
+    final resolvedPackages =
+        packages ??
+        (stop is DeliveryStop ? stop.packages : const <Package>[]);
     return StopRequestDto(
       latitude: stop.latitude,
       longitude: stop.longitude,
       address: stop.address,
       stopType: stopType,
-      packages: packages ?? const [],
+      packages: resolvedPackages,
     );
   }
 

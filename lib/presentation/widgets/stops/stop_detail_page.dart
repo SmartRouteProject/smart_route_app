@@ -208,7 +208,19 @@ class StopDetailPage extends ConsumerWidget {
                             leading: Icon(Icons.inventory_2_outlined),
                             title: Text('Paquetes asignados'),
                             trailing: Icon(Icons.chevron_right),
-                            onTap: () {},
+                            onTap: () {
+                              showGeneralDialog(
+                                context: context,
+                                barrierColor: Colors.black54,
+                                barrierDismissible: true,
+                                barrierLabel: 'close-packages-list',
+                                transitionDuration:
+                                    const Duration(milliseconds: 250),
+                                pageBuilder: (_, __, ___) {
+                                  return const AssignedPackagesList();
+                                },
+                              );
+                            },
                           ),
                         ),
                         const SizedBox(height: 32),

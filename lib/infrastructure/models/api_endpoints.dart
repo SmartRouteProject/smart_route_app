@@ -12,6 +12,8 @@ abstract class ApiEndpoints {
   static String getUserRoutes = "/route";
   static String createRoute = "/route";
   static String searchAddress = "/maps/findPlace";
+  static String getReturnAddresses = "/ReturnAddress";
+  static String createReturnAddress = "/ReturnAddress";
 
   static String getRouteById(String id) => "/route/$id";
   static String updateRouteById(String id) => "/route/$id";
@@ -22,4 +24,6 @@ abstract class ApiEndpoints {
       "/stop/$routeId/$stopId";
   static String deleteStop({required String routeId, required String stopId}) =>
       "/stop/$routeId/$stopId";
+  static String updateReturnAddress(String id) => "/ReturnAddress/$id";
+  static String deleteReturnAddress(String id) => "/ReturnAddress/$id";
 }

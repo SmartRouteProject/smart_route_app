@@ -54,6 +54,24 @@ class MapNotifier extends StateNotifier<MapState> {
     state = state.copyWith(routes: [...state.routes, route]);
   }
 
+  bool addPackageToSelectedStop(Package package) {
+    final selectedStop = state.selectedStop;
+    if (selectedStop == null) return false;
+    if (selectedStop is! DeliveryStop) return false;
+
+    final updatedStop = DeliveryStop(
+      id: selectedStop.id,
+      latitude: selectedStop.latitude,
+      longitude: selectedStop.longitude,
+      address: selectedStop.address,
+      status: selectedStop.status,
+      packages: [...selectedStop.packages, package],
+    );
+
+    upsertStop(originalStop: selectedStop, updatedStop: updatedStop);
+    return true;
+  }
+
   void upsertStop({required Stop originalStop, required Stop updatedStop}) {
     final selectedRoute = state.selectedRoute;
     if (selectedRoute == null) return;

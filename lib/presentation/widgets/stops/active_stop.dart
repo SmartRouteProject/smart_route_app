@@ -213,28 +213,6 @@ Future<void> _openMaps(BuildContext context, Stop stop) async {
   );
 }
 
-class _InfoTile extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final Widget? trailing;
-
-  const _InfoTile({required this.icon, required this.title, this.trailing});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: Icon(icon, size: 20, color: theme.colorScheme.primary),
-      title: Text(title, style: Theme.of(context).textTheme.bodyMedium),
-      trailing: trailing ?? const Icon(Icons.chevron_right),
-      onTap: () {},
-      dense: true,
-      visualDensity: VisualDensity.compact,
-    );
-  }
-}
-
 class _ActionTile extends StatelessWidget {
   final IconData icon;
   final String title;

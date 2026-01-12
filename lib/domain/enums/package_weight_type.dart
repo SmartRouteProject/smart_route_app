@@ -1,11 +1,11 @@
 enum PackageWeightType {
-  under25,
-  over25;
+  under_25kg,
+  over_25kg;
 
   static PackageWeightType fromString(String value) {
     return PackageWeightType.values.firstWhere(
       (e) => e.name.toLowerCase() == value.toLowerCase(),
-      orElse: () => PackageWeightType.under25,
+      orElse: () => PackageWeightType.under_25kg,
     );
   }
 }
@@ -15,9 +15,9 @@ extension PackageWeightTypeExt on PackageWeightType {
 
   String get label {
     switch (this) {
-      case PackageWeightType.under25:
+      case PackageWeightType.under_25kg:
         return 'Menos de 25kg';
-      case PackageWeightType.over25:
+      case PackageWeightType.over_25kg:
         return 'Mas de 25kg';
     }
   }
