@@ -6,6 +6,8 @@ abstract class Stop {
   double longitude;
   String address;
   StopStatus status;
+  DateTime? arrivalTime;
+  String description;
 
   Stop({
     this.id,
@@ -13,6 +15,8 @@ abstract class Stop {
     required this.longitude,
     required this.address,
     this.status = StopStatus.pending,
+    this.arrivalTime,
+    this.description = '',
   });
 
   factory Stop.fromJson(Map<String, dynamic> json) {

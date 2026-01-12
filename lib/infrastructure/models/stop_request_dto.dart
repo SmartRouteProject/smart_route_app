@@ -5,6 +5,8 @@ class StopRequestDto {
   final double longitude;
   final String address;
   final String stopType;
+  final DateTime? arrivalTime;
+  final String description;
   final List<Package> packages;
 
   StopRequestDto({
@@ -12,6 +14,8 @@ class StopRequestDto {
     required this.longitude,
     required this.address,
     required this.stopType,
+    required this.arrivalTime,
+    required this.description,
     required this.packages,
   });
 
@@ -25,6 +29,8 @@ class StopRequestDto {
       longitude: stop.longitude,
       address: stop.address,
       stopType: stopType,
+      arrivalTime: stop.arrivalTime,
+      description: stop.description,
       packages: resolvedPackages,
     );
   }
@@ -35,6 +41,8 @@ class StopRequestDto {
       'longitude': longitude,
       'address': address,
       'stopType': stopType,
+      'arrivalTime': arrivalTime?.toIso8601String(),
+      'description': description,
       'packages': packages.map((package) => package.toMap()).toList(),
     };
   }

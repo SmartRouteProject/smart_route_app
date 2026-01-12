@@ -65,6 +65,8 @@ class MapNotifier extends StateNotifier<MapState> {
       longitude: selectedStop.longitude,
       address: selectedStop.address,
       status: selectedStop.status,
+      arrivalTime: selectedStop.arrivalTime,
+      description: selectedStop.description,
       packages: [...selectedStop.packages, package],
     );
 
