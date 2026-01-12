@@ -104,6 +104,7 @@ class _CreateReturnAdressFormState
                         errorText: formState.addressErrorMessage,
                       ),
                     ),
+                    //El nombre no es requerido
                     TextFormField(
                       controller: _nicknameController,
                       onChanged: formNotifier.onNicknameChanged,
