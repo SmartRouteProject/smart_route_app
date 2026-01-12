@@ -22,6 +22,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   double? _sheetHeight;
   static const double _minSheetHeight = 150;
   static const double _initialSheetHeight = 140;
+  static const double _optimizeSectionHeight = 76;
 
   @override
   Widget build(BuildContext context) {
@@ -29,8 +30,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final size = MediaQuery.of(context).size;
     final maxSheetHeight = size.height * 0.6;
     _sheetHeight ??= _initialSheetHeight.clamp(_minSheetHeight, maxSheetHeight);
-    final showOptimizeSection =
-        mapState.selectedRoute?.state == RouteState.planned;
+    final routeState = mapState.selectedRoute?.state;
+    final optimizeOffset = routeState == RouteState.planned
+        ? _optimizeSectionHeight
+        : 0;
 
     return Scaffold(
       appBar: AppBar(
@@ -59,6 +62,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           Positioned(
             bottom:
                 (_sheetHeight ?? _initialSheetHeight) +
+                optimizeOffset +
                 12, // <-- separación fija
             right: 16,
             child: FloatingActionButton(
@@ -83,47 +87,76 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             left: 0,
             right: 0,
             bottom: 0,
-            child: GestureDetector(
-              onVerticalDragUpdate: (details) {
-                setState(() {
-                  final next =
-                      (_sheetHeight ?? _initialSheetHeight) - details.delta.dy;
-                  final maxSheetHeight =
-                      MediaQuery.of(context).size.height * 0.6;
-                  _sheetHeight = next.clamp(_minSheetHeight, maxSheetHeight);
-                });
-              },
-              child: RouteBottomSheet(
-                height: (_sheetHeight ?? _initialSheetHeight),
-              ),
-            ),
-          ),
-
-          if (showOptimizeSection)
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: SafeArea(
-                top: false,
-                child: Container(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface,
-                    border: BoxBorder.all(color: Colors.grey.shade300),
-                  ),
-                  child: SizedBox(
-                    height: 48,
-                    width: double.infinity,
-                    child: LoadingFloatingActionButton(
-                      label: "Optimizar",
-                      loader: false,
-                      onPressed: () {},
-                    ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                GestureDetector(
+                  onVerticalDragUpdate: (details) {
+                    setState(() {
+                      final next =
+                          (_sheetHeight ?? _initialSheetHeight) -
+                          details.delta.dy;
+                      final maxSheetHeight =
+                          MediaQuery.of(context).size.height * 0.6;
+                      _sheetHeight = next.clamp(
+                        _minSheetHeight,
+                        maxSheetHeight,
+                      );
+                    });
+                  },
+                  child: RouteBottomSheet(
+                    height: (_sheetHeight ?? _initialSheetHeight),
                   ),
                 ),
-              ),
+                if (routeState != RouteState.completed)
+                  SafeArea(
+                    top: false,
+                    child: Container(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surface,
+                        border: BoxBorder.all(color: Colors.grey.shade300),
+                      ),
+                      child: Column(
+                        spacing: 5,
+                        children: [
+                          if (routeState == RouteState.planned)
+                            SizedBox(
+                              height: 48,
+                              width: double.infinity,
+                              child: LoadingFloatingActionButton(
+                                label: "Iniciar Ruta",
+                                loader: false,
+                                onPressed: () {},
+                              ),
+                            ),
+                          if (routeState == RouteState.planned)
+                            SizedBox(
+                              height: 48,
+                              width: double.infinity,
+                              child: LoadingFloatingActionButton(
+                                label: "Optimizar",
+                                loader: false,
+                                onPressed: () {},
+                              ),
+                            ),
+                          if (routeState == RouteState.started)
+                            SizedBox(
+                              height: 48,
+                              width: double.infinity,
+                              child: LoadingFloatingActionButton(
+                                label: "Finalizar Ruta",
+                                loader: false,
+                                onPressed: () {},
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
             ),
+          ),
         ],
       ),
     );

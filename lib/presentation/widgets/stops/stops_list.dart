@@ -101,6 +101,7 @@ class _StopsListState extends ConsumerState<StopsList> {
     return SafeArea(
       top: false,
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const SizedBox(height: 8),
           Container(
@@ -169,7 +170,11 @@ class _StopsListState extends ConsumerState<StopsList> {
                 child: ListTile(
                   leading: Icon(Icons.route),
                   title: Text('Parada #${index + 1}'),
-                  subtitle: Text(stops[index].address),
+                  subtitle: Text(
+                    stops[index].address,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   trailing: Icon(Icons.chevron_right),
                   onTap: () {
                     if (selectedRoute?.state == RouteState.started) {
