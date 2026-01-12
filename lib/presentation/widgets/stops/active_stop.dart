@@ -12,13 +12,25 @@ class ActiveStop extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final mapNotifier = ref.read(mapProvider.notifier);
-    final stop = ref.watch(mapProvider).selectedStop;
+    final mapState = ref.watch(mapProvider);
+    final stop = mapState.selectedStop;
+    final selectedRoute = mapState.selectedRoute;
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
 
     if (stop == null) {
       return const SizedBox.shrink();
     }
+
+    final totalStops = selectedRoute?.stops.length ?? 0;
+    final stopIndex = selectedRoute != null
+        ? _findStopIndex(selectedRoute.stops, stop)
+        : null;
+    final positionLabel = totalStops > 0 && stopIndex != null
+        ? '${stopIndex + 1}/$totalStops'
+        : totalStops > 0
+            ? '-/$totalStops'
+            : '0/0';
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
@@ -57,9 +69,8 @@ class ActiveStop extends ConsumerWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              //TODO : Reemplazar texto hardcodeado por datos reales
               Text(
-                '1/3, 21:22',
+                positionLabel,
                 style: textTheme.bodySmall?.copyWith(
                   color: textTheme.bodySmall?.color?.withValues(alpha: 0.6),
                 ),
@@ -175,6 +186,22 @@ class ActiveStop extends ConsumerWidget {
       ),
     );
   }
+}
+
+int? _findStopIndex(List<Stop> stops, Stop stop) {
+  final stopId = stop.id;
+  if (stopId != null) {
+    final index = stops.indexWhere((candidate) => candidate.id == stopId);
+    if (index != -1) return index;
+  }
+
+  final index = stops.indexWhere(
+    (candidate) =>
+        candidate.latitude == stop.latitude &&
+        candidate.longitude == stop.longitude &&
+        candidate.address == stop.address,
+  );
+  return index == -1 ? null : index;
 }
 
 Future<void> _openMaps(BuildContext context, Stop stop) async {
