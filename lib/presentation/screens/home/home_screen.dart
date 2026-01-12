@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:smart_route_app/domain/domain.dart';
 import 'package:smart_route_app/presentation/providers/providers.dart';
 import 'package:smart_route_app/presentation/screens/screens.dart';
 import 'package:smart_route_app/presentation/widgets/returnAdress/return_address_list.dart';
@@ -24,9 +25,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final mapState = ref.watch(mapProvider);
     final size = MediaQuery.of(context).size;
     final maxSheetHeight = size.height * 0.6;
     _sheetHeight ??= _initialSheetHeight.clamp(_minSheetHeight, maxSheetHeight);
+    final showOptimizeSection =
+        mapState.selectedRoute?.state == RouteState.planned;
 
     return Scaffold(
       appBar: AppBar(
@@ -94,6 +98,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ),
           ),
+
+          if (showOptimizeSection)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: SafeArea(
+                top: false,
+                child: Container(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
+                    border: BoxBorder.all(color: Colors.grey.shade300),
+                  ),
+                  child: SizedBox(
+                    height: 48,
+                    width: double.infinity,
+                    child: LoadingFloatingActionButton(
+                      label: "Optimizar",
+                      loader: false,
+                      onPressed: () {},
+                    ),
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
