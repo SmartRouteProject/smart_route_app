@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 
 import 'package:smart_route_app/domain/domain.dart';
 import 'package:smart_route_app/infrastructure/infrastructure.dart';
@@ -29,16 +30,18 @@ class OptimizationNotifier extends StateNotifier<OptimizationState> {
   Future<RouteEnt?> onSubmit() async {
     final selectedRoute = ref.read(mapProvider).selectedRoute;
     final routeId = selectedRoute?.id ?? '';
-    final origin = selectedRoute?.returnAddress;
-    if (routeId.isEmpty || origin == null) return null;
+    final position = await Geolocator.getCurrentPosition(
+      locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
+    );
+    if (routeId.isEmpty) return null;
 
     state = state.copyWith(optimizing: true);
     try {
       final request = OptimizationRequestDto(
         optimizeStopOrder: state.optimizeStops,
         origin: OptimizationOrigin(
-          latitude: origin.latitude,
-          longitude: origin.longitude,
+          latitude: position.latitude,
+          longitude: position.longitude,
         ),
       );
 
