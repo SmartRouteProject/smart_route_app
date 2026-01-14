@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -27,11 +29,19 @@ class MapNotifier extends StateNotifier<MapState> {
   }
 
   void selectRoute(RouteEnt? route) {
-    state = state.copyWith(selectedRoute: route, clearSelectedStop: true);
+    state = state.copyWith(
+      selectedRoute: route,
+      clearSelectedStop: true,
+      polylines: _buildRoutePolylines(route),
+    );
   }
 
   void clearSelectedRoute() {
-    state = state.copyWith(clearSelectedRoute: true, clearSelectedStop: true);
+    state = state.copyWith(
+      clearSelectedRoute: true,
+      clearSelectedStop: true,
+      polylines: const <Polyline>{},
+    );
   }
 
   void selectStop(Stop? stop) {
@@ -153,6 +163,20 @@ class MapNotifier extends StateNotifier<MapState> {
     );
   }
 
+  Set<Polyline> _buildRoutePolylines(RouteEnt? route) {
+    final points = route?.geometry;
+    if (points == null || points.isEmpty) return const <Polyline>{};
+
+    return {
+      Polyline(
+        polylineId: PolylineId('route-${route?.id ?? 'selected'}'),
+        points: points,
+        color: const Color(0xFF1E88E5),
+        width: 4,
+      ),
+    };
+  }
+
   bool _isSameStop(Stop a, Stop b) {
     return a.latitude == b.latitude &&
         a.longitude == b.longitude &&
@@ -193,6 +217,7 @@ class MapState {
   final Stop? selectedStop;
   final CameraPosition cameraPosition;
   final GoogleMapController? mapController;
+  final Set<Polyline> polylines;
 
   MapState({
     this.routes = const [],
@@ -200,6 +225,7 @@ class MapState {
     this.selectedStop,
     required this.cameraPosition,
     this.mapController,
+    this.polylines = const <Polyline>{},
   });
 
   MapState copyWith({
@@ -208,6 +234,7 @@ class MapState {
     Stop? selectedStop,
     CameraPosition? cameraPosition,
     GoogleMapController? mapController,
+    Set<Polyline>? polylines,
     bool clearSelectedRoute = false,
     bool clearSelectedStop = false,
   }) => MapState(
@@ -220,5 +247,6 @@ class MapState {
         : (selectedStop ?? this.selectedStop),
     cameraPosition: cameraPosition ?? this.cameraPosition,
     mapController: mapController ?? this.mapController,
+    polylines: polylines ?? this.polylines,
   );
 }

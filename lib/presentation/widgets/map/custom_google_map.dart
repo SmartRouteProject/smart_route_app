@@ -136,6 +136,7 @@ class _CustomGoogleMapState extends ConsumerState<CustomGoogleMap> {
       zoomControlsEnabled: false,
       compassEnabled: true,
       markers: _markers,
+      polylines: mapState.polylines,
       onMapCreated: (controller) =>
           ref.read(mapProvider.notifier).setMapController(controller),
     );
