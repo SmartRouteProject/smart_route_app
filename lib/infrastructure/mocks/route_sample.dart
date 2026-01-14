@@ -1,10 +1,12 @@
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+
 import 'package:smart_route_app/domain/domain.dart';
 
 final List<RouteEnt> sampleRoutes = [
   RouteEnt(
     id: "1",
     name: "Ruta 1",
-    geometry: 1,
+    geometry: const [LatLng(-34.901112, -56.164532)],
     creationDate: DateTime.now().subtract(Duration(days: 1)),
     state: RouteState.completed,
     returnAddress: ReturnAddress(
@@ -30,7 +32,7 @@ final List<RouteEnt> sampleRoutes = [
   RouteEnt(
     id: "2",
     name: "Ruta 2",
-    geometry: 2,
+    geometry: const [LatLng(-34.841389, -56.219444)],
     creationDate: DateTime.now().subtract(Duration(days: 2)),
     state: RouteState.started,
     returnAddress: ReturnAddress(
@@ -61,7 +63,7 @@ final List<RouteEnt> sampleRoutes = [
   RouteEnt(
     id: "3",
     name: "Ruta 3",
-    geometry: 3,
+    geometry: const [LatLng(-34.902310, -56.168130)],
     creationDate: DateTime.now().subtract(Duration(days: 3)),
     state: RouteState.planned,
     returnAddress: ReturnAddress(
@@ -87,7 +89,7 @@ final List<RouteEnt> sampleRoutes = [
   RouteEnt(
     id: "4",
     name: "Ruta 4",
-    geometry: 4,
+    geometry: const [LatLng(-34.537222, -56.280556)],
     creationDate: DateTime.now().subtract(Duration(days: 5)),
     state: RouteState.completed,
     returnAddress: ReturnAddress(
@@ -118,7 +120,7 @@ final List<RouteEnt> sampleRoutes = [
   RouteEnt(
     id: "5",
     name: "Ruta 5",
-    geometry: 5,
+    geometry: const [LatLng(-34.904115, -56.188843)],
     creationDate: DateTime.now().subtract(Duration(days: 7)),
     state: RouteState.started,
     returnAddress: ReturnAddress(

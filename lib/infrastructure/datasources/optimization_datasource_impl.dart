@@ -10,9 +10,10 @@ class OptimizationDatasourceImpl extends IOptimizationDatasource {
     OptimizationRequestDto optimizationRequestDto,
   ) async {
     try {
+      final dataToSend = optimizationRequestDto.toMap();
       final response = await DioRequestHandler.post(
         ApiEndpoints.optimizeRoute(routeId),
-        data: optimizationRequestDto.toMap(),
+        data: dataToSend,
         requestOptions: RequestOptionsModel(hasBearerToken: true),
       );
 

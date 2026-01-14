@@ -27,13 +27,14 @@ class OptimizationNotifier extends StateNotifier<OptimizationState> {
     state = state.copyWith(optimizeStops: value);
   }
 
-  Future<RouteEnt?> onSubmit() async {
+  Future<bool> onSubmit() async {
     final selectedRoute = ref.read(mapProvider).selectedRoute;
     final routeId = selectedRoute?.id ?? '';
+    if (routeId.isEmpty) return false;
+
     final position = await Geolocator.getCurrentPosition(
       locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
     );
-    if (routeId.isEmpty) return null;
 
     state = state.copyWith(optimizing: true);
     try {
@@ -45,7 +46,11 @@ class OptimizationNotifier extends StateNotifier<OptimizationState> {
         ),
       );
 
-      return await optimizationRepository.optimizeRoute(routeId, request);
+      final result = await optimizationRepository.optimizeRoute(
+        routeId,
+        request,
+      );
+      return result != null;
     } finally {
       state = state.copyWith(optimizing: false);
     }

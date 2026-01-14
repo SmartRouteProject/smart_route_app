@@ -99,17 +99,9 @@ class MapNotifier extends StateNotifier<MapState> {
         .map((route) => route.id == updatedRoute.id ? updatedRoute : route)
         .toList();
 
-    final selectedStop = state.selectedStop;
-    final updatedSelectedStop =
-        selectedStop != null &&
-            (identical(selectedStop, originalStop) ||
-                _isSameStop(selectedStop, originalStop))
-        ? updatedStop
-        : selectedStop;
-
     state = state.copyWith(
       selectedRoute: updatedRoute,
-      selectedStop: updatedSelectedStop,
+      selectedStop: null,
       routes: List<RouteEnt>.unmodifiable(updatedRoutes),
     );
   }
