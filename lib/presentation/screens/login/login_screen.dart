@@ -203,14 +203,6 @@ class GoogleSignInButton extends ConsumerWidget {
             .loginWithGoogle(idToken);
 
         if (success) {
-          final user = ref.read(authProvider).user;
-          if (user != null && !user.validated) {
-            context.goNamed(
-              VerifyEmailScreen.name,
-              queryParameters: {'email': user.email},
-            );
-            return;
-          }
           context.goNamed(HomeScreen.name);
         } else {
           final errorMsg = ref.read(authProvider).errorMessage;
