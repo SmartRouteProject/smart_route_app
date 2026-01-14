@@ -26,4 +26,6 @@ abstract class ApiEndpoints {
       "/stop/$routeId/$stopId";
   static String updateReturnAddress(String id) => "/ReturnAddress/$id";
   static String deleteReturnAddress(String id) => "/ReturnAddress/$id";
+  static String optimizeRoute(String routeId) =>
+      "/Optimization/$routeId/optimize";
 }

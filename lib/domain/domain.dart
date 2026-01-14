@@ -20,3 +20,5 @@ export 'datasources/i_stop_datasource.dart';
 export 'repositories/i_stop_repository.dart';
 export 'datasources/i_return_address_datasource.dart';
 export 'repositories/i_return_address_repository.dart';
+export 'datasources/i_optimization_datasource.dart';
+export 'repositories/i_optimization_repository.dart';
