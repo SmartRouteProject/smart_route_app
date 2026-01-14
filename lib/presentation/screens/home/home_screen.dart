@@ -30,6 +30,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final size = MediaQuery.of(context).size;
     final maxSheetHeight = size.height * 0.6;
     _sheetHeight ??= _initialSheetHeight.clamp(_minSheetHeight, maxSheetHeight);
+    final selectedRoute = mapState.selectedRoute;
     final routeState = mapState.selectedRoute?.state;
     final optimizeOffset = routeState == RouteState.planned
         ? _optimizeSectionHeight
@@ -108,7 +109,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     height: (_sheetHeight ?? _initialSheetHeight),
                   ),
                 ),
-                if (routeState != RouteState.completed)
+                if (selectedRoute != null && routeState != RouteState.completed)
                   SafeArea(
                     top: false,
                     child: Container(
@@ -137,7 +138,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               child: LoadingFloatingActionButton(
                                 label: "Optimizar",
                                 loader: false,
-                                onPressed: () {},
+                                onPressed: () {
+                                  showDialog<bool>(
+                                    context: context,
+                                    builder: (_) => const OptimizationDialog(),
+                                  );
+                                },
                               ),
                             ),
                           if (routeState == RouteState.started)
