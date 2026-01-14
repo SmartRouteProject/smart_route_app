@@ -1,28 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class OptimizationDialog extends StatefulWidget {
+import 'package:smart_route_app/presentation/providers/providers.dart';
+
+class OptimizationDialog extends ConsumerWidget {
   const OptimizationDialog({super.key});
 
   @override
-  State<OptimizationDialog> createState() => _OptimizationDialogState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(optimizationProvider);
+    final notifier = ref.read(optimizationProvider.notifier);
 
-class _OptimizationDialogState extends State<OptimizationDialog> {
-  bool _optimizeStops = true;
-
-  @override
-  Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('Optimizacion'),
-      content: SwitchListTile(
-        contentPadding: EdgeInsets.zero,
-        title: const Text('Optimizar paradas'),
-        value: _optimizeStops,
-        onChanged: (value) {
-          setState(() {
-            _optimizeStops = value;
-          });
-        },
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Optimizar paradas'),
+            value: state.optimizeStops,
+            onChanged: state.optimizing ? null : notifier.setOptimizeStops,
+          ),
+          if (state.optimizing)
+            const Padding(
+              padding: EdgeInsets.only(top: 12),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+        ],
       ),
       actions: [
         TextButton(
@@ -30,7 +35,9 @@ class _OptimizationDialogState extends State<OptimizationDialog> {
           child: const Text('Cancelar'),
         ),
         TextButton(
-          onPressed: () => Navigator.of(context).pop(true),
+          onPressed: () async {
+            await ref.read(optimizationProvider.notifier).onSubmit();
+          },
           child: const Text('Aceptar'),
         ),
       ],
