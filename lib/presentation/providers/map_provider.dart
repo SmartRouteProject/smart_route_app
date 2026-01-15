@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:flutter_polyline_points_plus/flutter_polyline_points_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -164,8 +165,10 @@ class MapNotifier extends StateNotifier<MapState> {
   }
 
   Set<Polyline> _buildRoutePolylines(RouteEnt? route) {
-    final points = route?.geometry;
-    if (points == null || points.isEmpty) return const <Polyline>{};
+    final encoded = route?.geometry;
+    if (encoded == null || encoded.isEmpty) return const <Polyline>{};
+    final points = _decodePolyline(encoded);
+    if (points.isEmpty) return const <Polyline>{};
 
     return {
       Polyline(
@@ -175,6 +178,14 @@ class MapNotifier extends StateNotifier<MapState> {
         width: 4,
       ),
     };
+  }
+
+  List<LatLng> _decodePolyline(String encoded) {
+    PolylinePoints polylinePoints = PolylinePoints();
+    final decoded = polylinePoints.decodePolyline(encoded);
+    return decoded
+        .map((point) => LatLng(point.latitude, point.longitude))
+        .toList();
   }
 
   bool _isSameStop(Stop a, Stop b) {

@@ -1,11 +1,9 @@
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-
 import 'package:smart_route_app/domain/domain.dart';
 
 class RouteEnt {
   String id;
   String name;
-  List<LatLng>? geometry;
+  String? geometry;
   DateTime creationDate;
   DateTime? completionDate;
   RouteState state;
@@ -49,14 +47,7 @@ class RouteEnt {
     return {
       'id': id,
       'name': name,
-      'geometry': geometry
-          ?.map(
-            (point) => {
-              'latitude': point.latitude,
-              'longitude': point.longitude,
-            },
-          )
-          .toList(),
+      'geometry': geometry,
       'creationDate': creationDate.toIso8601String(),
       'completionDate': completionDate?.toIso8601String(),
       'state': state.name,
@@ -66,27 +57,68 @@ class RouteEnt {
   }
 }
 
-List<LatLng>? _parseGeometry(dynamic value) {
-  if (value is! List) return null;
-
-  return value
-      .map<LatLng?>((point) {
-        if (point is Map) {
-          final latitude = point['latitude'] ?? point['lat'];
-          final longitude =
-              point['longitude'] ?? point['lng'] ?? point['lon'];
-          if (latitude is num && longitude is num) {
-            return LatLng(latitude.toDouble(), longitude.toDouble());
-          }
-        } else if (point is List && point.length >= 2) {
-          final lat = point[0];
-          final lng = point[1];
-          if (lat is num && lng is num) {
-            return LatLng(lat.toDouble(), lng.toDouble());
-          }
+String? _parseGeometry(dynamic value) {
+  if (value is String) {
+    return value;
+  }
+  if (value is List) {
+    final points = <_Coord>[];
+    for (final point in value) {
+      if (point is Map) {
+        final latitude = point['latitude'] ?? point['lat'];
+        final longitude = point['longitude'] ?? point['lng'] ?? point['lon'];
+        if (latitude is num && longitude is num) {
+          points.add(_Coord(latitude.toDouble(), longitude.toDouble()));
         }
-        return null;
-      })
-      .whereType<LatLng>()
-      .toList();
+      } else if (point is List && point.length >= 2) {
+        final lat = point[0];
+        final lng = point[1];
+        if (lat is num && lng is num) {
+          points.add(_Coord(lat.toDouble(), lng.toDouble()));
+        }
+      }
+    }
+    if (points.isEmpty) return null;
+    return _encodePolyline(points);
+  }
+  return null;
+}
+
+class _Coord {
+  final double latitude;
+  final double longitude;
+
+  const _Coord(this.latitude, this.longitude);
+}
+
+String _encodePolyline(List<_Coord> points) {
+  var lastLat = 0;
+  var lastLng = 0;
+  final buffer = StringBuffer();
+
+  for (final point in points) {
+    final lat = (point.latitude * 1e5).round();
+    final lng = (point.longitude * 1e5).round();
+    buffer.write(_encodeValue(lat - lastLat));
+    buffer.write(_encodeValue(lng - lastLng));
+    lastLat = lat;
+    lastLng = lng;
+  }
+
+  return buffer.toString();
+}
+
+String _encodeValue(int value) {
+  var v = value << 1;
+  if (value < 0) {
+    v = ~v;
+  }
+  final buffer = StringBuffer();
+  while (v >= 0x20) {
+    final charCode = (0x20 | (v & 0x1f)) + 63;
+    buffer.writeCharCode(charCode);
+    v >>= 5;
+  }
+  buffer.writeCharCode(v + 63);
+  return buffer.toString();
 }
