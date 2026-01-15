@@ -3,6 +3,7 @@ import 'package:geolocator/geolocator.dart';
 
 import 'package:smart_route_app/domain/domain.dart';
 import 'package:smart_route_app/infrastructure/infrastructure.dart';
+import 'package:smart_route_app/presentation/providers/auth_provider.dart';
 import 'package:smart_route_app/presentation/providers/map_provider.dart';
 
 final optimizationProvider =
@@ -50,10 +51,40 @@ class OptimizationNotifier extends StateNotifier<OptimizationState> {
         routeId,
         request,
       );
-      return result != null;
+      if (result == null) return false;
+
+      final mapState = ref.read(mapProvider);
+      final updatedMapRoutes = _upsertRoute(mapState.routes, result);
+      ref.read(mapProvider.notifier).setRoutes(updatedMapRoutes);
+      ref.read(mapProvider.notifier).selectRoute(result);
+
+      final currentUser = ref.read(authProvider).user;
+      if (currentUser != null) {
+        final updatedUserRoutes = _upsertRoute(currentUser.routes, result);
+        ref
+            .read(authProvider.notifier)
+            .updateUser(currentUser.copyWith(routes: updatedUserRoutes));
+      }
+
+      return true;
     } finally {
       state = state.copyWith(optimizing: false);
     }
+  }
+
+  List<RouteEnt> _upsertRoute(List<RouteEnt> routes, RouteEnt updatedRoute) {
+    var replaced = false;
+    final updatedRoutes = routes.map((route) {
+      if (route.id == updatedRoute.id) {
+        replaced = true;
+        return updatedRoute;
+      }
+      return route;
+    }).toList();
+    if (!replaced) {
+      updatedRoutes.add(updatedRoute);
+    }
+    return List<RouteEnt>.unmodifiable(updatedRoutes);
   }
 }
 

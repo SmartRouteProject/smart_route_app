@@ -37,6 +37,9 @@ class OptimizationDialog extends ConsumerWidget {
         TextButton(
           onPressed: () async {
             await ref.read(optimizationProvider.notifier).onSubmit();
+            if (context.mounted) {
+              Navigator.of(context).pop(true);
+            }
           },
           child: const Text('Aceptar'),
         ),
