@@ -14,6 +14,8 @@ class DeliveryStop extends Stop {
     required super.address,
     super.status = StopStatus.pending,
     super.arrivalTime,
+    super.closedTime,
+    super.order,
     super.description = '',
     List<Package> packages = const [],
   }) : packages = List<Package>.from(packages);
@@ -26,6 +28,8 @@ class DeliveryStop extends Stop {
       address: json['address'] ?? '',
       status: StopStatus.fromString(json['status'] ?? ''),
       arrivalTime: _parseArrivalTime(json['arrivalTime']),
+      closedTime: _parseArrivalTime(json['closedTime']),
+      order: _parseOrder(json['order']),
       description: json['description'] ?? '',
       packages:
           (json['packages'] as List<dynamic>?)
@@ -44,6 +48,8 @@ class DeliveryStop extends Stop {
       'address': address,
       'status': status,
       'arrivalTime': arrivalTime?.toIso8601String(),
+      'closedTime': closedTime?.toIso8601String(),
+      'order': order,
       'description': description,
       'packages': packages.map((package) => package.toMap()).toList(),
     };
@@ -53,6 +59,15 @@ class DeliveryStop extends Stop {
     if (value is DateTime) return value;
     if (value is String && value.isNotEmpty) {
       return DateTime.tryParse(value);
+    }
+    return null;
+  }
+
+  static int? _parseOrder(dynamic value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String && value.isNotEmpty) {
+      return int.tryParse(value);
     }
     return null;
   }

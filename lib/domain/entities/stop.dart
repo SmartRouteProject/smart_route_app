@@ -7,6 +7,8 @@ abstract class Stop {
   String address;
   StopStatus status;
   DateTime? arrivalTime;
+  DateTime? closedTime;
+  int? order;
   String description;
 
   Stop({
@@ -16,6 +18,8 @@ abstract class Stop {
     required this.address,
     this.status = StopStatus.pending,
     this.arrivalTime,
+    this.closedTime,
+    this.order,
     this.description = '',
   });
 

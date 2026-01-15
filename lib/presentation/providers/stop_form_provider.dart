@@ -129,6 +129,7 @@ class StopFormNotifier extends StateNotifier<StopFormState> {
     final address = state.address;
     final arrivalTime = _parseArrivalTime(state.arrivalTime);
     final description = state.description;
+    final order = _resolveOrder();
 
     if (state.selectedType == StopType.delivery) {
       return DeliveryStop(
@@ -138,6 +139,7 @@ class StopFormNotifier extends StateNotifier<StopFormState> {
         address: address,
         status: _originalStop.status,
         arrivalTime: arrivalTime,
+        order: order,
         description: description,
         packages: state.packageList ?? const [],
       );
@@ -150,8 +152,34 @@ class StopFormNotifier extends StateNotifier<StopFormState> {
       address: address,
       status: _originalStop.status,
       arrivalTime: arrivalTime,
+      order: order,
       description: description,
     );
+  }
+
+  int? _resolveOrder() {
+    final isNewStop = _originalStop.id == null || _originalStop.id!.isEmpty;
+    if (!isNewStop) return _originalStop.order;
+
+    final selectedRoute = _ref.read(mapProvider).selectedRoute;
+    if (selectedRoute == null) return 1;
+
+    final stops = selectedRoute.stops
+        .where(
+          (stop) =>
+              !identical(stop, _originalStop) &&
+              (stop.id == null || stop.id != _originalStop.id),
+        )
+        .toList();
+
+    final existingOrders =
+        stops.map((stop) => stop.order).whereType<int>().toList();
+    if (existingOrders.isNotEmpty) {
+      existingOrders.sort();
+      return existingOrders.last + 1;
+    }
+
+    return stops.length + 1;
   }
 }
 

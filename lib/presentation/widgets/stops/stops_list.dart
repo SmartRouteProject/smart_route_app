@@ -97,11 +97,17 @@ class _StopsListState extends ConsumerState<StopsList> {
     final selectedRoute = mapState.selectedRoute;
     final routeName = selectedRoute?.name ?? 'Ruta sin nombre';
     final stops = selectedRoute?.stops ?? [];
+    final orderedStops = List<Stop>.from(stops)
+      ..sort((a, b) {
+        final aOrder = a.order ?? 1 << 30;
+        final bOrder = b.order ?? 1 << 30;
+        if (aOrder != bOrder) return aOrder.compareTo(bOrder);
+        return a.address.compareTo(b.address);
+      });
 
     return SafeArea(
       top: false,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const SizedBox(height: 8),
           Container(
@@ -165,23 +171,25 @@ class _StopsListState extends ConsumerState<StopsList> {
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              itemCount: stops.length,
+              itemCount: orderedStops.length,
               itemBuilder: (context, index) => Card(
                 child: ListTile(
                   leading: Icon(Icons.route),
-                  title: Text('Parada #${index + 1}'),
+                  title: Text(
+                    'Parada #${orderedStops[index].order ?? index + 1}',
+                  ),
                   subtitle: Text(
-                    stops[index].address,
+                    orderedStops[index].address,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                   trailing: Icon(Icons.chevron_right),
                   onTap: () {
                     if (selectedRoute?.state == RouteState.started) {
-                      mapNotifier.selectStop(stops[index]);
+                      mapNotifier.selectStop(orderedStops[index]);
                       return;
                     }
-                    mapNotifier.selectStop(stops[index]);
+                    mapNotifier.selectStop(orderedStops[index]);
                   },
                 ),
               ),

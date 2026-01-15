@@ -37,7 +37,7 @@ class _CustomGoogleMapState extends ConsumerState<CustomGoogleMap> {
       return GoogleMapsCustomMarker.createCustomMarker(
         marker: baseMarker,
         shape: MarkerShape.bubble,
-        title: index.toString(),
+        title: "${stop.order}",
         textSize: 50,
         backgroundColor: const Color(0xFF1E88E5),
         foregroundColor: Colors.white,
