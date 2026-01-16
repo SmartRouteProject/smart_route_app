@@ -76,10 +76,8 @@ class ActiveStop extends ConsumerWidget {
                   color: textTheme.bodySmall?.color?.withValues(alpha: 0.6),
                 ),
               ),
-              if (stop.status != StopStatus.pending) ...[
-                const SizedBox(width: 12),
-                _StatusBadge(status: stop.status),
-              ],
+              const SizedBox(width: 12),
+              _StatusBadge(status: stop.status),
             ],
           ),
           const SizedBox(height: 16),
@@ -333,8 +331,8 @@ _StatusColors _statusColors(ThemeData theme, StopStatus status) {
       );
     case StopStatus.pending:
       return _StatusColors(
-        background: theme.colorScheme.outlineVariant,
-        foreground: theme.colorScheme.onSurfaceVariant,
+        background: Colors.grey.withValues(alpha: 0.2),
+        foreground: Colors.grey.shade700,
       );
   }
 }
