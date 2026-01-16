@@ -22,6 +22,7 @@ class ActiveStop extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
+    final canEditStop = stop.status == StopStatus.pending;
     final totalStops = selectedRoute?.stops.length ?? 0;
     final stopIndex = selectedRoute != null
         ? _findStopIndex(selectedRoute.stops, stop)
@@ -29,8 +30,8 @@ class ActiveStop extends ConsumerWidget {
     final positionLabel = totalStops > 0 && stopIndex != null
         ? '${stopIndex + 1}/$totalStops'
         : totalStops > 0
-            ? '-/$totalStops'
-            : '0/0';
+        ? '-/$totalStops'
+        : '0/0';
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
@@ -100,100 +101,104 @@ class ActiveStop extends ConsumerWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: SizedBox(
-                  height: 56,
-                  child: OutlinedButton(
-                    onPressed: () async {
-                      await ref
-                          .read(mapProvider.notifier)
-                          .updateStopStatus(stop, StopStatus.failed);
-                    },
-                    style: OutlinedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+              if (canEditStop) ...[
+                const SizedBox(width: 10),
+                Expanded(
+                  child: SizedBox(
+                    height: 56,
+                    child: OutlinedButton(
+                      onPressed: () async {
+                        await ref
+                            .read(mapProvider.notifier)
+                            .updateStopStatus(stop, StopStatus.failed);
+                      },
+                      style: OutlinedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: const [
-                        Icon(Icons.close, color: Colors.red),
-                        SizedBox(height: 6),
-                        Text('Fallida'),
-                      ],
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Icon(Icons.close, color: Colors.red),
+                          SizedBox(height: 6),
+                          Text('Fallida'),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: SizedBox(
-                  height: 56,
-                  child: OutlinedButton(
-                    onPressed: () async {
-                      await ref
-                          .read(mapProvider.notifier)
-                          .updateStopStatus(stop, StopStatus.succeded);
-                    },
-                    style: OutlinedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: SizedBox(
+                    height: 56,
+                    child: OutlinedButton(
+                      onPressed: () async {
+                        await ref
+                            .read(mapProvider.notifier)
+                            .updateStopStatus(stop, StopStatus.succeded);
+                      },
+                      style: OutlinedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: const [
-                        Icon(Icons.check_circle_outline, color: Colors.green),
-                        SizedBox(height: 6),
-                        Text('Entregada'),
-                      ],
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Icon(Icons.check_circle_outline, color: Colors.green),
+                          SizedBox(height: 6),
+                          Text('Entregada'),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
+              ],
             ],
           ),
           const SizedBox(height: 16),
-          _ActionTile(
-            icon: Icons.edit_location_alt_outlined,
-            title: 'Editar parada',
-            onTap: () {
-              showGeneralDialog(
-                context: context,
-                barrierColor: Colors.black54,
-                barrierDismissible: true,
-                barrierLabel: 'close-stop-details',
-                transitionDuration: const Duration(milliseconds: 250),
-                pageBuilder: (_, __, ___) {
-                  return const StopDetailPage();
-                },
-              );
-            },
-          ),
-          _ActionTile(
-            icon: Icons.delete_outline,
-            title: 'Eliminar parada',
-            color: theme.colorScheme.error,
-            onTap: () async {
-              final confirmed = await showDialog<bool>(
-                context: context,
-                builder: (_) => ConfirmationDialog(
-                  title: 'Eliminar parada',
-                  description: '¿Estás seguro que desea eliminar la parada?',
-                  onConfirmed: () {},
-                ),
-              );
-              if (confirmed != true) return;
+          if (canEditStop) ...[
+            _ActionTile(
+              icon: Icons.edit_location_alt_outlined,
+              title: 'Editar parada',
+              onTap: () {
+                showGeneralDialog(
+                  context: context,
+                  barrierColor: Colors.black54,
+                  barrierDismissible: true,
+                  barrierLabel: 'close-stop-details',
+                  transitionDuration: const Duration(milliseconds: 250),
+                  pageBuilder: (_, __, ___) {
+                    return const StopDetailPage();
+                  },
+                );
+              },
+            ),
+            _ActionTile(
+              icon: Icons.delete_outline,
+              title: 'Eliminar parada',
+              color: theme.colorScheme.error,
+              onTap: () async {
+                final confirmed = await showDialog<bool>(
+                  context: context,
+                  builder: (_) => ConfirmationDialog(
+                    title: 'Eliminar parada',
+                    description: '¿Estás seguro que desea eliminar la parada?',
+                    onConfirmed: () {},
+                  ),
+                );
+                if (confirmed != true) return;
 
-              final deleted = await ref
-                  .read(mapProvider.notifier)
-                  .deleteStop(stop);
-              if (deleted && context.mounted) {
-                ref.read(mapProvider.notifier).clearSelectedStop();
-              }
-            },
-          ),
+                final deleted = await ref
+                    .read(mapProvider.notifier)
+                    .deleteStop(stop);
+                if (deleted && context.mounted) {
+                  ref.read(mapProvider.notifier).clearSelectedStop();
+                }
+              },
+            ),
+          ],
         ],
       ),
     );
