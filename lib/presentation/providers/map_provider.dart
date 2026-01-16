@@ -8,9 +8,11 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:smart_route_app/domain/domain.dart';
 import 'package:smart_route_app/infrastructure/infrastructure.dart';
 import 'package:smart_route_app/infrastructure/mocks/route_sample.dart';
+import 'package:smart_route_app/presentation/providers/auth_provider.dart';
 
 final mapProvider = StateNotifierProvider<MapNotifier, MapState>((ref) {
-  return MapNotifier();
+  final routeRepository = RouteRepositoryImpl();
+  return MapNotifier(ref: ref, routeRepository: routeRepository);
 });
 
 final mapErrorProvider = Provider<String>((ref) {
@@ -24,9 +26,13 @@ class MapNotifier extends StateNotifier<MapState> {
   );
 
   final IStopRepository _stopRepository;
+  final IRouteRepository _routeRepository;
+  final Ref _ref;
 
-  MapNotifier()
-    : _stopRepository = StopRepositoryImpl(),
+  MapNotifier({required Ref ref, required IRouteRepository routeRepository})
+    : _ref = ref,
+      _stopRepository = StopRepositoryImpl(),
+      _routeRepository = routeRepository,
       super(
         MapState(routes: sampleRoutes, cameraPosition: defaultCameraPosition),
       ) {
@@ -206,6 +212,35 @@ class MapNotifier extends StateNotifier<MapState> {
     }
   }
 
+  Future<bool> startSelectedRoute() async {
+    final selectedRoute = state.selectedRoute;
+    if (selectedRoute == null || selectedRoute.id.isEmpty) {
+      state = state.copyWith(errorMessage: 'Ruta no seleccionada');
+      return false;
+    }
+
+    final updatedRoute = _copyRouteWithState(selectedRoute, RouteState.started);
+
+    try {
+      state = state.copyWith(errorMessage: '');
+      final response = await _routeRepository.updateRoute(updatedRoute);
+      if (response == null) {
+        state = state.copyWith(errorMessage: 'No se pudo iniciar la ruta');
+        return false;
+      }
+
+      _updateRouteInState(response);
+      _updateRouteInUser(response);
+      return true;
+    } on ArgumentError catch (err) {
+      state = state.copyWith(errorMessage: err.message);
+      return false;
+    } catch (err) {
+      state = state.copyWith(errorMessage: 'No se pudo iniciar la ruta');
+      return false;
+    }
+  }
+
   RouteEnt _copyRouteWithStops(RouteEnt route, List<Stop> stops) {
     return RouteEnt(
       id: route.id,
@@ -255,6 +290,19 @@ class MapNotifier extends StateNotifier<MapState> {
     return _isSameStop(a, b);
   }
 
+  RouteEnt _copyRouteWithState(RouteEnt route, RouteState state) {
+    return RouteEnt(
+      id: route.id,
+      name: route.name,
+      geometry: route.geometry,
+      creationDate: route.creationDate,
+      completionDate: route.completionDate,
+      state: state,
+      stops: route.stops,
+      returnAddress: route.returnAddress,
+    );
+  }
+
   Stop _copyStopWithStatus(Stop stop, StopStatus status) {
     if (stop is DeliveryStop) {
       return DeliveryStop(
@@ -284,6 +332,28 @@ class MapNotifier extends StateNotifier<MapState> {
       );
     }
     return stop;
+  }
+
+  void _updateRouteInState(RouteEnt updatedRoute) {
+    final updatedRoutes = state.routes
+        .map((route) => route.id == updatedRoute.id ? updatedRoute : route)
+        .toList();
+
+    state = state.copyWith(
+      selectedRoute: updatedRoute,
+      routes: List<RouteEnt>.unmodifiable(updatedRoutes),
+    );
+  }
+
+  void _updateRouteInUser(RouteEnt updatedRoute) {
+    final currentUser = _ref.read(authProvider).user;
+    if (currentUser == null) return;
+
+    final updatedRoutes = currentUser.routes
+        .map((route) => route.id == updatedRoute.id ? updatedRoute : route)
+        .toList();
+    final updatedUser = currentUser.copyWith(routes: updatedRoutes);
+    _ref.read(authProvider.notifier).updateUser(updatedUser);
   }
 
   Future<void> setCurrentPosition() async {

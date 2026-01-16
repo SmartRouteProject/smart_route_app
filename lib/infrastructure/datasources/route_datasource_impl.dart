@@ -65,13 +65,14 @@ class RouteDatasourceImpl extends IRouteDatasource {
   @override
   Future<RouteEnt?> updateRoute(RouteEnt route) async {
     try {
+      final dto = {
+        'name': route.name,
+        'creationDate': route.creationDate.toIso8601String(),
+        'state': _serializeRouteState(route.state),
+      };
       final response = await DioRequestHandler.put(
         ApiEndpoints.getRouteById(route.id),
-        data: {
-          'name': route.name,
-          'date': route.creationDate.toIso8601String(),
-          'state': _serializeRouteState(route.state),
-        },
+        data: dto,
         requestOptions: RequestOptionsModel(hasBearerToken: true),
       );
 

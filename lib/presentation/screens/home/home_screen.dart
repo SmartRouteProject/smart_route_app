@@ -152,7 +152,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               child: LoadingFloatingActionButton(
                                 label: "Iniciar Ruta",
                                 loader: false,
-                                onPressed: () {},
+                                onPressed: () async {
+                                  await ref
+                                      .read(mapProvider.notifier)
+                                      .startSelectedRoute();
+                                },
                               ),
                             ),
                           if (routeState == RouteState.planned)

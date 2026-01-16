@@ -31,7 +31,7 @@ class RouteEnt {
           ? DateTime.parse(json['completionDate'])
           : null,
       state: RouteState.values.firstWhere(
-        (e) => e.name == json['state'],
+        (e) => e.name == (json['state'] as String).toLowerCase(),
         orElse: () => RouteState.planned,
       ),
       stops: (json['stops'] as List<dynamic>? ?? [])
