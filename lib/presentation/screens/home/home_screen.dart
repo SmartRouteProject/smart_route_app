@@ -24,8 +24,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   static const double _initialSheetHeight = 140;
   static const double _optimizeSectionHeight = 76;
 
+  void _showSnackbar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red.shade400,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    ref.listen<String>(stopFormErrorProvider, (previous, next) {
+      if (next.isEmpty) return;
+      _showSnackbar(context, next);
+      final selectedStop = ref.read(mapProvider).selectedStop;
+      if (selectedStop == null) return;
+      ref.read(stopFormProvider(selectedStop).notifier).clearError();
+    });
+    ref.listen<String>(mapErrorProvider, (previous, next) {
+      if (next.isEmpty) return;
+      _showSnackbar(context, next);
+      ref.read(mapProvider.notifier).clearError();
+    });
+
     final mapState = ref.watch(mapProvider);
     final size = MediaQuery.of(context).size;
     final maxSheetHeight = size.height * 0.6;

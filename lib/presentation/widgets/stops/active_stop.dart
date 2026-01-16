@@ -75,6 +75,10 @@ class ActiveStop extends ConsumerWidget {
                   color: textTheme.bodySmall?.color?.withValues(alpha: 0.6),
                 ),
               ),
+              if (stop.status != StopStatus.pending) ...[
+                const SizedBox(width: 12),
+                _StatusBadge(status: stop.status),
+              ],
             ],
           ),
           const SizedBox(height: 16),
@@ -101,7 +105,11 @@ class ActiveStop extends ConsumerWidget {
                 child: SizedBox(
                   height: 56,
                   child: OutlinedButton(
-                    onPressed: () {},
+                    onPressed: () async {
+                      await ref
+                          .read(mapProvider.notifier)
+                          .updateStopStatus(stop, StopStatus.failed);
+                    },
                     style: OutlinedButton.styleFrom(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -123,7 +131,11 @@ class ActiveStop extends ConsumerWidget {
                 child: SizedBox(
                   height: 56,
                   child: OutlinedButton(
-                    onPressed: () {},
+                    onPressed: () async {
+                      await ref
+                          .read(mapProvider.notifier)
+                          .updateStopStatus(stop, StopStatus.succeded);
+                    },
                     style: OutlinedButton.styleFrom(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -273,4 +285,58 @@ class _ActionTile extends StatelessWidget {
       visualDensity: VisualDensity.compact,
     );
   }
+}
+
+class _StatusBadge extends StatelessWidget {
+  final StopStatus status;
+
+  const _StatusBadge({required this.status});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = _statusColors(theme, status);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: colors.background,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        status.label,
+        style: theme.textTheme.labelSmall?.copyWith(
+          color: colors.foreground,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
+_StatusColors _statusColors(ThemeData theme, StopStatus status) {
+  switch (status) {
+    case StopStatus.failed:
+      return _StatusColors(
+        background: theme.colorScheme.error.withValues(alpha: 0.12),
+        foreground: theme.colorScheme.error,
+      );
+    case StopStatus.succeded:
+      return _StatusColors(
+        background: Colors.green.withValues(alpha: 0.12),
+        foreground: Colors.green,
+      );
+    case StopStatus.pending:
+      return _StatusColors(
+        background: theme.colorScheme.outlineVariant,
+        foreground: theme.colorScheme.onSurfaceVariant,
+      );
+  }
+}
+
+class _StatusColors {
+  final Color background;
+  final Color foreground;
+
+  const _StatusColors({required this.background, required this.foreground});
 }

@@ -7,12 +7,18 @@ import 'package:smart_route_app/presentation/providers/map_provider.dart';
 
 enum StopType { delivery, pickup }
 
-final stopFormProvider =
-    StateNotifierProvider.autoDispose.family<StopFormNotifier, StopFormState, Stop>(
-      (ref, stop) {
-        return StopFormNotifier(ref: ref, stop: stop);
-      },
-    );
+final stopFormProvider = StateNotifierProvider.autoDispose
+    .family<StopFormNotifier, StopFormState, Stop>((ref, stop) {
+      return StopFormNotifier(ref: ref, stop: stop);
+    });
+
+final stopFormErrorProvider = Provider.autoDispose<String>((ref) {
+  final selectedStop = ref.watch(
+    mapProvider.select((state) => state.selectedStop),
+  );
+  if (selectedStop == null) return '';
+  return ref.watch(stopFormProvider(selectedStop)).errorMessage;
+});
 
 class StopFormNotifier extends StateNotifier<StopFormState> {
   final Ref _ref;
@@ -102,27 +108,49 @@ class StopFormNotifier extends StateNotifier<StopFormState> {
 
   Future<bool> onSubmit() async {
     final routeId = _ref.read(mapProvider).selectedRoute?.id;
-    if (routeId == null || routeId.isEmpty) return false;
-    if (state.isPosting) return false;
-
-    state = state.copyWith(isPosting: true);
-    final updatedStop = _buildUpdatedStop();
-    final isNewStop = _originalStop.id == null || _originalStop.id!.isEmpty;
-    final Stop? response = isNewStop
-        ? await _stopRepository.createStop(routeId, updatedStop)
-        : await _stopRepository.editStop(routeId, updatedStop);
-
-    if (response == null) {
-      state = state.copyWith(isPosting: false);
+    if (routeId == null || routeId.isEmpty) {
+      state = state.copyWith(errorMessage: 'Ruta no seleccionada');
       return false;
     }
+    if (state.isPosting) return false;
 
-    _ref.read(mapProvider.notifier).upsertStop(
-      originalStop: _originalStop,
-      updatedStop: response,
-    );
-    state = state.copyWith(isPosting: false);
-    return true;
+    state = state.copyWith(isPosting: true, errorMessage: '');
+
+    try {
+      final updatedStop = _buildUpdatedStop();
+      final isNewStop = _originalStop.id == null || _originalStop.id!.isEmpty;
+      final Stop? response = isNewStop
+          ? await _stopRepository.createStop(routeId, updatedStop)
+          : await _stopRepository.editStop(routeId, updatedStop);
+
+      if (response == null) {
+        state = state.copyWith(
+          isPosting: false,
+          errorMessage: 'No se pudo guardar la parada',
+        );
+        return false;
+      }
+
+      _ref
+          .read(mapProvider.notifier)
+          .upsertStop(originalStop: _originalStop, updatedStop: response);
+      state = state.copyWith(isPosting: false, errorMessage: '');
+      return true;
+    } on ArgumentError catch (err) {
+      state = state.copyWith(isPosting: false, errorMessage: err.message);
+      return false;
+    } catch (_) {
+      state = state.copyWith(
+        isPosting: false,
+        errorMessage: 'No se pudo guardar la parada',
+      );
+      return false;
+    }
+  }
+
+  void clearError() {
+    if (state.errorMessage.isEmpty) return;
+    state = state.copyWith(errorMessage: '');
   }
 
   Stop _buildUpdatedStop() {
@@ -172,8 +200,10 @@ class StopFormNotifier extends StateNotifier<StopFormState> {
         )
         .toList();
 
-    final existingOrders =
-        stops.map((stop) => stop.order).whereType<int>().toList();
+    final existingOrders = stops
+        .map((stop) => stop.order)
+        .whereType<int>()
+        .toList();
     if (existingOrders.isNotEmpty) {
       existingOrders.sort();
       return existingOrders.last + 1;
@@ -210,6 +240,7 @@ class StopFormState {
   final List<Package>? packageList;
   final StopType selectedType;
   final bool isPosting;
+  final String errorMessage;
 
   StopFormState({
     required this.address,
@@ -220,6 +251,7 @@ class StopFormState {
     required this.packageList,
     required this.selectedType,
     this.isPosting = false,
+    this.errorMessage = '',
   });
 
   String get typeLabel {
@@ -237,6 +269,7 @@ class StopFormState {
     List<Package>? packageList,
     StopType? selectedType,
     bool? isPosting,
+    String? errorMessage,
   }) => StopFormState(
     address: address ?? this.address,
     latitude: latitude ?? this.latitude,
@@ -246,5 +279,6 @@ class StopFormState {
     packageList: packageList ?? this.packageList,
     selectedType: selectedType ?? this.selectedType,
     isPosting: isPosting ?? this.isPosting,
+    errorMessage: errorMessage ?? this.errorMessage,
   );
 }

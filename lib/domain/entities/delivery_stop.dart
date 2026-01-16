@@ -46,7 +46,7 @@ class DeliveryStop extends Stop {
       'latitude': latitude,
       'longitude': longitude,
       'address': address,
-      'status': status,
+      'status': status.getStringValue(),
       'arrivalTime': arrivalTime?.toIso8601String(),
       'closedTime': closedTime?.toIso8601String(),
       'order': order,

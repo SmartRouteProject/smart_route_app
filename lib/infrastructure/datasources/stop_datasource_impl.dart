@@ -47,10 +47,10 @@ class StopDatasourceImpl extends IStopDatasource {
   @override
   Future<Stop?> editStop(String routeId, Stop stop) async {
     try {
-      final dto = StopRequestDto.fromStop(stop);
+      final dto = stop.toMap();
       final response = await DioRequestHandler.put(
         ApiEndpoints.updateStop(routeId: routeId, stopId: stop.id!),
-        data: dto.toMap(),
+        data: dto,
         requestOptions: RequestOptionsModel(hasBearerToken: true),
       );
 

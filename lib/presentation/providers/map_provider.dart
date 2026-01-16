@@ -13,6 +13,10 @@ final mapProvider = StateNotifierProvider<MapNotifier, MapState>((ref) {
   return MapNotifier();
 });
 
+final mapErrorProvider = Provider<String>((ref) {
+  return ref.watch(mapProvider).errorMessage;
+});
+
 class MapNotifier extends StateNotifier<MapState> {
   static const CameraPosition defaultCameraPosition = CameraPosition(
     target: LatLng(-32.8, -56.0),
@@ -87,7 +91,10 @@ class MapNotifier extends StateNotifier<MapState> {
 
   void upsertStop({required Stop originalStop, required Stop updatedStop}) {
     final selectedRoute = state.selectedRoute;
-    if (selectedRoute == null) return;
+    if (selectedRoute == null) {
+      state = state.copyWith(errorMessage: 'Ruta no seleccionada');
+      return;
+    }
 
     final updatedStops = List<Stop>.from(selectedRoute.stops);
     var index = updatedStops.indexWhere(
@@ -114,7 +121,44 @@ class MapNotifier extends StateNotifier<MapState> {
       selectedRoute: updatedRoute,
       selectedStop: null,
       routes: List<RouteEnt>.unmodifiable(updatedRoutes),
+      errorMessage: '',
     );
+  }
+
+  void clearError() {
+    if (state.errorMessage.isEmpty) return;
+    state = state.copyWith(errorMessage: '');
+  }
+
+  Future<bool> updateStopStatus(Stop stop, StopStatus status) async {
+    final selectedRoute = state.selectedRoute;
+    final routeId = selectedRoute?.id ?? '';
+    final stopId = stop.id ?? '';
+    if (selectedRoute == null || routeId.isEmpty || stopId.isEmpty) {
+      state = state.copyWith(errorMessage: 'Ruta o parada invalida');
+      return false;
+    }
+
+    final updatedStop = _copyStopWithStatus(stop, status);
+
+    try {
+      state = state.copyWith(errorMessage: '');
+      final response = await _stopRepository.editStop(routeId, updatedStop);
+      if (response == null) {
+        state = state.copyWith(errorMessage: 'No se pudo actualizar la parada');
+        return false;
+      }
+      upsertStop(originalStop: stop, updatedStop: response);
+      selectStop(response);
+      state = state.copyWith(errorMessage: '');
+      return true;
+    } on ArgumentError catch (err) {
+      state = state.copyWith(errorMessage: err.message);
+      return false;
+    } catch (_) {
+      state = state.copyWith(errorMessage: 'No se pudo actualizar la parada');
+      return false;
+    }
   }
 
   Future<bool> deleteStop(Stop stop) async {
@@ -122,12 +166,17 @@ class MapNotifier extends StateNotifier<MapState> {
     final routeId = selectedRoute?.id ?? '';
     final stopId = stop.id ?? '';
     if (selectedRoute == null || routeId.isEmpty || stopId.isEmpty) {
+      state = state.copyWith(errorMessage: 'Ruta o parada invalida');
       return false;
     }
 
     try {
+      state = state.copyWith(errorMessage: '');
       final deleted = await _stopRepository.deleteStop(routeId, stopId);
-      if (!deleted) return false;
+      if (!deleted) {
+        state = state.copyWith(errorMessage: 'No se pudo eliminar la parada');
+        return false;
+      }
 
       final updatedStops = selectedRoute.stops
           .where((candidate) => !_isSameStopByIdOrFallback(candidate, stop))
@@ -145,10 +194,15 @@ class MapNotifier extends StateNotifier<MapState> {
         selectedRoute: updatedRoute,
         selectedStop: shouldClearSelected ? null : selectedStop,
         routes: List<RouteEnt>.unmodifiable(updatedRoutes),
+        errorMessage: '',
       );
       return true;
-    } catch (err) {
-      rethrow;
+    } on ArgumentError catch (err) {
+      state = state.copyWith(errorMessage: err.message);
+      return false;
+    } catch (_) {
+      state = state.copyWith(errorMessage: 'No se pudo eliminar la parada');
+      return false;
     }
   }
 
@@ -201,6 +255,37 @@ class MapNotifier extends StateNotifier<MapState> {
     return _isSameStop(a, b);
   }
 
+  Stop _copyStopWithStatus(Stop stop, StopStatus status) {
+    if (stop is DeliveryStop) {
+      return DeliveryStop(
+        id: stop.id,
+        latitude: stop.latitude,
+        longitude: stop.longitude,
+        address: stop.address,
+        status: status,
+        arrivalTime: stop.arrivalTime,
+        closedTime: stop.closedTime,
+        order: stop.order,
+        description: stop.description,
+        packages: stop.packages,
+      );
+    }
+    if (stop is PickupStop) {
+      return PickupStop(
+        id: stop.id,
+        latitude: stop.latitude,
+        longitude: stop.longitude,
+        address: stop.address,
+        status: status,
+        arrivalTime: stop.arrivalTime,
+        closedTime: stop.closedTime,
+        order: stop.order,
+        description: stop.description,
+      );
+    }
+    return stop;
+  }
+
   Future<void> setCurrentPosition() async {
     try {
       final position = await Geolocator.getCurrentPosition(
@@ -229,6 +314,7 @@ class MapState {
   final CameraPosition cameraPosition;
   final GoogleMapController? mapController;
   final Set<Polyline> polylines;
+  final String errorMessage;
 
   MapState({
     this.routes = const [],
@@ -237,6 +323,7 @@ class MapState {
     required this.cameraPosition,
     this.mapController,
     this.polylines = const <Polyline>{},
+    this.errorMessage = '',
   });
 
   MapState copyWith({
@@ -246,6 +333,7 @@ class MapState {
     CameraPosition? cameraPosition,
     GoogleMapController? mapController,
     Set<Polyline>? polylines,
+    String? errorMessage,
     bool clearSelectedRoute = false,
     bool clearSelectedStop = false,
   }) => MapState(
@@ -259,5 +347,6 @@ class MapState {
     cameraPosition: cameraPosition ?? this.cameraPosition,
     mapController: mapController ?? this.mapController,
     polylines: polylines ?? this.polylines,
+    errorMessage: errorMessage ?? this.errorMessage,
   );
 }
