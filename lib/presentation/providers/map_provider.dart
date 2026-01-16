@@ -241,6 +241,38 @@ class MapNotifier extends StateNotifier<MapState> {
     }
   }
 
+  Future<bool> completeSelectedRoute() async {
+    final selectedRoute = state.selectedRoute;
+    if (selectedRoute == null || selectedRoute.id.isEmpty) {
+      state = state.copyWith(errorMessage: 'Ruta no seleccionada');
+      return false;
+    }
+
+    final updatedRoute = _copyRouteWithState(
+      selectedRoute,
+      RouteState.completed,
+    );
+
+    try {
+      state = state.copyWith(errorMessage: '');
+      final response = await _routeRepository.updateRoute(updatedRoute);
+      if (response == null) {
+        state = state.copyWith(errorMessage: 'No se pudo finalizar la ruta');
+        return false;
+      }
+
+      _updateRouteInState(response);
+      _updateRouteInUser(response);
+      return true;
+    } on ArgumentError catch (err) {
+      state = state.copyWith(errorMessage: err.message);
+      return false;
+    } catch (_) {
+      state = state.copyWith(errorMessage: 'No se pudo finalizar la ruta');
+      return false;
+    }
+  }
+
   RouteEnt _copyRouteWithStops(RouteEnt route, List<Stop> stops) {
     return RouteEnt(
       id: route.id,

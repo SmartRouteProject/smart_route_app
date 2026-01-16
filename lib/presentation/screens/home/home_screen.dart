@@ -181,7 +181,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               child: LoadingFloatingActionButton(
                                 label: "Finalizar Ruta",
                                 loader: false,
-                                onPressed: () {},
+                                onPressed: () async {
+                                  final confirmed = await showDialog<bool>(
+                                    context: context,
+                                    builder: (_) => ConfirmationDialog(
+                                      title: 'Finalizar ruta',
+                                      description:
+                                          '¿Estás seguro que desea finalizar la ruta?',
+                                      onConfirmed: () {},
+                                    ),
+                                  );
+                                  if (confirmed != true) return;
+
+                                  await ref
+                                      .read(mapProvider.notifier)
+                                      .completeSelectedRoute();
+                                },
                               ),
                             ),
                         ],
