@@ -236,6 +236,12 @@ class MapNotifier extends StateNotifier<MapState> {
 
       _updateRouteInState(response);
       _updateRouteInUser(response);
+      final firstStop = _getFirstStopByOrder(response.stops);
+      if (firstStop == null) {
+        clearSelectedStop();
+      } else {
+        selectStop(firstStop);
+      }
       return true;
     } on ArgumentError catch (err) {
       state = state.copyWith(errorMessage: err.message);
@@ -352,6 +358,13 @@ class MapNotifier extends StateNotifier<MapState> {
       stops: route.stops,
       returnAddress: route.returnAddress,
     );
+  }
+
+  Stop? _getFirstStopByOrder(List<Stop> stops) {
+    final orderedStops = stops.where((stop) => stop.order != null).toList()
+      ..sort((a, b) => a.order!.compareTo(b.order!));
+    if (orderedStops.isEmpty) return null;
+    return orderedStops.first;
   }
 
   Stop _copyStopWithStatus(Stop stop, StopStatus status) {
