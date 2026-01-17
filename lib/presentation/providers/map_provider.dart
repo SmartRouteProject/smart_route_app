@@ -145,6 +145,7 @@ class MapNotifier extends StateNotifier<MapState> {
       return false;
     }
 
+    final nextStop = _getNextStop(selectedRoute.stops, stop);
     final updatedStop = _copyStopWithStatus(stop, status);
 
     try {
@@ -155,7 +156,11 @@ class MapNotifier extends StateNotifier<MapState> {
         return false;
       }
       upsertStop(originalStop: stop, updatedStop: response);
-      selectStop(response);
+      if (nextStop == null) {
+        clearSelectedStop();
+      } else {
+        selectStop(nextStop);
+      }
       state = state.copyWith(errorMessage: '');
       return true;
     } on ArgumentError catch (err) {
@@ -320,6 +325,30 @@ class MapNotifier extends StateNotifier<MapState> {
       return a.id == b.id;
     }
     return _isSameStop(a, b);
+  }
+
+  Stop? _getNextStop(List<Stop> stops, Stop currentStop) {
+    final currentIndex = _findStopIndex(stops, currentStop);
+    if (currentIndex == null) return null;
+    final nextIndex = currentIndex + 1;
+    if (nextIndex >= stops.length) return null;
+    return stops[nextIndex];
+  }
+
+  int? _findStopIndex(List<Stop> stops, Stop stop) {
+    final stopId = stop.id;
+    if (stopId != null) {
+      final index = stops.indexWhere((candidate) => candidate.id == stopId);
+      if (index != -1) return index;
+    }
+
+    final index = stops.indexWhere(
+      (candidate) =>
+          candidate.latitude == stop.latitude &&
+          candidate.longitude == stop.longitude &&
+          candidate.address == stop.address,
+    );
+    return index == -1 ? null : index;
   }
 
   RouteEnt _copyRouteWithState(RouteEnt route, RouteState state) {
