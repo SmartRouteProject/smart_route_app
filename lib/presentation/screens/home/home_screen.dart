@@ -22,7 +22,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   double? _sheetHeight;
   static const double _minSheetHeight = 150;
   static const double _initialSheetHeight = 140;
-  static const double _optimizeSectionHeight = 76;
 
   void _showSnackbar(BuildContext context, String message) {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -56,17 +55,41 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     _sheetHeight ??= _initialSheetHeight.clamp(_minSheetHeight, maxSheetHeight);
     final selectedRoute = mapState.selectedRoute;
     final routeState = mapState.selectedRoute?.state;
-    final optimizeOffset = routeState == RouteState.planned
-        ? _optimizeSectionHeight
-        : 0;
 
     return Scaffold(
       appBar: AppBar(
         title: Text("Mapa"),
         actions: [
           IconButton(
+            icon: Icon(Icons.home),
+            onPressed: () {
+              showGeneralDialog(
+                context: context,
+                barrierColor: Colors.black54,
+                barrierDismissible: true,
+                barrierLabel: 'close-return-adress-list',
+                transitionDuration: const Duration(milliseconds: 250),
+                pageBuilder: (_, __, ___) {
+                  return ReturnAdressList();
+                },
+              );
+            },
+            tooltip: 'Dirección de retorno',
+          ),
+          IconButton(
             icon: Icon(Icons.logout),
             onPressed: () async {
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder: (_) => ConfirmationDialog(
+                  title: 'Cerrar sesi\u00f3n',
+                  description:
+                      '\u00bfEst\u00e1s seguro que deseas cerrar sesi\u00f3n?',
+                  onConfirmed: () {},
+                ),
+              );
+              if (confirmed != true) return;
+
               final logoutResp = await ref.read(authProvider.notifier).logout();
               if (logoutResp) {
                 // ignore: use_build_context_synchronously
@@ -83,30 +106,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         children: [
           // MAPA
           const CustomGoogleMap(),
-
-          Positioned(
-            bottom:
-                (_sheetHeight ?? _initialSheetHeight) +
-                optimizeOffset +
-                12, // <-- separación fija
-            right: 16,
-            child: FloatingActionButton(
-              onPressed: () {
-                showGeneralDialog(
-                  context: context,
-                  barrierColor: Colors.black54,
-                  barrierDismissible: true,
-                  barrierLabel: 'close-return-adress-list',
-                  transitionDuration: const Duration(milliseconds: 250),
-                  pageBuilder: (_, __, ___) {
-                    return ReturnAdressList();
-                  },
-                );
-              },
-              elevation: 2,
-              child: Icon(Icons.home),
-            ),
-          ),
 
           Positioned(
             left: 0,
