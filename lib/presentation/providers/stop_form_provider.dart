@@ -134,6 +134,9 @@ class StopFormNotifier extends StateNotifier<StopFormState> {
       _ref
           .read(mapProvider.notifier)
           .upsertStop(originalStop: _originalStop, updatedStop: response);
+      if (isNewStop) {
+        _ref.read(mapProvider.notifier).clearSelectedStop();
+      }
       state = state.copyWith(isPosting: false, errorMessage: '');
       return true;
     } on ArgumentError catch (err) {
