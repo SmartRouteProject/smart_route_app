@@ -24,9 +24,25 @@ class _CustomGoogleMapState extends ConsumerState<CustomGoogleMap> {
     double devicePixelRatio,
     void Function(Stop stop) onStopTap,
   ) async {
+    final nextPendingStop = _getNextPendingStopByOrder(stops);
     final futures = stops.asMap().entries.map((entry) async {
       final index = entry.key + 1;
       final stop = entry.value;
+      final isNextPending =
+          nextPendingStop != null &&
+          _isSameStopByIdOrFallback(nextPendingStop, stop);
+      final markerColor = const Color(0xFF1E88E5);
+      final isProcessed = stop.status != StopStatus.pending;
+      final markerBackground = isProcessed
+          ? Colors.grey
+          : isNextPending
+          ? markerColor
+          : Colors.white;
+      final markerForeground = isProcessed
+          ? Colors.white
+          : isNextPending
+          ? Colors.white
+          : markerColor;
       final baseMarker = Marker(
         markerId: MarkerId(
           'stop-${index - 1}-${stop.latitude}-${stop.longitude}',
@@ -39,8 +55,8 @@ class _CustomGoogleMapState extends ConsumerState<CustomGoogleMap> {
         shape: MarkerShape.bubble,
         title: "${stop.order}",
         textSize: 50,
-        backgroundColor: const Color(0xFF1E88E5),
-        foregroundColor: Colors.white,
+        backgroundColor: markerBackground,
+        foregroundColor: markerForeground,
         enableShadow: true,
         circleOptions: CircleMarkerOptions(diameter: 144),
         imagePixelRatio: devicePixelRatio,
@@ -48,6 +64,28 @@ class _CustomGoogleMapState extends ConsumerState<CustomGoogleMap> {
     }).toList();
 
     return (await Future.wait(futures)).toSet();
+  }
+
+  Stop? _getNextPendingStopByOrder(List<Stop> stops) {
+    final pendingStops =
+        stops.where((stop) => stop.status == StopStatus.pending).toList()
+          ..sort((a, b) {
+            final aOrder = a.order ?? 1 << 30;
+            final bOrder = b.order ?? 1 << 30;
+            if (aOrder != bOrder) return aOrder.compareTo(bOrder);
+            return a.address.compareTo(b.address);
+          });
+    if (pendingStops.isEmpty) return null;
+    return pendingStops.first;
+  }
+
+  bool _isSameStopByIdOrFallback(Stop a, Stop b) {
+    if (a.id != null && b.id != null) {
+      return a.id == b.id;
+    }
+    return a.latitude == b.latitude &&
+        a.longitude == b.longitude &&
+        a.address == b.address;
   }
 
   @override
