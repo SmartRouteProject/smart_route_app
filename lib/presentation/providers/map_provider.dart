@@ -328,27 +328,17 @@ class MapNotifier extends StateNotifier<MapState> {
   }
 
   Stop? _getNextStop(List<Stop> stops, Stop currentStop) {
-    final currentIndex = _findStopIndex(stops, currentStop);
-    if (currentIndex == null) return null;
-    final nextIndex = currentIndex + 1;
-    if (nextIndex >= stops.length) return null;
-    return stops[nextIndex];
-  }
+    final currentOrder = currentStop.order;
+    if (currentOrder == null) return null;
+    final nextStops = stops
+        .where((candidate) => candidate.order != null)
+        .toList()
+      ..sort((a, b) => a.order!.compareTo(b.order!));
 
-  int? _findStopIndex(List<Stop> stops, Stop stop) {
-    final stopId = stop.id;
-    if (stopId != null) {
-      final index = stops.indexWhere((candidate) => candidate.id == stopId);
-      if (index != -1) return index;
+    for (final candidate in nextStops) {
+      if (candidate.order! > currentOrder) return candidate;
     }
-
-    final index = stops.indexWhere(
-      (candidate) =>
-          candidate.latitude == stop.latitude &&
-          candidate.longitude == stop.longitude &&
-          candidate.address == stop.address,
-    );
-    return index == -1 ? null : index;
+    return null;
   }
 
   RouteEnt _copyRouteWithState(RouteEnt route, RouteState state) {
