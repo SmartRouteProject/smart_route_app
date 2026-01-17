@@ -22,7 +22,9 @@ class ActiveStop extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    final canEditStop = stop.status == StopStatus.pending;
+    final canEditStop =
+        stop.status == StopStatus.pending &&
+        selectedRoute?.state != RouteState.completed;
     final totalStops = selectedRoute?.stops.length ?? 0;
     final stopIndex = selectedRoute != null
         ? _findStopIndex(selectedRoute.stops, stop)
