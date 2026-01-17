@@ -1,7 +1,7 @@
 enum StopStatus {
   pending,
   failed,
-  succeded;
+  succeeded;
 
   static StopStatus fromString(String value) {
     return StopStatus.values.firstWhere(
@@ -20,7 +20,7 @@ extension StopStatusExt on StopStatus {
         return 'Pendiente';
       case StopStatus.failed:
         return 'Fallido';
-      case StopStatus.succeded:
+      case StopStatus.succeeded:
         return 'Exitoso';
     }
   }

@@ -133,7 +133,7 @@ class ActiveStop extends ConsumerWidget {
                       onPressed: () async {
                         await ref
                             .read(mapProvider.notifier)
-                            .updateStopStatus(stop, StopStatus.succeded);
+                            .updateStopStatus(stop, StopStatus.succeeded);
                       },
                       style: OutlinedButton.styleFrom(
                         shape: RoundedRectangleBorder(
@@ -145,7 +145,7 @@ class ActiveStop extends ConsumerWidget {
                         children: const [
                           Icon(Icons.check_circle_outline, color: Colors.green),
                           SizedBox(height: 6),
-                          Text('Entregada'),
+                          Text('Exitosa'),
                         ],
                       ),
                     ),
@@ -307,7 +307,7 @@ _StatusColors _statusColors(ThemeData theme, StopStatus status) {
         background: theme.colorScheme.error.withValues(alpha: 0.12),
         foreground: theme.colorScheme.error,
       );
-    case StopStatus.succeded:
+    case StopStatus.succeeded:
       return _StatusColors(
         background: Colors.green.withValues(alpha: 0.12),
         foreground: Colors.green,
