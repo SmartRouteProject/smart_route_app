@@ -202,22 +202,6 @@ class ActiveStop extends ConsumerWidget {
   }
 }
 
-int? _findStopIndex(List<Stop> stops, Stop stop) {
-  final stopId = stop.id;
-  if (stopId != null) {
-    final index = stops.indexWhere((candidate) => candidate.id == stopId);
-    if (index != -1) return index;
-  }
-
-  final index = stops.indexWhere(
-    (candidate) =>
-        candidate.latitude == stop.latitude &&
-        candidate.longitude == stop.longitude &&
-        candidate.address == stop.address,
-  );
-  return index == -1 ? null : index;
-}
-
 Future<void> _openMaps(BuildContext context, Stop stop) async {
   final availableMaps = await MapLauncher.installedMaps;
   if (!context.mounted) return;

@@ -148,6 +148,9 @@ class _StopsListState extends ConsumerState<StopsList> {
                 routeName,
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
+              trailing: selectedRoute == null
+                  ? null
+                  : _RouteStatusBadge(status: selectedRoute.state),
               onTap: () {},
             ),
           ),
@@ -199,4 +202,58 @@ class _StopsListState extends ConsumerState<StopsList> {
       ),
     );
   }
+}
+
+class _RouteStatusBadge extends StatelessWidget {
+  final RouteState status;
+
+  const _RouteStatusBadge({required this.status});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = _routeStatusColors(theme, status);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: colors.background,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        status.label,
+        style: theme.textTheme.labelSmall?.copyWith(
+          color: colors.foreground,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
+_StatusColors _routeStatusColors(ThemeData theme, RouteState status) {
+  switch (status) {
+    case RouteState.completed:
+      return _StatusColors(
+        background: Colors.green.withValues(alpha: 0.12),
+        foreground: Colors.green,
+      );
+    case RouteState.started:
+      return _StatusColors(
+        background: theme.colorScheme.primary.withValues(alpha: 0.12),
+        foreground: theme.colorScheme.primary,
+      );
+    case RouteState.planned:
+      return _StatusColors(
+        background: Colors.grey.withValues(alpha: 0.2),
+        foreground: Colors.grey.shade700,
+      );
+  }
+}
+
+class _StatusColors {
+  final Color background;
+  final Color foreground;
+
+  const _StatusColors({required this.background, required this.foreground});
 }
