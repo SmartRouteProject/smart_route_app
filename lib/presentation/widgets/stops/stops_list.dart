@@ -7,7 +7,6 @@ import 'package:smart_route_app/presentation/providers/map_provider.dart';
 import 'package:smart_route_app/presentation/widgets/widgets.dart';
 
 //TODO: la ultima parada queda cortada por los botones de mas abajo
-//TODO: Si la ruta esta completada, no mostrar el input text para agregar paradas
 class StopsList extends ConsumerStatefulWidget {
   const StopsList({super.key});
 
@@ -99,6 +98,7 @@ class _StopsListState extends ConsumerState<StopsList> {
     final selectedRoute = mapState.selectedRoute;
     final routeName = selectedRoute?.name ?? 'Ruta sin nombre';
     final stops = selectedRoute?.stops ?? [];
+    final isCompleted = selectedRoute?.state == RouteState.completed;
     final orderedStops = List<Stop>.from(stops)
       ..sort((a, b) {
         final aOrder = a.order ?? 1 << 30;
@@ -121,27 +121,28 @@ class _StopsListState extends ConsumerState<StopsList> {
             ),
           ),
           const SizedBox(height: 12),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: TextFormField(
-              onTap: () async {
-                await showSearch(
-                  context: context,
-                  delegate: AddressSearchDelegate(),
-                );
-              },
-              readOnly: true,
-              decoration: InputDecoration(
-                hintText: "Excribe para añadir una parada",
-                suffixIcon: IconButton(
-                  icon: const Icon(Icons.mic),
-                  onPressed: _isListening
-                      ? null
-                      : () => _startVoiceSearch(context),
+          if (!isCompleted)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: TextFormField(
+                onTap: () async {
+                  await showSearch(
+                    context: context,
+                    delegate: AddressSearchDelegate(),
+                  );
+                },
+                readOnly: true,
+                decoration: InputDecoration(
+                  hintText: "Excribe para añadir una parada",
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.mic),
+                    onPressed: _isListening
+                        ? null
+                        : () => _startVoiceSearch(context),
+                  ),
                 ),
               ),
             ),
-          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: ListTile(
