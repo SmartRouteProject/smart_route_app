@@ -14,6 +14,7 @@ class CustomGoogleMap extends ConsumerStatefulWidget {
   ConsumerState<CustomGoogleMap> createState() => _CustomGoogleMapState();
 }
 
+//TODO: agregar icono a la direccion de origen
 class _CustomGoogleMapState extends ConsumerState<CustomGoogleMap> {
   Set<Marker> _markers = <Marker>{};
   int _markerRequestId = 0;

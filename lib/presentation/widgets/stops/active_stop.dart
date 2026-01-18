@@ -6,6 +6,7 @@ import 'package:smart_route_app/domain/domain.dart';
 import 'package:smart_route_app/presentation/providers/providers.dart';
 import 'package:smart_route_app/presentation/widgets/widgets.dart';
 
+//TODO: NO permitir la edicion ni elminacion de paradas si la ruta esta iniciada o completada
 class ActiveStop extends ConsumerWidget {
   const ActiveStop({super.key});
 
