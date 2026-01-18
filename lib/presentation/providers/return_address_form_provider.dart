@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:smart_route_app/domain/domain.dart';
+import 'package:smart_route_app/infrastructure/errors/return_address_errors.dart';
 import 'package:smart_route_app/infrastructure/infrastructure.dart';
 import 'package:smart_route_app/presentation/providers/auth_provider.dart';
 
@@ -54,18 +55,42 @@ class ReturnAddressFormNotifier extends StateNotifier<ReturnAddressFormState> {
     );
   }
 
-  //TODO: Controlar mensajes de error desde el back
   Future<bool> onFormSubmit() async {
-    if (state.isPosting) return false;
-    _touchEveryField();
-    if (!state.isValid) return false;
+    try {
+      if (state.isPosting) return false;
+      _touchEveryField();
+      if (!state.isValid) return false;
 
-    state = state.copyWith(isPosting: true);
-    final saved = await _saveReturnAddress();
-    if (mounted) {
-      state = state.copyWith(isPosting: false);
+      state = state.copyWith(isPosting: true, errorMessage: '');
+      final saved = await _saveReturnAddress();
+      if (mounted) {
+        state = state.copyWith(
+          isPosting: false,
+          errorMessage: saved ? '' : 'No se pudo guardar la direccion',
+        );
+      }
+      return saved;
+    } on ArgumentError catch (err) {
+      if (mounted) {
+        state = state.copyWith(isPosting: false, errorMessage: err.message);
+      }
+      return false;
+    } on ADDR002DuplicatedAddress catch (_) {
+      state = state.copyWith(
+        isPosting: false,
+        errorMessage:
+            "Ya existe una dirección de retorno con la misma dirección",
+      );
+      return false;
+    } catch (_) {
+      if (mounted) {
+        state = state.copyWith(
+          isPosting: false,
+          errorMessage: 'No se pudo guardar la direccion',
+        );
+      }
+      return false;
     }
-    return saved;
   }
 
   Future<bool> deleteReturnAddress(int index) async {
@@ -74,7 +99,7 @@ class ReturnAddressFormNotifier extends StateNotifier<ReturnAddressFormState> {
     if (currentUser == null) return false;
     if (index < 0 || index >= currentUser.returnAddresses.length) return false;
 
-    state = state.copyWith(isPosting: true);
+    state = state.copyWith(isPosting: true, errorMessage: '');
     try {
       final addressToDelete = currentUser.returnAddresses[index];
       final addressId = addressToDelete.id;
@@ -82,7 +107,12 @@ class ReturnAddressFormNotifier extends StateNotifier<ReturnAddressFormState> {
         final deleted = await _returnAddressRepository.deleteReturnAddress(
           addressId,
         );
-        if (!deleted) return false;
+        if (!deleted) {
+          state = state.copyWith(
+            errorMessage: 'No se pudo eliminar la direccion',
+          );
+          return false;
+        }
       }
       final updatedAddresses = List<ReturnAddress>.from(
         currentUser.returnAddresses,
@@ -93,13 +123,22 @@ class ReturnAddressFormNotifier extends StateNotifier<ReturnAddressFormState> {
       // final savedUser = await _userRepository.editUser(updatedUser);
       _ref.read(authProvider.notifier).updateUser(updatedUser);
       return true;
+    } on ArgumentError catch (err) {
+      state = state.copyWith(errorMessage: err.message);
+      return false;
     } catch (_) {
+      state = state.copyWith(errorMessage: 'No se pudo eliminar la direccion');
       return false;
     } finally {
       if (mounted) {
         state = state.copyWith(isPosting: false);
       }
     }
+  }
+
+  void clearError() {
+    if (state.errorMessage.isEmpty) return;
+    state = state.copyWith(errorMessage: '');
   }
 
   void _touchEveryField() {
@@ -141,7 +180,12 @@ class ReturnAddressFormNotifier extends StateNotifier<ReturnAddressFormState> {
           addressId,
           updatedAddress,
         );
-        if (savedAddress == null) return false;
+        if (savedAddress == null) {
+          state = state.copyWith(
+            errorMessage: 'No se pudo guardar la direccion',
+          );
+          return false;
+        }
         updatedAddresses[state.editingIndex!] = savedAddress;
       } else {
         updatedAddresses[state.editingIndex!] = updatedAddress;
@@ -150,7 +194,10 @@ class ReturnAddressFormNotifier extends StateNotifier<ReturnAddressFormState> {
       savedAddress = await _returnAddressRepository.createReturnAddress(
         updatedAddress,
       );
-      if (savedAddress == null) return false;
+      if (savedAddress == null) {
+        state = state.copyWith(errorMessage: 'No se pudo guardar la direccion');
+        return false;
+      }
       updatedAddresses.add(savedAddress);
     }
 
@@ -175,6 +222,7 @@ class ReturnAddressFormState {
   final double longitude;
   final String nickname;
   final int? editingIndex;
+  final String errorMessage;
 
   ReturnAddressFormState({
     this.isPosting = false,
@@ -185,6 +233,7 @@ class ReturnAddressFormState {
     this.longitude = 0,
     this.nickname = '',
     this.editingIndex,
+    this.errorMessage = '',
   });
 
   String? get addressErrorMessage {
@@ -208,6 +257,7 @@ class ReturnAddressFormState {
     double? longitude,
     String? nickname,
     int? editingIndex,
+    String? errorMessage,
   }) => ReturnAddressFormState(
     isPosting: isPosting ?? this.isPosting,
     isFormPosted: isFormPosted ?? this.isFormPosted,
@@ -217,5 +267,6 @@ class ReturnAddressFormState {
     longitude: longitude ?? this.longitude,
     nickname: nickname ?? this.nickname,
     editingIndex: editingIndex ?? this.editingIndex,
+    errorMessage: errorMessage ?? this.errorMessage,
   );
 }
