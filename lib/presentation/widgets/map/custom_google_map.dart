@@ -14,7 +14,6 @@ class CustomGoogleMap extends ConsumerStatefulWidget {
   ConsumerState<CustomGoogleMap> createState() => _CustomGoogleMapState();
 }
 
-//TODO: agregar icono a la direccion de origen
 class _CustomGoogleMapState extends ConsumerState<CustomGoogleMap> {
   Set<Marker> _markers = <Marker>{};
   int _markerRequestId = 0;
@@ -89,10 +88,59 @@ class _CustomGoogleMapState extends ConsumerState<CustomGoogleMap> {
         a.address == b.address;
   }
 
+  Future<Marker?> _buildOriginMarker(RouteEnt? route) async {
+    if (route == null) return null;
+
+    final returnAddress = route.returnAddress;
+    LatLng? originPosition;
+    String originLabel = '';
+    if (returnAddress != null) {
+      originPosition = LatLng(returnAddress.latitude, returnAddress.longitude);
+      originLabel = returnAddress.nickname.isNotEmpty
+          ? returnAddress.nickname
+          : returnAddress.address;
+    } else {
+      try {
+        final position = await Geolocator.getCurrentPosition(
+          locationSettings: const LocationSettings(
+            accuracy: LocationAccuracy.high,
+          ),
+        );
+        originPosition = LatLng(position.latitude, position.longitude);
+        originLabel = 'Ubicacion actual';
+      } catch (_) {
+        return null;
+      }
+    }
+
+    final baseMarker = Marker(
+      markerId: MarkerId(
+        'origin-${originPosition.latitude}-${originPosition.longitude}',
+      ),
+      position: originPosition,
+      infoWindow: InfoWindow(
+        title: 'Origen',
+        snippet: originLabel,
+      ),
+    );
+
+    return GoogleMapsCustomMarker.createCustomMarker(
+      marker: baseMarker,
+      shape: MarkerShape.bubble,
+      title: '🏁',
+      textSize: 50,
+      backgroundColor: const Color(0xFF1E88E5),
+      foregroundColor: Colors.white,
+      enableShadow: true,
+      circleOptions: CircleMarkerOptions(diameter: 144),
+      imagePixelRatio: _devicePixelRatio,
+    );
+  }
+
   @override
   void initState() {
     super.initState();
-    _refreshMarkers(ref.read(mapProvider).selectedRoute?.stops ?? []);
+    _refreshMarkers(ref.read(mapProvider).selectedRoute);
   }
 
   @override
@@ -101,15 +149,20 @@ class _CustomGoogleMapState extends ConsumerState<CustomGoogleMap> {
     final ratio = MediaQuery.of(context).devicePixelRatio;
     if (_devicePixelRatio != ratio) {
       _devicePixelRatio = ratio;
-      _refreshMarkers(ref.read(mapProvider).selectedRoute?.stops ?? []);
+      _refreshMarkers(ref.read(mapProvider).selectedRoute);
     }
   }
 
-  Future<void> _refreshMarkers(List<Stop> stops) async {
+  Future<void> _refreshMarkers(RouteEnt? route) async {
     final requestId = ++_markerRequestId;
+    final stops = route?.stops ?? const <Stop>[];
     final markers = await _buildMarkers(stops, _devicePixelRatio, (stop) {
       ref.read(mapProvider.notifier).selectStop(stop);
     });
+    final originMarker = await _buildOriginMarker(route);
+    if (originMarker != null) {
+      markers.add(originMarker);
+    }
 
     if (!mounted || requestId != _markerRequestId) return;
     setState(() => _markers = markers);
@@ -163,7 +216,7 @@ class _CustomGoogleMapState extends ConsumerState<CustomGoogleMap> {
       next,
     ) {
       final stops = next?.stops ?? [];
-      _refreshMarkers(stops);
+      _refreshMarkers(next);
       _moveCameraForStops(stops);
     });
     return GoogleMap(
