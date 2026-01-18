@@ -31,14 +31,18 @@ class OptimizationNotifier extends StateNotifier<OptimizationState> {
   Future<bool> onSubmit() async {
     final selectedRoute = ref.read(mapProvider).selectedRoute;
     final routeId = selectedRoute?.id ?? '';
-    if (routeId.isEmpty) return false;
+    if (routeId.isEmpty) {
+      state = state.copyWith(errorMessage: 'Ruta no seleccionada');
+      return false;
+    }
 
-    final position = await Geolocator.getCurrentPosition(
-      locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
-    );
-
-    state = state.copyWith(optimizing: true);
+    state = state.copyWith(optimizing: true, errorMessage: '');
     try {
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
+      );
       final request = OptimizationRequestDto(
         optimizeStopOrder: state.optimizeStops,
         origin: OptimizationOrigin(
@@ -51,7 +55,10 @@ class OptimizationNotifier extends StateNotifier<OptimizationState> {
         routeId,
         request,
       );
-      if (result == null) return false;
+      if (result == null) {
+        state = state.copyWith(errorMessage: 'No se pudo optimizar la ruta');
+        return false;
+      }
 
       final mapState = ref.read(mapProvider);
       final updatedMapRoutes = _upsertRoute(mapState.routes, result);
@@ -66,10 +73,22 @@ class OptimizationNotifier extends StateNotifier<OptimizationState> {
             .updateUser(currentUser.copyWith(routes: updatedUserRoutes));
       }
 
+      state = state.copyWith(errorMessage: '');
       return true;
+    } on ArgumentError catch (err) {
+      state = state.copyWith(errorMessage: err.message);
+      return false;
+    } catch (_) {
+      state = state.copyWith(errorMessage: 'No se pudo optimizar la ruta');
+      return false;
     } finally {
       state = state.copyWith(optimizing: false);
     }
+  }
+
+  void clearError() {
+    if (state.errorMessage.isEmpty) return;
+    state = state.copyWith(errorMessage: '');
   }
 
   List<RouteEnt> _upsertRoute(List<RouteEnt> routes, RouteEnt updatedRoute) {
@@ -91,13 +110,23 @@ class OptimizationNotifier extends StateNotifier<OptimizationState> {
 class OptimizationState {
   final bool optimizeStops;
   final bool optimizing;
+  final String errorMessage;
 
-  const OptimizationState({this.optimizeStops = true, this.optimizing = false});
+  const OptimizationState({
+    this.optimizeStops = true,
+    this.optimizing = false,
+    this.errorMessage = '',
+  });
 
-  OptimizationState copyWith({bool? optimizeStops, bool? optimizing}) {
+  OptimizationState copyWith({
+    bool? optimizeStops,
+    bool? optimizing,
+    String? errorMessage,
+  }) {
     return OptimizationState(
       optimizeStops: optimizeStops ?? this.optimizeStops,
       optimizing: optimizing ?? this.optimizing,
+      errorMessage: errorMessage ?? this.errorMessage,
     );
   }
 }

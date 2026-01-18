@@ -26,17 +26,35 @@ class RouteNotifier extends StateNotifier<RouteFormState> {
 
       if (!state.isValid) return false;
 
-      state = state.copyWith(isPosting: true);
+      state = state.copyWith(isPosting: true, errorMessage: '');
 
-      await _createRoute();
+      final created = await _createRoute();
+      if (!created) {
+        state = state.copyWith(
+          isPosting: false,
+          errorMessage: 'No se pudo crear la ruta',
+        );
+        return false;
+      }
 
-      state = state.copyWith(isPosting: false);
+      state = state.copyWith(isPosting: false, errorMessage: '');
 
       return true;
+    } on ArgumentError catch (err) {
+      state = state.copyWith(isPosting: false, errorMessage: err.message);
+      return false;
     } catch (err) {
-      state = state.copyWith(isPosting: false);
+      state = state.copyWith(
+        isPosting: false,
+        errorMessage: 'No se pudo crear la ruta',
+      );
       return false;
     }
+  }
+
+  void clearError() {
+    if (state.errorMessage.isEmpty) return;
+    state = state.copyWith(errorMessage: '');
   }
 
   onNameChange(String value) {
@@ -66,7 +84,7 @@ class RouteNotifier extends StateNotifier<RouteFormState> {
     );
   }
 
-  Future<void> _createRoute() async {
+  Future<bool> _createRoute() async {
     try {
       final route = CreateRouteDto(
         name: state.name,
@@ -76,22 +94,24 @@ class RouteNotifier extends StateNotifier<RouteFormState> {
 
       final routeResult = await routeRepository.createRoute(route);
 
-      if (routeResult != null) {
-        final currentUser = ref.read(authProvider).user;
-        if (currentUser != null) {
-          final updatedUser = User(
-            id: currentUser.id,
-            email: currentUser.email,
-            password: currentUser.password,
-            name: currentUser.name,
-            lastName: currentUser.lastName,
-            returnAddresses: currentUser.returnAddresses,
-            routes: [...currentUser.routes, routeResult],
-            profilePicture: currentUser.profilePicture,
-          );
-          ref.read(authProvider.notifier).updateUser(updatedUser);
-        }
+      if (routeResult == null) {
+        return false;
       }
+      final currentUser = ref.read(authProvider).user;
+      if (currentUser != null) {
+        final updatedUser = User(
+          id: currentUser.id,
+          email: currentUser.email,
+          password: currentUser.password,
+          name: currentUser.name,
+          lastName: currentUser.lastName,
+          returnAddresses: currentUser.returnAddresses,
+          routes: [...currentUser.routes, routeResult],
+          profilePicture: currentUser.profilePicture,
+        );
+        ref.read(authProvider.notifier).updateUser(updatedUser);
+      }
+      return true;
     } catch (err) {
       rethrow;
     }
@@ -105,6 +125,7 @@ class RouteFormState {
   final String name;
   final RouteDate date;
   final ReturnAddress? returnAddress;
+  final String errorMessage;
 
   RouteFormState({
     this.isPosting = false,
@@ -113,6 +134,7 @@ class RouteFormState {
     this.name = "",
     RouteDate? date,
     this.returnAddress,
+    this.errorMessage = '',
   }) : date = date ?? RouteDate.dirty(DateTime.now());
 
   RouteFormState copyWith({
@@ -122,6 +144,7 @@ class RouteFormState {
     String? name,
     RouteDate? date,
     ReturnAddress? returnAddress,
+    String? errorMessage,
     bool clearReturnAddress = false,
   }) => RouteFormState(
     isPosting: isPosting ?? this.isPosting,
@@ -132,5 +155,6 @@ class RouteFormState {
     returnAddress: clearReturnAddress
         ? null
         : returnAddress ?? this.returnAddress,
+    errorMessage: errorMessage ?? this.errorMessage,
   );
 }

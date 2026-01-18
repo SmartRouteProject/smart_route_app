@@ -59,15 +59,19 @@ class _StopsListState extends ConsumerState<StopsList> {
     await _speech.stop();
     if (!mounted) return;
     setState(() => _isListening = false);
-    _closeListeningDialog(context);
+    if (context.mounted) {
+      _closeListeningDialog(context);
+    }
     final words = _lastWords.trim();
     _isFinishing = false;
     if (words.isEmpty) return;
-    await showSearch(
-      context: context,
-      delegate: AddressSearchDelegate(),
-      query: words,
-    );
+    if (context.mounted) {
+      await showSearch(
+        context: context,
+        delegate: AddressSearchDelegate(),
+        query: words,
+      );
+    }
   }
 
   Future<void> _startVoiceSearch(BuildContext context) async {
@@ -78,7 +82,9 @@ class _StopsListState extends ConsumerState<StopsList> {
     if (!mounted) return;
     _lastWords = '';
     setState(() => _isListening = true);
-    _showListeningDialog(context);
+    if (context.mounted) {
+      _showListeningDialog(context);
+    }
 
     await _speech.listen(
       pauseFor: const Duration(seconds: 3),

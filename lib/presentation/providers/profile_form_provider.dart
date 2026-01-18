@@ -49,17 +49,28 @@ class ProfileFormNotifier extends StateNotifier<ProfileFormState> {
 
       if (!state.isValid) return false;
 
-      state = state.copyWith(isPosting: true);
+      state = state.copyWith(isPosting: true, errorMessage: '');
 
       await _updateAuthUser();
 
-      state = state.copyWith(isPosting: false);
+      state = state.copyWith(isPosting: false, errorMessage: '');
 
       return true;
+    } on ArgumentError catch (err) {
+      state = state.copyWith(isPosting: false, errorMessage: err.message);
+      return false;
     } catch (err) {
-      state = state.copyWith(isPosting: false);
+      state = state.copyWith(
+        isPosting: false,
+        errorMessage: 'No se pudo actualizar el perfil',
+      );
       return false;
     }
+  }
+
+  void clearError() {
+    if (state.errorMessage.isEmpty) return;
+    state = state.copyWith(errorMessage: '');
   }
 
   onUserNameChange(String value) {
@@ -146,6 +157,7 @@ class ProfileFormState {
   final UserName userName;
   final UserName userLastName;
   final File? profilePicture;
+  final String errorMessage;
 
   ProfileFormState({
     this.isPosting = false,
@@ -154,6 +166,7 @@ class ProfileFormState {
     this.userName = const UserName.pure(),
     this.userLastName = const UserName.pure(),
     this.profilePicture,
+    this.errorMessage = '',
   });
 
   ProfileFormState copyWith({
@@ -163,6 +176,7 @@ class ProfileFormState {
     UserName? userName,
     UserName? userLastName,
     File? profilePicture,
+    String? errorMessage,
   }) => ProfileFormState(
     isPosting: isPosting ?? this.isPosting,
     isFormPosted: isFormPosted ?? this.isFormPosted,
@@ -170,5 +184,6 @@ class ProfileFormState {
     userName: userName ?? this.userName,
     userLastName: userLastName ?? this.userLastName,
     profilePicture: profilePicture ?? this.profilePicture,
+    errorMessage: errorMessage ?? this.errorMessage,
   );
 }
