@@ -1,6 +1,7 @@
 import 'package:dio_flow/dio_flow.dart';
 
 import 'package:smart_route_app/domain/domain.dart';
+import 'package:smart_route_app/infrastructure/errors/stop_errors.dart';
 import 'package:smart_route_app/infrastructure/infrastructure.dart';
 
 class StopDatasourceImpl extends IStopDatasource {
@@ -124,7 +125,11 @@ class StopDatasourceImpl extends IStopDatasource {
     final apiResponse = ApiResponse<dynamic>.fromJson(data, (json) => json);
 
     if (apiResponse.error.message.isNotEmpty) {
-      throw ArgumentError(apiResponse.error.message);
+      if (apiResponse.error.code == 'STOP002') {
+        throw STOP002DeliveryWithNoPackages();
+      } else {
+        throw ArgumentError(apiResponse.error.message);
+      }
     }
 
     throw ArgumentError('Error del servidor, consultar con el administrador');

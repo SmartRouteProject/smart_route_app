@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:smart_route_app/domain/domain.dart';
+import 'package:smart_route_app/infrastructure/errors/stop_errors.dart';
 import 'package:smart_route_app/infrastructure/infrastructure.dart';
 import 'package:smart_route_app/infrastructure/mocks/stops_sample.dart';
 import 'package:smart_route_app/presentation/providers/map_provider.dart';
@@ -141,6 +142,12 @@ class StopFormNotifier extends StateNotifier<StopFormState> {
       return true;
     } on ArgumentError catch (err) {
       state = state.copyWith(isPosting: false, errorMessage: err.message);
+      return false;
+    } on STOP002DeliveryWithNoPackages catch (_) {
+      state = state.copyWith(
+        isPosting: false,
+        errorMessage: "Una parada de entrega debe tener al menos un paquete",
+      );
       return false;
     } catch (_) {
       state = state.copyWith(

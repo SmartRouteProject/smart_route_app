@@ -296,9 +296,6 @@ class StopDetailPage extends ConsumerWidget {
 
                       const SizedBox(height: 4),
 
-                      //TODO: Controlar los mensajes de error traiodos del backend
-                      //TODO: Validar el formulario antes de enviar para los paquetes cuando es de tipo delivery
-                      // Botón guardar cambios
                       SizedBox(
                         width: double.infinity,
                         child: LoadingFloatingActionButton(
