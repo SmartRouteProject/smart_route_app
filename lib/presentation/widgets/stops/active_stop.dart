@@ -6,7 +6,6 @@ import 'package:smart_route_app/domain/domain.dart';
 import 'package:smart_route_app/presentation/providers/providers.dart';
 import 'package:smart_route_app/presentation/widgets/widgets.dart';
 
-//TODO: NO permitir la edicion ni elminacion de paradas si la ruta esta iniciada o completada
 class ActiveStop extends ConsumerWidget {
   const ActiveStop({super.key});
 
@@ -156,7 +155,7 @@ class ActiveStop extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 16),
-          if (canEditStop) ...[
+          if (canEditStop && selectedRoute?.state == RouteState.planned) ...[
             _ActionTile(
               icon: Icons.edit_location_alt_outlined,
               title: 'Editar parada',
