@@ -6,6 +6,7 @@ class StopRequestDto {
   final String address;
   final String stopType;
   final DateTime? arrivalTime;
+  final int? order;
   final String description;
   final List<Package> packages;
 
@@ -15,6 +16,7 @@ class StopRequestDto {
     required this.address,
     required this.stopType,
     required this.arrivalTime,
+    required this.order,
     required this.description,
     required this.packages,
   });
@@ -30,6 +32,7 @@ class StopRequestDto {
       address: stop.address,
       stopType: stopType,
       arrivalTime: stop.arrivalTime,
+      order: stop.order,
       description: stop.description,
       packages: resolvedPackages,
     );
@@ -42,6 +45,7 @@ class StopRequestDto {
       'address': address,
       'stopType': stopType,
       'arrivalTime': arrivalTime?.toIso8601String(),
+      'order': order,
       'description': description,
       'packages': packages.map((package) => package.toMap()).toList(),
     };

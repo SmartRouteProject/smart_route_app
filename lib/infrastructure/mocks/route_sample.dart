@@ -4,7 +4,7 @@ final List<RouteEnt> sampleRoutes = [
   RouteEnt(
     id: "1",
     name: "Ruta 1",
-    geometry: 1,
+    geometry: null,
     creationDate: DateTime.now().subtract(Duration(days: 1)),
     state: RouteState.completed,
     returnAddress: ReturnAddress(
@@ -30,7 +30,7 @@ final List<RouteEnt> sampleRoutes = [
   RouteEnt(
     id: "2",
     name: "Ruta 2",
-    geometry: 2,
+    geometry: null,
     creationDate: DateTime.now().subtract(Duration(days: 2)),
     state: RouteState.started,
     returnAddress: ReturnAddress(
@@ -61,7 +61,7 @@ final List<RouteEnt> sampleRoutes = [
   RouteEnt(
     id: "3",
     name: "Ruta 3",
-    geometry: 3,
+    geometry: null,
     creationDate: DateTime.now().subtract(Duration(days: 3)),
     state: RouteState.planned,
     returnAddress: ReturnAddress(
@@ -87,7 +87,7 @@ final List<RouteEnt> sampleRoutes = [
   RouteEnt(
     id: "4",
     name: "Ruta 4",
-    geometry: 4,
+    geometry: null,
     creationDate: DateTime.now().subtract(Duration(days: 5)),
     state: RouteState.completed,
     returnAddress: ReturnAddress(
@@ -118,7 +118,7 @@ final List<RouteEnt> sampleRoutes = [
   RouteEnt(
     id: "5",
     name: "Ruta 5",
-    geometry: 5,
+    geometry: null,
     creationDate: DateTime.now().subtract(Duration(days: 7)),
     state: RouteState.started,
     returnAddress: ReturnAddress(

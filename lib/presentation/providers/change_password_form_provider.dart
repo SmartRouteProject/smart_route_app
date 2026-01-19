@@ -149,26 +149,67 @@ class ChangePasswordFormNotifier
     if (!isStepValid) return false;
 
     if (state.isPosting) return false;
-    state = state.copyWith(isPosting: true);
-    final verified = await _ref
-        .read(authProvider.notifier)
-        .verifyPasswordChange(
-          state.email.value,
-          state.code.value,
-          password.value,
+    state = state.copyWith(isPosting: true, errorMessage: '');
+    try {
+      final verified = await _ref
+          .read(authProvider.notifier)
+          .verifyPasswordChange(
+            state.email.value,
+            state.code.value,
+            password.value,
+          );
+      if (!verified) {
+        state = state.copyWith(
+          isPosting: false,
+          errorMessage: 'No se pudo actualizar la contrasena',
         );
-    state = state.copyWith(isPosting: false);
-    return verified;
+        return false;
+      }
+      state = state.copyWith(isPosting: false, errorMessage: '');
+      return true;
+    } on ArgumentError catch (err) {
+      state = state.copyWith(isPosting: false, errorMessage: err.message);
+      return false;
+    } catch (_) {
+      state = state.copyWith(
+        isPosting: false,
+        errorMessage: 'No se pudo actualizar la contrasena',
+      );
+      return false;
+    }
   }
 
   Future<bool> _requestPasswordChange(String email) async {
     if (state.isPosting) return false;
-    state = state.copyWith(isPosting: true);
-    final sent = await _ref
-        .read(authProvider.notifier)
-        .requestPasswordChange(email);
-    state = state.copyWith(isPosting: false);
-    return sent;
+    state = state.copyWith(isPosting: true, errorMessage: '');
+    try {
+      final sent = await _ref
+          .read(authProvider.notifier)
+          .requestPasswordChange(email);
+      if (!sent) {
+        state = state.copyWith(
+          isPosting: false,
+          errorMessage: 'No se pudo solicitar el cambio de contrasena',
+        );
+        return false;
+      }
+      state = state.copyWith(isPosting: false, errorMessage: '');
+      return true;
+    } on ArgumentError catch (err) {
+      state = state.copyWith(isPosting: false, errorMessage: err.message);
+      return false;
+    } catch (_) {
+      state = state.copyWith(
+        isPosting: false,
+        errorMessage: 'No se pudo solicitar el cambio de contrasena',
+      );
+      return false;
+    }
+  }
+
+  void clearError() {
+    if (state.errorMessage.isEmpty) return;
+    state = state.copyWith(errorMessage: '');
   }
 }
 
@@ -181,6 +222,7 @@ class ChangePasswordFormState {
   final OtpCode code;
   final Password password;
   final ConfirmPassword confirmPassword;
+  final String errorMessage;
 
   ChangePasswordFormState({
     this.currentStep = 0,
@@ -191,6 +233,7 @@ class ChangePasswordFormState {
     this.code = const OtpCode.pure(),
     this.password = const Password.pure(),
     this.confirmPassword = const ConfirmPassword.pure(),
+    this.errorMessage = '',
   });
 
   ChangePasswordFormState copyWith({
@@ -202,6 +245,7 @@ class ChangePasswordFormState {
     OtpCode? code,
     Password? password,
     ConfirmPassword? confirmPassword,
+    String? errorMessage,
   }) => ChangePasswordFormState(
     currentStep: currentStep ?? this.currentStep,
     isPosting: isPosting ?? this.isPosting,
@@ -211,5 +255,6 @@ class ChangePasswordFormState {
     code: code ?? this.code,
     password: password ?? this.password,
     confirmPassword: confirmPassword ?? this.confirmPassword,
+    errorMessage: errorMessage ?? this.errorMessage,
   );
 }

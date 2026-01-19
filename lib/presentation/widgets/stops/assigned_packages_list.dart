@@ -99,7 +99,7 @@ class AssignedPackagesList extends ConsumerWidget {
                                     builder: (_) => ConfirmationDialog(
                                       title: 'Eliminar paquete',
                                       description:
-                                          '隅Estケs seguro que desea eliminar el paquete?',
+                                          '¿Esta seguro que desea eliminar el paquete?',
                                       onConfirmed: () {},
                                     ),
                                   );

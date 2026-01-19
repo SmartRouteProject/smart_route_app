@@ -91,23 +91,39 @@ class PackageFormNotifier extends StateNotifier<PackageFormState> {
 
   Future<bool> onFormSubmit() async {
     if (state.isPosting) return false;
-    state = state.copyWith(isPosting: true);
+    state = state.copyWith(isPosting: true, errorMessage: '');
 
-    final package = Package(
-      description: state.description.trim(),
-      weight: state.weight,
-      picture: state.picture,
-    );
+    try {
+      final package = Package(
+        description: state.description.trim(),
+        weight: state.weight,
+        picture: state.picture,
+      );
 
-    final stopForm = _ref.read(stopFormProvider(_stop).notifier);
-    if (_editingIndex != null) {
-      stopForm.updatePackage(_editingIndex, package);
-    } else {
-      stopForm.addPackage(package);
+      final stopForm = _ref.read(stopFormProvider(_stop).notifier);
+      if (_editingIndex != null) {
+        stopForm.updatePackage(_editingIndex, package);
+      } else {
+        stopForm.addPackage(package);
+      }
+
+      state = state.copyWith(isPosting: false, errorMessage: '');
+      return true;
+    } on ArgumentError catch (err) {
+      state = state.copyWith(isPosting: false, errorMessage: err.message);
+      return false;
+    } catch (_) {
+      state = state.copyWith(
+        isPosting: false,
+        errorMessage: 'No se pudo guardar el paquete',
+      );
+      return false;
     }
+  }
 
-    state = state.copyWith(isPosting: false);
-    return true;
+  void clearError() {
+    if (state.errorMessage.isEmpty) return;
+    state = state.copyWith(errorMessage: '');
   }
 }
 
@@ -116,12 +132,14 @@ class PackageFormState {
   final PackageWeightType weight;
   final File? picture;
   final bool isPosting;
+  final String errorMessage;
 
   PackageFormState({
     this.description = '',
     this.weight = PackageWeightType.under_25kg,
     this.picture,
     this.isPosting = false,
+    this.errorMessage = '',
   });
 
   PackageFormState copyWith({
@@ -129,10 +147,12 @@ class PackageFormState {
     PackageWeightType? weight,
     File? picture,
     bool? isPosting,
+    String? errorMessage,
   }) => PackageFormState(
     description: description ?? this.description,
     weight: weight ?? this.weight,
     picture: picture ?? this.picture,
     isPosting: isPosting ?? this.isPosting,
+    errorMessage: errorMessage ?? this.errorMessage,
   );
 }

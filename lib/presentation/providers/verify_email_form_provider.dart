@@ -41,17 +41,28 @@ class VerifyEmailFormNotifier extends StateNotifier<VerifyEmailFormState> {
       _touchEveryField();
       if (!state.isValid) return false;
 
-      state = state.copyWith(isPosting: true);
+      state = state.copyWith(isPosting: true, errorMessage: '');
 
       final isValid = await verifyEmailCallback(state.email, state.code.value);
 
-      state = state.copyWith(isPosting: false);
+      state = state.copyWith(isPosting: false, errorMessage: '');
 
       return isValid;
+    } on ArgumentError catch (err) {
+      state = state.copyWith(isPosting: false, errorMessage: err.message);
+      return false;
     } catch (err) {
-      state = state.copyWith(isPosting: false);
+      state = state.copyWith(
+        isPosting: false,
+        errorMessage: 'No se pudo verificar el correo',
+      );
       return false;
     }
+  }
+
+  void clearError() {
+    if (state.errorMessage.isEmpty) return;
+    state = state.copyWith(errorMessage: '');
   }
 
   void _touchEveryField() {
@@ -70,6 +81,7 @@ class VerifyEmailFormState {
   final bool isValid;
   final OtpCode code;
   final String email;
+  final String errorMessage;
 
   VerifyEmailFormState({
     this.isPosting = false,
@@ -77,6 +89,7 @@ class VerifyEmailFormState {
     this.isValid = false,
     this.code = const OtpCode.pure(),
     required this.email,
+    this.errorMessage = '',
   });
 
   VerifyEmailFormState copyWith({
@@ -85,11 +98,13 @@ class VerifyEmailFormState {
     bool? isValid,
     OtpCode? code,
     String? email,
+    String? errorMessage,
   }) => VerifyEmailFormState(
     isPosting: isPosting ?? this.isPosting,
     isFormPosted: isFormPosted ?? this.isFormPosted,
     isValid: isValid ?? this.isValid,
     code: code ?? this.code,
     email: email ?? this.email,
+    errorMessage: errorMessage ?? this.errorMessage,
   );
 }

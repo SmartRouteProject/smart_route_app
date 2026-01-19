@@ -124,9 +124,7 @@ class AddressSearchDelegate extends SearchDelegate<String?> {
                 Future.microtask(() {
                   container.read(mapProvider.notifier).selectStop(stop);
                   navigator.push(
-                    MaterialPageRoute(
-                      builder: (_) => const StopDetailPage(),
-                    ),
+                    MaterialPageRoute(builder: (_) => const StopDetailPage()),
                   );
                 });
               },
@@ -181,6 +179,7 @@ class AddressSearchDelegate extends SearchDelegate<String?> {
     if (_isFinishing) return;
     _isFinishing = true;
     await _speech.stop();
+    if (!context.mounted) return;
     _isListening = false;
     _closeListeningDialog(context);
     final words = _lastWords.trim();
@@ -197,7 +196,9 @@ class AddressSearchDelegate extends SearchDelegate<String?> {
 
     _lastWords = '';
     _isListening = true;
-    _showListeningDialog(context);
+    if (context.mounted) {
+      _showListeningDialog(context);
+    }
 
     await _speech.listen(
       pauseFor: const Duration(seconds: 3),

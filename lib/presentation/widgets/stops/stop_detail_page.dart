@@ -7,7 +7,6 @@ import 'package:smart_route_app/presentation/widgets/widgets.dart';
 
 class StopDetailPage extends ConsumerWidget {
   const StopDetailPage({super.key});
-  //TODO: Al abrir el modal de editar parada el tipo de parada se abre en entrega y no tiene la hora de llegada
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -214,8 +213,9 @@ class StopDetailPage extends ConsumerWidget {
                                 barrierColor: Colors.black54,
                                 barrierDismissible: true,
                                 barrierLabel: 'close-packages-list',
-                                transitionDuration:
-                                    const Duration(milliseconds: 250),
+                                transitionDuration: const Duration(
+                                  milliseconds: 250,
+                                ),
                                 pageBuilder: (_, __, ___) {
                                   return const AssignedPackagesList();
                                 },
@@ -296,7 +296,6 @@ class StopDetailPage extends ConsumerWidget {
 
                       const SizedBox(height: 4),
 
-                      // Botón guardar cambios
                       SizedBox(
                         width: double.infinity,
                         child: LoadingFloatingActionButton(

@@ -11,7 +11,7 @@ final List<Stop> stopsSample = [
     latitude: -34.907450,
     longitude: -56.199000,
     address: "Terminal Tres Cruces, Montevideo",
-    status: StopStatus.succeded,
+    status: StopStatus.succeeded,
   ),
   DeliveryStop(
     latitude: -34.891300,
@@ -35,7 +35,7 @@ final List<Stop> stopsSample = [
     latitude: -34.833001,
     longitude: -56.028500,
     address: "Punta Carretas Shopping, José Ellauri 350",
-    status: StopStatus.succeded,
+    status: StopStatus.succeeded,
   ),
   DeliveryStop(
     latitude: -34.903900,
@@ -59,6 +59,6 @@ final List<Stop> stopsSample = [
     latitude: -34.760800,
     longitude: -56.223200,
     address: "Las Piedras Shopping, Gral. Flores 652",
-    status: StopStatus.succeded,
+    status: StopStatus.succeeded,
   ),
 ];

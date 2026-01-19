@@ -6,6 +6,7 @@ import 'package:smart_route_app/domain/domain.dart';
 import 'package:smart_route_app/presentation/providers/map_provider.dart';
 import 'package:smart_route_app/presentation/widgets/widgets.dart';
 
+//TODO: la ultima parada queda cortada por los botones de mas abajo
 class StopsList extends ConsumerStatefulWidget {
   const StopsList({super.key});
 
@@ -58,15 +59,19 @@ class _StopsListState extends ConsumerState<StopsList> {
     await _speech.stop();
     if (!mounted) return;
     setState(() => _isListening = false);
-    _closeListeningDialog(context);
+    if (context.mounted) {
+      _closeListeningDialog(context);
+    }
     final words = _lastWords.trim();
     _isFinishing = false;
     if (words.isEmpty) return;
-    await showSearch(
-      context: context,
-      delegate: AddressSearchDelegate(),
-      query: words,
-    );
+    if (context.mounted) {
+      await showSearch(
+        context: context,
+        delegate: AddressSearchDelegate(),
+        query: words,
+      );
+    }
   }
 
   Future<void> _startVoiceSearch(BuildContext context) async {
@@ -77,7 +82,9 @@ class _StopsListState extends ConsumerState<StopsList> {
     if (!mounted) return;
     _lastWords = '';
     setState(() => _isListening = true);
-    _showListeningDialog(context);
+    if (context.mounted) {
+      _showListeningDialog(context);
+    }
 
     await _speech.listen(
       pauseFor: const Duration(seconds: 3),
@@ -97,6 +104,14 @@ class _StopsListState extends ConsumerState<StopsList> {
     final selectedRoute = mapState.selectedRoute;
     final routeName = selectedRoute?.name ?? 'Ruta sin nombre';
     final stops = selectedRoute?.stops ?? [];
+    final isCompleted = selectedRoute?.state == RouteState.completed;
+    final orderedStops = List<Stop>.from(stops)
+      ..sort((a, b) {
+        final aOrder = a.order ?? 1 << 30;
+        final bOrder = b.order ?? 1 << 30;
+        if (aOrder != bOrder) return aOrder.compareTo(bOrder);
+        return a.address.compareTo(b.address);
+      });
 
     return SafeArea(
       top: false,
@@ -112,27 +127,28 @@ class _StopsListState extends ConsumerState<StopsList> {
             ),
           ),
           const SizedBox(height: 12),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: TextFormField(
-              onTap: () async {
-                await showSearch(
-                  context: context,
-                  delegate: AddressSearchDelegate(),
-                );
-              },
-              readOnly: true,
-              decoration: InputDecoration(
-                hintText: "Excribe para añadir una parada",
-                suffixIcon: IconButton(
-                  icon: const Icon(Icons.mic),
-                  onPressed: _isListening
-                      ? null
-                      : () => _startVoiceSearch(context),
+          if (!isCompleted)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: TextFormField(
+                onTap: () async {
+                  await showSearch(
+                    context: context,
+                    delegate: AddressSearchDelegate(),
+                  );
+                },
+                readOnly: true,
+                decoration: InputDecoration(
+                  hintText: "Excribe para añadir una parada",
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.mic),
+                    onPressed: _isListening
+                        ? null
+                        : () => _startVoiceSearch(context),
+                  ),
                 ),
               ),
             ),
-          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: ListTile(
@@ -141,6 +157,9 @@ class _StopsListState extends ConsumerState<StopsList> {
                 routeName,
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
+              trailing: selectedRoute == null
+                  ? null
+                  : _RouteStatusBadge(status: selectedRoute.state),
               onTap: () {},
             ),
           ),
@@ -164,19 +183,25 @@ class _StopsListState extends ConsumerState<StopsList> {
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              itemCount: stops.length,
+              itemCount: orderedStops.length,
               itemBuilder: (context, index) => Card(
                 child: ListTile(
                   leading: Icon(Icons.route),
-                  title: Text('Parada #${index + 1}'),
-                  subtitle: Text(stops[index].address),
+                  title: Text(
+                    'Parada #${orderedStops[index].order ?? index + 1}',
+                  ),
+                  subtitle: Text(
+                    orderedStops[index].address,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   trailing: Icon(Icons.chevron_right),
                   onTap: () {
                     if (selectedRoute?.state == RouteState.started) {
-                      mapNotifier.selectStop(stops[index]);
+                      mapNotifier.selectStop(orderedStops[index]);
                       return;
                     }
-                    mapNotifier.selectStop(stops[index]);
+                    mapNotifier.selectStop(orderedStops[index]);
                   },
                 ),
               ),
@@ -186,4 +211,58 @@ class _StopsListState extends ConsumerState<StopsList> {
       ),
     );
   }
+}
+
+class _RouteStatusBadge extends StatelessWidget {
+  final RouteState status;
+
+  const _RouteStatusBadge({required this.status});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = _routeStatusColors(theme, status);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: colors.background,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        status.label,
+        style: theme.textTheme.labelSmall?.copyWith(
+          color: colors.foreground,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
+_StatusColors _routeStatusColors(ThemeData theme, RouteState status) {
+  switch (status) {
+    case RouteState.completed:
+      return _StatusColors(
+        background: Colors.green.withValues(alpha: 0.12),
+        foreground: Colors.green,
+      );
+    case RouteState.started:
+      return _StatusColors(
+        background: theme.colorScheme.primary.withValues(alpha: 0.12),
+        foreground: theme.colorScheme.primary,
+      );
+    case RouteState.planned:
+      return _StatusColors(
+        background: Colors.grey.withValues(alpha: 0.2),
+        foreground: Colors.grey.shade700,
+      );
+  }
+}
+
+class _StatusColors {
+  final Color background;
+  final Color foreground;
+
+  const _StatusColors({required this.background, required this.foreground});
 }
