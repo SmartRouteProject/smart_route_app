@@ -56,6 +56,7 @@ class ReportFormNotifier extends StateNotifier<ReportFormState> {
     }
 
     try {
+      state = state.copyWith(isPosting: true, errorMessage: '');
       final dateRange = state.dateRange!;
       final packageType = state.packageType!;
       final documentType = state.documentType!;
@@ -67,13 +68,16 @@ class ReportFormNotifier extends StateNotifier<ReportFormState> {
       );
 
       await reportRepository.generatePackagesReport(dto);
-      state = state.copyWith(errorMessage: '');
+      state = state.copyWith(isPosting: false, errorMessage: '');
       return true;
     } on ArgumentError catch (err) {
-      state = state.copyWith(errorMessage: err.message);
+      state = state.copyWith(isPosting: false, errorMessage: err.message);
       return false;
     } catch (_) {
-      state = state.copyWith(errorMessage: 'No se pudo generar el reporte');
+      state = state.copyWith(
+        isPosting: false,
+        errorMessage: 'No se pudo generar el reporte',
+      );
       return false;
     }
   }
@@ -95,12 +99,14 @@ class ReportFormState {
   final PackageWeightType? packageType;
   final ReportDocumentType? documentType;
   final String errorMessage;
+  final bool isPosting;
 
   const ReportFormState({
     this.dateRange,
     this.packageType,
     this.documentType,
     this.errorMessage = '',
+    this.isPosting = false,
   });
 
   bool get isValid =>
@@ -111,10 +117,12 @@ class ReportFormState {
     PackageWeightType? packageType,
     ReportDocumentType? documentType,
     String? errorMessage,
+    bool? isPosting,
   }) => ReportFormState(
     dateRange: dateRange ?? this.dateRange,
     packageType: packageType ?? this.packageType,
     documentType: documentType ?? this.documentType,
     errorMessage: errorMessage ?? this.errorMessage,
+    isPosting: isPosting ?? this.isPosting,
   );
 }

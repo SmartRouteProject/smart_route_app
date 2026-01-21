@@ -64,15 +64,27 @@ class GenerateReportDialog extends ConsumerWidget {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
+          onPressed: state.isPosting
+              ? null
+              : () => Navigator.of(context).pop(false),
           child: const Text('Cancelar'),
         ),
         TextButton(
-          onPressed: () {
-            notifier.onSubmit();
-            Navigator.of(context).pop(true);
-          },
-          child: const Text('Aceptar'),
+          onPressed: state.isPosting
+              ? null
+              : () async {
+                  final success = await notifier.onSubmit();
+                  if (success && context.mounted) {
+                    Navigator.of(context).pop(true);
+                  }
+                },
+          child: state.isPosting
+              ? const SizedBox(
+                  height: 18,
+                  width: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('Aceptar'),
         ),
       ],
       actionsAlignment: MainAxisAlignment.center,
