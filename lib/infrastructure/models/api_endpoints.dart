@@ -14,6 +14,7 @@ abstract class ApiEndpoints {
   static String searchAddress = "/maps/findPlace";
   static String getReturnAddresses = "/ReturnAddress";
   static String createReturnAddress = "/ReturnAddress";
+  static String generatePackagesReport = "/Reports/packages";
 
   static String getRouteById(String id) => "/route/$id";
   static String updateRouteById(String id) => "/route/$id";

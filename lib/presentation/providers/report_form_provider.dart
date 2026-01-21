@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:smart_route_app/domain/enums/package_weight_type.dart';
+import 'package:smart_route_app/domain/domain.dart';
+import 'package:smart_route_app/infrastructure/infrastructure.dart';
 
 enum ReportDocumentType { pdf, excel }
 
@@ -20,16 +21,19 @@ final reportFormProvider =
     StateNotifierProvider.autoDispose<ReportFormNotifier, ReportFormState>((
       ref,
     ) {
-      return ReportFormNotifier();
+      return ReportFormNotifier(reportRepository: ReportRepositoryImpl());
     });
 
 class ReportFormNotifier extends StateNotifier<ReportFormState> {
-  ReportFormNotifier()
+  final IReportRepository reportRepository;
+
+  ReportFormNotifier({required this.reportRepository})
     : super(
         ReportFormState(
           dateRange: _todayRange(),
           packageType: PackageWeightType.under_25kg,
           documentType: ReportDocumentType.pdf,
+          errorMessage: '',
         ),
       );
 
@@ -45,10 +49,38 @@ class ReportFormNotifier extends StateNotifier<ReportFormState> {
     state = state.copyWith(documentType: value);
   }
 
-  void onSubmit() {
-    debugPrint('Report dateRange: ${state.dateRange}');
-    debugPrint('Report packageType: ${state.packageType}');
-    debugPrint('Report documentType: ${state.documentType}');
+  Future<bool> onSubmit() async {
+    if (!state.isValid) {
+      state = state.copyWith(errorMessage: 'Formulario incompleto');
+      return false;
+    }
+
+    try {
+      final dateRange = state.dateRange!;
+      final packageType = state.packageType!;
+      final documentType = state.documentType!;
+      final dto = GeneratePackagesReportDto(
+        from: dateRange.start,
+        to: dateRange.end,
+        weightFilter: packageType,
+        format: documentType.label,
+      );
+
+      await reportRepository.generatePackagesReport(dto);
+      state = state.copyWith(errorMessage: '');
+      return true;
+    } on ArgumentError catch (err) {
+      state = state.copyWith(errorMessage: err.message);
+      return false;
+    } catch (_) {
+      state = state.copyWith(errorMessage: 'No se pudo generar el reporte');
+      return false;
+    }
+  }
+
+  void clearError() {
+    if (state.errorMessage.isEmpty) return;
+    state = state.copyWith(errorMessage: '');
   }
 }
 
@@ -62,8 +94,14 @@ class ReportFormState {
   final DateTimeRange? dateRange;
   final PackageWeightType? packageType;
   final ReportDocumentType? documentType;
+  final String errorMessage;
 
-  const ReportFormState({this.dateRange, this.packageType, this.documentType});
+  const ReportFormState({
+    this.dateRange,
+    this.packageType,
+    this.documentType,
+    this.errorMessage = '',
+  });
 
   bool get isValid =>
       dateRange != null && packageType != null && documentType != null;
@@ -72,9 +110,11 @@ class ReportFormState {
     DateTimeRange? dateRange,
     PackageWeightType? packageType,
     ReportDocumentType? documentType,
+    String? errorMessage,
   }) => ReportFormState(
     dateRange: dateRange ?? this.dateRange,
     packageType: packageType ?? this.packageType,
     documentType: documentType ?? this.documentType,
+    errorMessage: errorMessage ?? this.errorMessage,
   );
 }

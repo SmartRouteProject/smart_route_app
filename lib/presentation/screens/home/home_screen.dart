@@ -61,6 +61,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       _showSnackbar(context, next.errorMessage);
       ref.read(returnAddressFormProvider.notifier).clearError();
     });
+    ref.listen<ReportFormState>(reportFormProvider, (previous, next) {
+      if (next.errorMessage.isEmpty) return;
+      _showSnackbar(context, next.errorMessage);
+      ref.read(reportFormProvider.notifier).clearError();
+    });
 
     final mapState = ref.watch(mapProvider);
     final size = MediaQuery.of(context).size;
