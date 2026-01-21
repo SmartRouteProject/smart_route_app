@@ -1,33 +1,92 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:smart_route_app/domain/enums/package_weight_type.dart';
+import 'package:smart_route_app/presentation/providers/providers.dart';
 import 'package:smart_route_app/presentation/widgets/shared/custom_dropdown_button_form_field.dart';
 
-class GenerateReportDialog extends StatefulWidget {
+class GenerateReportDialog extends ConsumerWidget {
   const GenerateReportDialog({super.key});
 
   @override
-  State<GenerateReportDialog> createState() => _GenerateReportDialogState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(reportFormProvider);
+    final notifier = ref.read(reportFormProvider.notifier);
+    final dateRangeText = state.dateRange == null
+        ? ''
+        : '${_formatDate(state.dateRange!.start)} - ${_formatDate(state.dateRange!.end)}';
 
-class _GenerateReportDialogState extends State<GenerateReportDialog> {
-  final _formKey = GlobalKey<FormState>();
-  final _dateRangeController = TextEditingController();
-
-  DateTimeRange? _selectedRange;
-  PackageWeightType? _selectedPackageType;
-  String? _selectedDocumentType;
-
-  @override
-  void dispose() {
-    _dateRangeController.dispose();
-    super.dispose();
+    return AlertDialog(
+      title: const Text('Generar reporte', textAlign: TextAlign.center),
+      content: Form(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            InkWell(
+              onTap: () => _pickDateRange(notifier, state.dateRange, context),
+              borderRadius: BorderRadius.circular(4),
+              child: InputDecorator(
+                decoration: const InputDecoration(
+                  labelText: 'Rango de fechas',
+                  suffixIcon: Icon(Icons.date_range),
+                ),
+                child: Text(
+                  dateRangeText.isEmpty ? 'Seleccionar' : dateRangeText,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            CustomDropdownButtonFormField<PackageWeightType>(
+              label: 'Tipo de paquete',
+              value: state.packageType,
+              items: PackageWeightType.values
+                  .map(
+                    (type) =>
+                        DropdownMenuItem(value: type, child: Text(type.label)),
+                  )
+                  .toList(),
+              onChanged: notifier.onPackageTypeChanged,
+            ),
+            const SizedBox(height: 12),
+            CustomDropdownButtonFormField<ReportDocumentType>(
+              label: 'Tipo de documento',
+              value: state.documentType,
+              items: ReportDocumentType.values
+                  .map(
+                    (type) =>
+                        DropdownMenuItem(value: type, child: Text(type.label)),
+                  )
+                  .toList(),
+              onChanged: notifier.onDocumentTypeChanged,
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: const Text('Cancelar'),
+        ),
+        TextButton(
+          onPressed: () {
+            notifier.onSubmit();
+            Navigator.of(context).pop(true);
+          },
+          child: const Text('Aceptar'),
+        ),
+      ],
+      actionsAlignment: MainAxisAlignment.center,
+    );
   }
 
-  Future<void> _pickDateRange() async {
+  Future<void> _pickDateRange(
+    ReportFormNotifier notifier,
+    DateTimeRange? currentRange,
+    BuildContext context,
+  ) async {
     final now = DateTime.now();
     final initialRange =
-        _selectedRange ??
+        currentRange ??
         DateTimeRange(
           start: DateTime(now.year, now.month, now.day - 7),
           end: DateTime(now.year, now.month, now.day),
@@ -40,77 +99,12 @@ class _GenerateReportDialogState extends State<GenerateReportDialog> {
     );
     if (range == null) return;
 
-    setState(() {
-      _selectedRange = range;
-      _dateRangeController.text =
-          '${_formatDate(range.start)} - ${_formatDate(range.end)}';
-    });
+    notifier.onDateRangeChanged(range);
   }
 
   String _formatDate(DateTime date) {
     final month = date.month.toString().padLeft(2, '0');
     final day = date.day.toString().padLeft(2, '0');
     return '${date.year}-$month-$day';
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Generar reporte', textAlign: TextAlign.center),
-      content: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextFormField(
-              controller: _dateRangeController,
-              readOnly: true,
-              decoration: const InputDecoration(
-                labelText: 'Rango de fechas',
-                suffixIcon: Icon(Icons.date_range),
-              ),
-              onTap: _pickDateRange,
-            ),
-            const SizedBox(height: 12),
-            CustomDropdownButtonFormField<PackageWeightType>(
-              label: 'Tipo de paquete',
-              value: _selectedPackageType,
-              items: PackageWeightType.values
-                  .map(
-                    (type) =>
-                        DropdownMenuItem(value: type, child: Text(type.label)),
-                  )
-                  .toList(),
-              onChanged: (value) => setState(() {
-                _selectedPackageType = value;
-              }),
-            ),
-            const SizedBox(height: 12),
-            CustomDropdownButtonFormField<String>(
-              label: 'Tipo de documento',
-              value: _selectedDocumentType,
-              items: const [
-                DropdownMenuItem(value: 'pdf', child: Text('PDF')),
-                DropdownMenuItem(value: 'excel', child: Text('Excel')),
-              ],
-              onChanged: (value) => setState(() {
-                _selectedDocumentType = value;
-              }),
-            ),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('Cancelar'),
-        ),
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(true),
-          child: const Text('Aceptar'),
-        ),
-      ],
-      actionsAlignment: MainAxisAlignment.center,
-    );
   }
 }
