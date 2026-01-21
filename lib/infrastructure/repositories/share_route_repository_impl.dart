@@ -9,7 +9,7 @@ class ShareRouteRepositoryImpl extends IShareRouteRepository {
           shareRouteDatasource ?? ShareRouteDatasourceImpl();
 
   @override
-  Future<bool> shareRoute(String routeId) {
+  Future<String?> shareRoute(String routeId) {
     return shareRouteDatasource.shareRoute(routeId);
   }
 

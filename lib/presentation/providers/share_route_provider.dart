@@ -16,65 +16,97 @@ class ShareRouteNotifier extends StateNotifier<ShareRouteState> {
   ShareRouteNotifier({required this.shareRouteRepository})
     : super(const ShareRouteState());
 
-  Future<bool> shareRoute(String routeId) async {
+  Future<String?> shareRoute(String routeId) async {
     if (routeId.isEmpty) {
-      state = state.copyWith(errorMessage: 'Ruta no seleccionada');
-      return false;
+      if (mounted) {
+        state = state.copyWith(errorMessage: 'Ruta no seleccionada');
+      }
+      return null;
     }
 
-    state = state.copyWith(isSharing: true, errorMessage: '');
+    if (mounted) {
+      state = state.copyWith(isSharing: true, errorMessage: '');
+    }
     try {
       final result = await shareRouteRepository.shareRoute(routeId);
-      if (!result) {
-        state = state.copyWith(errorMessage: 'No se pudo compartir la ruta');
-        return false;
+      if (result == null || result.isEmpty) {
+        if (mounted) {
+          state = state.copyWith(errorMessage: 'No se pudo compartir la ruta');
+        }
+        return null;
       }
-      state = state.copyWith(errorMessage: '');
-      return true;
+      if (mounted) {
+        state = state.copyWith(errorMessage: '');
+      }
+      return result;
     } on ArgumentError catch (err) {
-      state = state.copyWith(errorMessage: err.message);
-      return false;
+      if (mounted) {
+        state = state.copyWith(errorMessage: err.message);
+      }
+      return null;
     } catch (_) {
-      state = state.copyWith(errorMessage: 'No se pudo compartir la ruta');
-      return false;
+      if (mounted) {
+        state = state.copyWith(errorMessage: 'No se pudo compartir la ruta');
+      }
+      return null;
     } finally {
-      state = state.copyWith(isSharing: false);
+      if (mounted) {
+        state = state.copyWith(isSharing: false);
+      }
     }
   }
 
   Future<bool> acceptSharedRoute(String sharedRouteId) async {
     if (sharedRouteId.isEmpty) {
-      state = state.copyWith(errorMessage: 'Codigo de ruta compartida vacio');
+      if (mounted) {
+        state = state.copyWith(errorMessage: 'Codigo de ruta compartida vacio');
+      }
       return false;
     }
 
-    state = state.copyWith(isAccepting: true, errorMessage: '');
+    if (mounted) {
+      state = state.copyWith(isAccepting: true, errorMessage: '');
+    }
     try {
       final result = await shareRouteRepository.acceptSharedRoute(
         sharedRouteId,
       );
       if (!result) {
-        state =
-            state.copyWith(errorMessage: 'No se pudo aceptar la ruta compartida');
+        if (mounted) {
+          state = state.copyWith(
+            errorMessage: 'No se pudo aceptar la ruta compartida',
+          );
+        }
         return false;
       }
-      state = state.copyWith(errorMessage: '');
+      if (mounted) {
+        state = state.copyWith(errorMessage: '');
+      }
       return true;
     } on ArgumentError catch (err) {
-      state = state.copyWith(errorMessage: err.message);
+      if (mounted) {
+        state = state.copyWith(errorMessage: err.message);
+      }
       return false;
     } catch (_) {
-      state =
-          state.copyWith(errorMessage: 'No se pudo aceptar la ruta compartida');
+      if (mounted) {
+        state = state.copyWith(
+          errorMessage: 'No se pudo aceptar la ruta compartida',
+        );
+      }
       return false;
     } finally {
-      state = state.copyWith(isAccepting: false);
+      if (mounted) {
+        state = state.copyWith(isAccepting: false);
+      }
     }
   }
 
   void clearError() {
     if (state.errorMessage.isEmpty) return;
-    state = state.copyWith(errorMessage: '');
+    if (mounted) {
+      state = state.copyWith(errorMessage: '');
+    }
   }
 }
 

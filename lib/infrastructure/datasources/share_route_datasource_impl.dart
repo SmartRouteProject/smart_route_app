@@ -2,10 +2,11 @@ import 'package:dio_flow/dio_flow.dart';
 
 import 'package:smart_route_app/domain/domain.dart';
 import 'package:smart_route_app/infrastructure/infrastructure.dart';
+import 'package:smart_route_app/infrastructure/models/share_route_response.dart';
 
 class ShareRouteDatasourceImpl extends IShareRouteDatasource {
   @override
-  Future<bool> shareRoute(String routeId) async {
+  Future<String?> shareRoute(String routeId) async {
     try {
       final response = await DioRequestHandler.post(
         ApiEndpoints.shareRoute(routeId),
@@ -13,10 +14,11 @@ class ShareRouteDatasourceImpl extends IShareRouteDatasource {
       );
 
       if (response is SuccessResponseModel) {
-        return true;
+        final apiResponse = ShareRouteResponse.fromJson(response.data);
+        return apiResponse.shareLink;
       } else {
         _handleShareRouteError(response.data);
-        return false;
+        return null;
       }
     } catch (err) {
       rethrow;

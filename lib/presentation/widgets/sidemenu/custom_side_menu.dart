@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
 
 import 'package:smart_route_app/presentation/providers/providers.dart';
 import 'package:smart_route_app/presentation/widgets/widgets.dart';
@@ -183,7 +184,29 @@ class _CustomSideMenuRoutesList extends ConsumerWidget {
               children: [
                 IconButton(
                   icon: const Icon(Icons.share_outlined),
-                  onPressed: () {},
+                  onPressed: () async {
+                    final link = await ref
+                        .read(shareRouteProvider.notifier)
+                        .shareRoute(route.id);
+                    if (link == null || link.isEmpty) {
+                      final error =
+                          ref.read(shareRouteProvider).errorMessage;
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              error.isNotEmpty
+                                  ? error
+                                  : 'No se pudo compartir la ruta',
+                            ),
+                          ),
+                        );
+                      }
+                      return;
+                    }
+
+                    await SharePlus.instance.share(ShareParams(text: link));
+                  },
                 ),
                 IconButton(
                   icon: const Icon(Icons.delete_outline),
