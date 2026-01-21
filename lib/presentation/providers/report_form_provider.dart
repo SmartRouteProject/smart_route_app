@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'package:smart_route_app/domain/domain.dart';
 import 'package:smart_route_app/infrastructure/infrastructure.dart';
@@ -67,7 +71,17 @@ class ReportFormNotifier extends StateNotifier<ReportFormState> {
         format: documentType.label,
       );
 
-      await reportRepository.generatePackagesReport(dto);
+      final bytes = await reportRepository.generatePackagesReport(dto);
+      final extension = _reportFileExtension(documentType);
+      final filePath = await _writeTempReport(bytes, extension);
+      final result = await OpenFilex.open(filePath);
+      if (result.type != ResultType.done) {
+        state = state.copyWith(
+          isPosting: false,
+          errorMessage: 'No se pudo abrir el archivo',
+        );
+        return false;
+      }
       state = state.copyWith(isPosting: false, errorMessage: '');
       return true;
     } on ArgumentError catch (err) {
@@ -86,6 +100,21 @@ class ReportFormNotifier extends StateNotifier<ReportFormState> {
     if (state.errorMessage.isEmpty) return;
     state = state.copyWith(errorMessage: '');
   }
+}
+
+String _reportFileExtension(ReportDocumentType documentType) {
+  if (documentType == ReportDocumentType.pdf) return 'pdf';
+  return 'xlsx';
+}
+
+Future<String> _writeTempReport(List<int> bytes, String extension) async {
+  final directory = await getTemporaryDirectory();
+  final fileName =
+      'reporte_paquetes_${DateTime.now().millisecondsSinceEpoch}.$extension';
+  final filePath = '${directory.path}${Platform.pathSeparator}$fileName';
+  final file = File(filePath);
+  await file.writeAsBytes(bytes, flush: true);
+  return file.path;
 }
 
 DateTimeRange _todayRange() {
