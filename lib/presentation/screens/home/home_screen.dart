@@ -74,6 +74,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         title: Text("Mapa"),
         actions: [
           IconButton(
+            icon: Icon(Icons.assessment_outlined),
+            onPressed: () {},
+            tooltip: 'Generar reportes',
+          ),
+          IconButton(
             icon: Icon(Icons.home),
             onPressed: () {
               showGeneralDialog(
