@@ -2,18 +2,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:smart_route_app/domain/domain.dart';
 import 'package:smart_route_app/infrastructure/infrastructure.dart';
+import 'package:smart_route_app/presentation/providers/auth_provider.dart';
+import 'package:smart_route_app/presentation/providers/map_provider.dart';
 
 final shareRouteProvider =
-    StateNotifierProvider.autoDispose<ShareRouteNotifier, ShareRouteState>(
+    StateNotifierProvider<ShareRouteNotifier, ShareRouteState>(
       (ref) => ShareRouteNotifier(
         shareRouteRepository: ShareRouteRepositoryImpl(),
+        ref: ref,
       ),
     );
 
 class ShareRouteNotifier extends StateNotifier<ShareRouteState> {
   final IShareRouteRepository shareRouteRepository;
+  final Ref<ShareRouteState> ref;
 
-  ShareRouteNotifier({required this.shareRouteRepository})
+  ShareRouteNotifier({required this.shareRouteRepository, required this.ref})
     : super(const ShareRouteState());
 
   Future<String?> shareRoute(String routeId) async {
@@ -78,6 +82,7 @@ class ShareRouteNotifier extends StateNotifier<ShareRouteState> {
         }
         return null;
       }
+      _applyAcceptedRoute(result);
       if (mounted) {
         state = state.copyWith(errorMessage: '');
       }
@@ -106,6 +111,36 @@ class ShareRouteNotifier extends StateNotifier<ShareRouteState> {
     if (mounted) {
       state = state.copyWith(errorMessage: '');
     }
+  }
+
+  void _applyAcceptedRoute(RouteEnt route) {
+    final mapState = ref.read(mapProvider);
+    final updatedMapRoutes = _upsertRoute(mapState.routes, route);
+    ref.read(mapProvider.notifier).setRoutes(updatedMapRoutes);
+    ref.read(mapProvider.notifier).selectRoute(route);
+
+    final currentUser = ref.read(authProvider).user;
+    if (currentUser != null) {
+      final updatedUserRoutes = _upsertRoute(currentUser.routes, route);
+      ref
+          .read(authProvider.notifier)
+          .updateUser(currentUser.copyWith(routes: updatedUserRoutes));
+    }
+  }
+
+  List<RouteEnt> _upsertRoute(List<RouteEnt> routes, RouteEnt updatedRoute) {
+    var replaced = false;
+    final updatedRoutes = routes.map((route) {
+      if (route.id == updatedRoute.id) {
+        replaced = true;
+        return updatedRoute;
+      }
+      return route;
+    }).toList();
+    if (!replaced) {
+      updatedRoutes.add(updatedRoute);
+    }
+    return List<RouteEnt>.unmodifiable(updatedRoutes);
   }
 }
 

@@ -82,8 +82,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ref.read(returnAddressFormProvider.notifier).clearError();
       },
     );
-
     final mapState = ref.watch(mapProvider);
+    final shareRouteState = ref.watch(shareRouteProvider);
     final size = MediaQuery.of(context).size;
     final maxSheetHeight = size.height * 0.6;
     _sheetHeight ??= _initialSheetHeight.clamp(_minSheetHeight, maxSheetHeight);
@@ -239,6 +239,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ],
             ),
           ),
+          if (shareRouteState.isAccepting) ...[
+            const ModalBarrier(dismissible: false, color: Colors.black26),
+            const Center(child: CircularProgressIndicator()),
+          ],
         ],
       ),
     );
