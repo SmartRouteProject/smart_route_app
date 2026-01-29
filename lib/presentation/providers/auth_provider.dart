@@ -3,12 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:smart_route_app/domain/domain.dart';
 import 'package:smart_route_app/infrastructure/infrastructure.dart';
+import 'package:smart_route_app/presentation/providers/map_provider.dart';
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   final authRepository = AuthRepositoryImpl();
   final routeRepository = RouteRepositoryImpl();
 
   return AuthNotifier(
+    ref: ref,
     authRepository: authRepository,
     routeRepository: routeRepository,
   );
@@ -17,9 +19,14 @@ final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
 class AuthNotifier extends StateNotifier<AuthState> {
   final IAuthRepository authRepository;
   final IRouteRepository routeRepository;
+  final Ref _ref;
 
-  AuthNotifier({required this.authRepository, required this.routeRepository})
-    : super(AuthState());
+  AuthNotifier({
+    required Ref ref,
+    required this.authRepository,
+    required this.routeRepository,
+  }) : _ref = ref,
+       super(AuthState());
 
   Future<void> loginUser(String email, String password) async {
     try {
@@ -184,6 +191,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<bool> logout({String? errorMsg}) async {
+    _ref.read(mapProvider.notifier).clearSelectedRoute();
     state = state.copyWith(
       user: null,
       authStatus: AuthStatus.notAuthenticated,
