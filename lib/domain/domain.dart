@@ -24,3 +24,5 @@ export 'datasources/i_optimization_datasource.dart';
 export 'repositories/i_optimization_repository.dart';
 export 'datasources/i_report_datasource.dart';
 export 'repositories/i_report_repository.dart';
+export 'datasources/i_share_route_datasource.dart';
+export 'repositories/i_share_route_repository.dart';

@@ -49,6 +49,14 @@ final appRouter = GoRouter(
       },
     ),
     GoRoute(
+      path: '/s/:sharedRouteId',
+      name: 'share-route-link',
+      builder: (context, state) {
+        final sharedRouteId = state.pathParameters['sharedRouteId'];
+        return HomeScreen(sharedRouteId: sharedRouteId);
+      },
+    ),
+    GoRoute(
       path: '/',
       name: HomeScreen.name,
       builder: (context, state) => const HomeScreen(),

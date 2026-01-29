@@ -15,6 +15,9 @@ abstract class ApiEndpoints {
   static String getReturnAddresses = "/ReturnAddress";
   static String createReturnAddress = "/ReturnAddress";
   static String generatePackagesReport = "/Reports/packages";
+  static String shareRoute(String routeId) => "/share/$routeId";
+  static String acceptSharedRoute(String sharedRouteId) =>
+      "/share/accept/$sharedRouteId";
 
   static String getRouteById(String id) => "/route/$id";
   static String updateRouteById(String id) => "/route/$id";

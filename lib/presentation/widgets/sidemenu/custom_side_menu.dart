@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
 
 import 'package:smart_route_app/presentation/providers/providers.dart';
 import 'package:smart_route_app/presentation/widgets/widgets.dart';
@@ -178,19 +179,61 @@ class _CustomSideMenuRoutesList extends ConsumerWidget {
             ),
             // Nombre de la ruta debajo
             subtitle: Text(route.name),
-            trailing: IconButton(
-              icon: const Icon(Icons.delete_outline),
-              onPressed: () {
-                showDialog<bool>(
-                  context: context,
-                  builder: (_) => ConfirmationDialog(
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.share_outlined),
+                  onPressed: () async {
+                    final link = await ref
+                        .read(shareRouteProvider.notifier)
+                        .shareRoute(route.id);
+                    if (link == null || link.isEmpty) {
+                      final error =
+                          ref.read(shareRouteProvider).errorMessage;
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              error.isNotEmpty
+                                  ? error
+                                  : 'No se pudo compartir la ruta',
+                            ),
+                          ),
+                        );
+                      }
+                      return;
+                    }
+
+                    await SharePlus.instance.share(ShareParams(text: link));
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete_outline),
+                  onPressed: () {
+                    showDialog<bool>(
+                      context: context,
+                      builder: (_) => ConfirmationDialog(
                     title: 'Eliminar ruta',
                     description: '¿Esta seguro que desea eliminar esta ruta?',
-                    onConfirmed: () =>
-                        ref.read(authProvider.notifier).deleteRoute(route.id),
+                    onConfirmed: () {
+                      ref
+                          .read(authProvider.notifier)
+                          .deleteRoute(route.id)
+                          .then((deleted) {
+                            if (!deleted) return;
+                            final selectedRoute =
+                                ref.read(mapProvider).selectedRoute;
+                            if (selectedRoute?.id == route.id) {
+                              mapNotifier.clearSelectedRoute();
+                            }
+                          });
+                    },
                   ),
                 );
               },
+            ),
+              ],
             ),
             onTap: () {
               mapNotifier.selectRoute(route);

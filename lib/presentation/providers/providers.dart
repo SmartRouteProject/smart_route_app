@@ -11,3 +11,4 @@ export 'package_form_provider.dart';
 export 'return_address_form_provider.dart';
 export 'optimization_provider.dart';
 export 'report_form_provider.dart';
+export 'share_route_provider.dart';

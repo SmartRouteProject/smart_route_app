@@ -11,7 +11,9 @@ import 'package:smart_route_app/presentation/widgets/widgets.dart';
 class HomeScreen extends ConsumerStatefulWidget {
   static const name = 'home-screen';
 
-  const HomeScreen({super.key});
+  final String? sharedRouteId;
+
+  const HomeScreen({super.key, this.sharedRouteId});
 
   @override
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
@@ -32,6 +34,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         behavior: SnackBarBehavior.floating,
       ),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    final sharedRouteId = widget.sharedRouteId;
+    if (sharedRouteId != null && sharedRouteId.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        final acceptedRoute = await ref
+            .read(shareRouteProvider.notifier)
+            .acceptSharedRoute(sharedRouteId);
+        if (!mounted || acceptedRoute != null) return;
+        final error = ref.read(shareRouteProvider).errorMessage;
+        if (error.isNotEmpty) {
+          _showSnackbar(context, error);
+          ref.read(shareRouteProvider.notifier).clearError();
+        }
+      });
+    }
   }
 
   @override
@@ -68,6 +89,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     });
 
     final mapState = ref.watch(mapProvider);
+    final shareRouteState = ref.watch(shareRouteProvider);
     final size = MediaQuery.of(context).size;
     final maxSheetHeight = size.height * 0.6;
     _sheetHeight ??= _initialSheetHeight.clamp(_minSheetHeight, maxSheetHeight);
@@ -233,6 +255,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ],
             ),
           ),
+          if (shareRouteState.isAccepting) ...[
+            const ModalBarrier(dismissible: false, color: Colors.black26),
+            const Center(child: CircularProgressIndicator()),
+          ],
         ],
       ),
     );
