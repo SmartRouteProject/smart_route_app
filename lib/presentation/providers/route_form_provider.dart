@@ -5,6 +5,7 @@ import 'package:smart_route_app/domain/domain.dart';
 import 'package:smart_route_app/infrastructure/infrastructure.dart';
 import 'package:smart_route_app/infrastructure/inputs/inputs.dart';
 import 'package:smart_route_app/presentation/providers/auth_provider.dart';
+import 'package:smart_route_app/presentation/providers/map_provider.dart';
 
 final routeFormProvider =
     StateNotifierProvider.autoDispose<RouteNotifier, RouteFormState>((ref) {
@@ -97,6 +98,8 @@ class RouteNotifier extends StateNotifier<RouteFormState> {
       if (routeResult == null) {
         return false;
       }
+      ref.read(mapProvider.notifier).addRoute(routeResult);
+      ref.read(mapProvider.notifier).selectRoute(routeResult);
       final currentUser = ref.read(authProvider).user;
       if (currentUser != null) {
         final updatedUser = User(

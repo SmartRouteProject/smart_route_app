@@ -164,24 +164,54 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                GestureDetector(
-                  onVerticalDragUpdate: (details) {
-                    setState(() {
-                      final next =
-                          (_sheetHeight ?? _initialSheetHeight) -
-                          details.delta.dy;
-                      final maxSheetHeight =
-                          MediaQuery.of(context).size.height * 0.6;
-                      _sheetHeight = next.clamp(
-                        _minSheetHeight,
-                        maxSheetHeight,
-                      );
-                    });
-                  },
-                  child: RouteBottomSheet(
-                    height: (_sheetHeight ?? _initialSheetHeight),
+                if (selectedRoute != null)
+                  GestureDetector(
+                    onVerticalDragUpdate: (details) {
+                      setState(() {
+                        final next =
+                            (_sheetHeight ?? _initialSheetHeight) -
+                            details.delta.dy;
+                        final maxSheetHeight =
+                            MediaQuery.of(context).size.height * 0.6;
+                        _sheetHeight = next.clamp(
+                          _minSheetHeight,
+                          maxSheetHeight,
+                        );
+                      });
+                    },
+                    child: RouteBottomSheet(
+                      height: (_sheetHeight ?? _initialSheetHeight),
+                    ),
                   ),
-                ),
+                if (selectedRoute == null)
+                  SafeArea(
+                    top: false,
+                    child: Container(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                      child: SizedBox(
+                        height: 48,
+                        width: double.infinity,
+                        child: LoadingFloatingActionButton(
+                          label: "Nueva Ruta",
+                          loader: false,
+                          onPressed: () {
+                            showGeneralDialog(
+                              context: context,
+                              barrierColor: Colors.black54,
+                              barrierDismissible: true,
+                              barrierLabel: 'close-route-form',
+                              transitionDuration: const Duration(
+                                milliseconds: 250,
+                              ),
+                              pageBuilder: (_, __, ___) {
+                                return const CreateRoute();
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
                 if (selectedRoute != null && routeState != RouteState.completed)
                   SafeArea(
                     top: false,
