@@ -14,7 +14,7 @@ class ShareRouteRepositoryImpl extends IShareRouteRepository {
   }
 
   @override
-  Future<bool> acceptSharedRoute(String sharedRouteId) {
+  Future<RouteEnt?> acceptSharedRoute(String sharedRouteId) {
     return shareRouteDatasource.acceptSharedRoute(sharedRouteId);
   }
 }

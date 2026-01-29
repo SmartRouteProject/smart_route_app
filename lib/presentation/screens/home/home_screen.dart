@@ -42,10 +42,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final sharedRouteId = widget.sharedRouteId;
     if (sharedRouteId != null && sharedRouteId.isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
-        final accepted = await ref
+        final acceptedRoute = await ref
             .read(shareRouteProvider.notifier)
             .acceptSharedRoute(sharedRouteId);
-        if (!mounted || accepted) return;
+        if (!mounted || acceptedRoute != null) return;
         final error = ref.read(shareRouteProvider).errorMessage;
         if (error.isNotEmpty) {
           _showSnackbar(context, error);

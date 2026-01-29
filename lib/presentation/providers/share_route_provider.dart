@@ -56,45 +56,44 @@ class ShareRouteNotifier extends StateNotifier<ShareRouteState> {
     }
   }
 
-  Future<bool> acceptSharedRoute(String sharedRouteId) async {
+  Future<RouteEnt?> acceptSharedRoute(String sharedRouteId) async {
     if (sharedRouteId.isEmpty) {
       if (mounted) {
         state = state.copyWith(errorMessage: 'Codigo de ruta compartida vacio');
       }
-      return false;
+      return null;
     }
 
     if (mounted) {
       state = state.copyWith(isAccepting: true, errorMessage: '');
     }
     try {
-      final result = await shareRouteRepository.acceptSharedRoute(
-        sharedRouteId,
-      );
-      if (!result) {
+      final result =
+          await shareRouteRepository.acceptSharedRoute(sharedRouteId);
+      if (result == null) {
         if (mounted) {
           state = state.copyWith(
             errorMessage: 'No se pudo aceptar la ruta compartida',
           );
         }
-        return false;
+        return null;
       }
       if (mounted) {
         state = state.copyWith(errorMessage: '');
       }
-      return true;
+      return result;
     } on ArgumentError catch (err) {
       if (mounted) {
         state = state.copyWith(errorMessage: err.message);
       }
-      return false;
+      return null;
     } catch (_) {
       if (mounted) {
         state = state.copyWith(
           errorMessage: 'No se pudo aceptar la ruta compartida',
         );
       }
-      return false;
+      return null;
     } finally {
       if (mounted) {
         state = state.copyWith(isAccepting: false);
