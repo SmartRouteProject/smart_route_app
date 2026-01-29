@@ -41,7 +41,7 @@
                 <category android:name="android.intent.category.BROWSABLE"/>
                 <data
                     android:scheme="https"
-                    android:host="smartroute.app"
+                    android:host="smartroute-fmehdretbhhpdne9.brazilsouth-01.azurewebsites.net"
                     android:pathPrefix="/s"/>
             </intent-filter>
         </activity>
