@@ -53,14 +53,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       _showSnackbar(context, next.errorMessage);
       ref.read(optimizationProvider.notifier).clearError();
     });
-    ref.listen<ReturnAddressFormState>(
-      returnAddressFormProvider,
-      (previous, next) {
-        if (next.errorMessage.isEmpty) return;
-        _showSnackbar(context, next.errorMessage);
-        ref.read(returnAddressFormProvider.notifier).clearError();
-      },
-    );
+    ref.listen<ReturnAddressFormState>(returnAddressFormProvider, (
+      previous,
+      next,
+    ) {
+      if (next.errorMessage.isEmpty) return;
+      _showSnackbar(context, next.errorMessage);
+      ref.read(returnAddressFormProvider.notifier).clearError();
+    });
+    ref.listen<ReportFormState>(reportFormProvider, (previous, next) {
+      if (next.errorMessage.isEmpty) return;
+      _showSnackbar(context, next.errorMessage);
+      ref.read(reportFormProvider.notifier).clearError();
+    });
 
     final mapState = ref.watch(mapProvider);
     final size = MediaQuery.of(context).size;
@@ -73,6 +78,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       appBar: AppBar(
         title: Text("Mapa"),
         actions: [
+          IconButton(
+            icon: Icon(Icons.assessment_outlined),
+            onPressed: () {
+              showDialog<bool>(
+                context: context,
+                builder: (_) => const GenerateReportDialog(),
+              );
+            },
+            tooltip: 'Generar reportes',
+          ),
           IconButton(
             icon: Icon(Icons.home),
             onPressed: () {

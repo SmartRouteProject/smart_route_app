@@ -6,6 +6,7 @@ import 'package:smart_route_app/domain/domain.dart';
 import 'package:smart_route_app/presentation/providers/providers.dart';
 import 'package:smart_route_app/presentation/widgets/widgets.dart';
 
+//TODO: Abrir el formulario para crear una parada y luego cerrarlo, queda una activestop invalida
 class ActiveStop extends ConsumerWidget {
   const ActiveStop({super.key});
 
