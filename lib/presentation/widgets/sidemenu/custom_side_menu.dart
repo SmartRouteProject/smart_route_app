@@ -214,15 +214,25 @@ class _CustomSideMenuRoutesList extends ConsumerWidget {
                     showDialog<bool>(
                       context: context,
                       builder: (_) => ConfirmationDialog(
-                        title: 'Eliminar ruta',
-                        description: '¿Esta seguro que desea eliminar esta ruta?',
-                        onConfirmed: () => ref
-                            .read(authProvider.notifier)
-                            .deleteRoute(route.id),
-                      ),
-                    );
-                  },
-                ),
+                    title: 'Eliminar ruta',
+                    description: '¿Esta seguro que desea eliminar esta ruta?',
+                    onConfirmed: () {
+                      ref
+                          .read(authProvider.notifier)
+                          .deleteRoute(route.id)
+                          .then((deleted) {
+                            if (!deleted) return;
+                            final selectedRoute =
+                                ref.read(mapProvider).selectedRoute;
+                            if (selectedRoute?.id == route.id) {
+                              mapNotifier.clearSelectedRoute();
+                            }
+                          });
+                    },
+                  ),
+                );
+              },
+            ),
               ],
             ),
             onTap: () {
