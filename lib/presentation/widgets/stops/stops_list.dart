@@ -6,7 +6,6 @@ import 'package:smart_route_app/domain/domain.dart';
 import 'package:smart_route_app/presentation/providers/map_provider.dart';
 import 'package:smart_route_app/presentation/widgets/widgets.dart';
 
-//TODO: la ultima parada queda cortada por los botones de mas abajo
 class StopsList extends ConsumerStatefulWidget {
   const StopsList({super.key});
 

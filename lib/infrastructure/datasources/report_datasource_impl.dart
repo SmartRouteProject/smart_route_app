@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+// ignore: depend_on_referenced_packages
 import 'package:dio/dio.dart';
 import 'package:dio_flow/dio_flow.dart';
 
