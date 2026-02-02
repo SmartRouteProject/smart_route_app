@@ -102,6 +102,11 @@ class MapNotifier extends StateNotifier<MapState> {
       return;
     }
 
+    final currentSelected = state.selectedStop;
+    final shouldUpdateSelected =
+        currentSelected != null &&
+        _isSameStopByIdOrFallback(currentSelected, originalStop);
+
     final updatedStops = List<Stop>.from(selectedRoute.stops);
     var index = updatedStops.indexWhere(
       (stop) => identical(stop, originalStop),
@@ -125,7 +130,7 @@ class MapNotifier extends StateNotifier<MapState> {
 
     state = state.copyWith(
       selectedRoute: updatedRoute,
-      selectedStop: null,
+      selectedStop: shouldUpdateSelected ? updatedStop : currentSelected,
       routes: List<RouteEnt>.unmodifiable(updatedRoutes),
       errorMessage: '',
     );
