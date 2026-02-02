@@ -39,6 +39,10 @@ class ReturnAddressFormNotifier extends StateNotifier<ReturnAddressFormState> {
     );
   }
 
+  void resetForm() {
+    state = ReturnAddressFormState();
+  }
+
   void onNicknameChanged(String value) {
     state = state.copyWith(
       nickname: value,

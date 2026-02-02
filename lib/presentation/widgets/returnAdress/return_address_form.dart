@@ -38,6 +38,11 @@ class _CreateReturnAdressFormState
             .read(returnAddressFormProvider.notifier)
             .initializeForEdit(initialAddress, initialIndex);
       });
+    } else {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ref.read(returnAddressFormProvider.notifier).resetForm();
+      });
     }
   }
 
