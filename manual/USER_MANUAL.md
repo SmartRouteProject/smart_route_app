@@ -80,7 +80,7 @@ Desde el icono de menu:
    - Eliminar parada.
 3. Guarda los cambios con **Guardar**.
 
-Gif pendiente
+![alt text](scrcpy_2j9RkonQ3Z.gif)
 
 ## Paquetes (solo en paradas de Entrega)
 
