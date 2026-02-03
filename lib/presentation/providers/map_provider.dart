@@ -128,6 +128,8 @@ class MapNotifier extends StateNotifier<MapState> {
         .map((route) => route.id == updatedRoute.id ? updatedRoute : route)
         .toList();
 
+    _updateRouteInUser(updatedRoute);
+
     state = state.copyWith(
       selectedRoute: updatedRoute,
       selectedStop: shouldUpdateSelected ? updatedStop : currentSelected,
