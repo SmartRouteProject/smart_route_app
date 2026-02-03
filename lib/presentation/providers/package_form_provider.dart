@@ -69,6 +69,8 @@ class PackageFormNotifier extends StateNotifier<PackageFormState> {
     final picked = await _picker.pickImage(
       source: ImageSource.gallery,
       imageQuality: 70,
+      maxWidth: 1280,
+      maxHeight: 1280,
     );
     if (picked != null) {
       state = state.copyWith(picture: File(picked.path));
@@ -79,6 +81,8 @@ class PackageFormNotifier extends StateNotifier<PackageFormState> {
     final picked = await _picker.pickImage(
       source: ImageSource.camera,
       imageQuality: 70,
+      maxWidth: 1280,
+      maxHeight: 1280,
     );
     if (picked != null) {
       state = state.copyWith(picture: File(picked.path));

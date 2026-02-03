@@ -134,6 +134,8 @@ class CreatePackageForm extends ConsumerWidget {
                                       fit: BoxFit.cover,
                                       width: double.infinity,
                                       height: double.infinity,
+                                      cacheWidth: 1024,
+                                      cacheHeight: 1024,
                                     ),
                                   )
                                 : Column(
