@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -5,7 +7,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 import 'package:smart_route_app/presentation/providers/providers.dart';
 import 'package:smart_route_app/presentation/screens/screens.dart';
-import 'package:smart_route_app/presentation/widgets/shared/custom_text_form_field.dart';
+import 'package:smart_route_app/presentation/widgets/widgets.dart';
 
 class LoginScreen extends StatelessWidget {
   static const name = 'login-screen';
@@ -41,9 +43,13 @@ class LoginScreen extends StatelessWidget {
 
                 const GoogleSignInButton(),
 
+                const SizedBox(height: 16),
+
+                _ForgotPasswordLink(),
+
                 Expanded(child: SizedBox()),
 
-                Text("No tienes una cuenta?", textAlign: TextAlign.center),
+                Text("¿No tienes una cuenta?", textAlign: TextAlign.center),
 
                 const SizedBox(height: 10),
 
@@ -59,6 +65,21 @@ class LoginScreen extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _ForgotPasswordLink extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.center,
+      child: TextButton(
+        onPressed: () {
+          context.pushNamed(ChangePasswordScreen.name);
+        },
+        child: const Text('¿Olvidaste tu contraseña?'),
       ),
     );
   }
@@ -81,6 +102,7 @@ class _LoginForm extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final loginForm = ref.watch(loginFormProvider);
+    final loginNotifier = ref.watch(loginFormProvider.notifier);
 
     ref.listen(authProvider, (previous, next) {
       if (next.errorMessage.isEmpty) return;
@@ -96,7 +118,7 @@ class _LoginForm extends ConsumerWidget {
               CustomTextFormField(
                 keyboardType: TextInputType.emailAddress,
                 label: 'Correo electronico',
-                onChanged: ref.read(loginFormProvider.notifier).onEmailChange,
+                onChanged: loginNotifier.onEmailChange,
                 errorMessage: loginForm.isFormPosted
                     ? loginForm.email.errorMessage
                     : null,
@@ -104,10 +126,8 @@ class _LoginForm extends ConsumerWidget {
               const SizedBox(height: 16),
               CustomTextFormField(
                 label: 'Contraseña',
-                obscureText: true,
-                onChanged: ref
-                    .read(loginFormProvider.notifier)
-                    .onPasswordChanged,
+                isPassword: true,
+                onChanged: loginNotifier.onPasswordChanged,
                 errorMessage: loginForm.isFormPosted
                     ? loginForm.password.errorMessage
                     : null,
@@ -115,28 +135,27 @@ class _LoginForm extends ConsumerWidget {
             ],
           ),
         ),
-        const SizedBox(height: 20),
-        FloatingActionButton.extended(
-          heroTag: null,
-          onPressed: loginForm.isPosting
-              ? null
-              : () async {
-                  final loginResp = await ref
-                      .read(loginFormProvider.notifier)
-                      .onFormSubmit();
-                  if (loginResp) context.goNamed(HomeScreen.name);
-                },
-          label: loginForm.isPosting
-              ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
-                )
-              : const Text("Ingresar"),
-          elevation: 0,
+        const SizedBox(height: 8),
+        LoadingFloatingActionButton(
+          label: 'Ingresar',
+          loader: loginForm.isPosting,
+          onPressed: () async {
+            final loginResp = await ref
+                .read(loginFormProvider.notifier)
+                .onFormSubmit();
+            if (!loginResp) return;
+
+            final user = ref.read(authProvider).user;
+            if (user == null) {
+              context.goNamed(
+                VerifyEmailScreen.name,
+                queryParameters: {'email': loginForm.email.value},
+              );
+              return;
+            }
+
+            context.goNamed(HomeScreen.name);
+          },
         ),
       ],
     );
@@ -178,8 +197,6 @@ class GoogleSignInButton extends ConsumerWidget {
           _showSnackbar(context, "No se pudo obtener el token de Google");
           return;
         }
-
-        debugPrint("idToken: $idToken");
 
         final success = await ref
             .read(authProvider.notifier)

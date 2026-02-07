@@ -24,7 +24,7 @@ class AuthDatasourceImpl extends IAuthDatasource {
         );
 
         if (apiResponse.error.code == 'AUTH002') {
-          throw WrongCredentials();
+          throw AUTH002WrongCredentials();
         }
         throw ArgumentError(
           'Error del servidor, consultar con el administrador',
@@ -59,7 +59,7 @@ class AuthDatasourceImpl extends IAuthDatasource {
         );
 
         if (apiResponse.error.code == "AUTH004") {
-          throw EmailAlreadyRegisterdManually();
+          throw AUTH004EmailAlreadyRegisteredManually();
         } else if (apiResponse.error.message.isNotEmpty) {
           throw ArgumentError(apiResponse.error.message);
         }
@@ -96,7 +96,131 @@ class AuthDatasourceImpl extends IAuthDatasource {
         );
 
         if (apiResponse.error.code == 'USER003') {
-          throw DuplicatedEmail();
+          throw USER003DuplicatedEmail();
+        }
+        throw ArgumentError(
+          'Error del servidor, consultar con el administrador',
+        );
+      }
+    } catch (err) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<bool> sendEmailVerification(String email) async {
+    try {
+      final response = await DioRequestHandler.post(
+        ApiEndpoints.sendEmailVerification,
+        data: {'email': email},
+        requestOptions: RequestOptionsModel(hasBearerToken: false),
+      );
+
+      if (response is SuccessResponseModel) {
+        return true;
+      } else {
+        final apiResponse = ApiResponse<Object?>.fromJson(
+          response.data,
+          (json) => json,
+        );
+
+        if (apiResponse.error.message.isNotEmpty) {
+          throw ArgumentError(apiResponse.error.message);
+        }
+        throw ArgumentError(
+          'Error del servidor, consultar con el administrador',
+        );
+      }
+    } catch (err) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<bool> verifyEmail(String email, String code) async {
+    try {
+      final response = await DioRequestHandler.post(
+        ApiEndpoints.verifyEmail,
+        data: {'email': email, 'code': code},
+        requestOptions: RequestOptionsModel(hasBearerToken: false),
+      );
+
+      if (response is SuccessResponseModel) {
+        return true;
+      } else {
+        final apiResponse = ApiResponse<Object?>.fromJson(
+          response.data,
+          (json) => json,
+        );
+
+        if (apiResponse.error.code == "AUTH007") {
+          throw AUTH007InvalidVerificationCode();
+        }
+        throw ArgumentError(
+          'Error del servidor, consultar con el administrador',
+        );
+      }
+    } catch (err) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<bool> requestPasswordChange(String email) async {
+    try {
+      final response = await DioRequestHandler.post(
+        ApiEndpoints.requestPasswordChange,
+        data: {'email': email},
+        requestOptions: RequestOptionsModel(hasBearerToken: false),
+      );
+
+      if (response is SuccessResponseModel) {
+        return true;
+      } else {
+        final apiResponse = ApiResponse<Object?>.fromJson(
+          response.data,
+          (json) => json,
+        );
+
+        if (apiResponse.error.code == "USER005") {
+          throw USER005UnexistentUser();
+        }
+
+        throw ArgumentError(
+          'Error del servidor, consultar con el administrador',
+        );
+      }
+    } catch (err) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<bool> verifyPasswordChange(
+    String email,
+    String code,
+    String newPassword,
+  ) async {
+    try {
+      final response = await DioRequestHandler.post(
+        ApiEndpoints.verifyPasswordChange,
+        data: {'email': email, 'code': code, 'newPassword': newPassword},
+        requestOptions: RequestOptionsModel(hasBearerToken: false),
+      );
+
+      if (response is SuccessResponseModel) {
+        return true;
+      } else {
+        final apiResponse = ApiResponse<Object?>.fromJson(
+          response.data,
+          (json) => json,
+        );
+
+        if (apiResponse.error.code == "AUTH007") {
+          throw AUTH007InvalidVerificationCode();
+        }
+        if (apiResponse.error.message.isNotEmpty) {
+          throw ArgumentError(apiResponse.error.message);
         }
         throw ArgumentError(
           'Error del servidor, consultar con el administrador',

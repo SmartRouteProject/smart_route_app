@@ -1,11 +1,9 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-import 'package:smart_route_app/presentation/providers/auth_provider.dart';
+import 'package:smart_route_app/domain/domain.dart';
+import 'package:smart_route_app/presentation/providers/providers.dart';
 import 'package:smart_route_app/presentation/screens/screens.dart';
 import 'package:smart_route_app/presentation/widgets/returnAdress/return_address_list.dart';
 import 'package:smart_route_app/presentation/widgets/widgets.dart';
@@ -13,41 +11,138 @@ import 'package:smart_route_app/presentation/widgets/widgets.dart';
 class HomeScreen extends ConsumerStatefulWidget {
   static const name = 'home-screen';
 
-  const HomeScreen({super.key});
+  final String? sharedRouteId;
+
+  const HomeScreen({super.key, this.sharedRouteId});
 
   @override
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  final Completer<GoogleMapController> _controller =
-      Completer<GoogleMapController>();
-
-  static const CameraPosition _kGooglePlex = CameraPosition(
-    target: LatLng(37.42796133580664, -122.085749655962),
-    zoom: 14.4746,
-  );
-
   // Draggable persistent bottom sheet height state
   double? _sheetHeight;
-  static const double _minSheetHeight = 100;
+  static const double _minSheetHeight = 150;
   static const double _initialSheetHeight = 140;
+
+  void _showSnackbar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red.shade400,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    final sharedRouteId = widget.sharedRouteId;
+    if (sharedRouteId != null && sharedRouteId.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        final acceptedRoute = await ref
+            .read(shareRouteProvider.notifier)
+            .acceptSharedRoute(sharedRouteId);
+        if (!mounted || acceptedRoute != null) return;
+        final error = ref.read(shareRouteProvider).errorMessage;
+        if (error.isNotEmpty) {
+          _showSnackbar(context, error);
+          ref.read(shareRouteProvider.notifier).clearError();
+        }
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<String>(stopFormErrorProvider, (previous, next) {
+      if (next.isEmpty) return;
+      _showSnackbar(context, next);
+      final selectedStop = ref.read(mapProvider).selectedStop;
+      if (selectedStop == null) return;
+      ref.read(stopFormProvider(selectedStop).notifier).clearError();
+    });
+    ref.listen<String>(mapErrorProvider, (previous, next) {
+      if (next.isEmpty) return;
+      _showSnackbar(context, next);
+      ref.read(mapProvider.notifier).clearError();
+    });
+    ref.listen<OptimizationState>(optimizationProvider, (previous, next) {
+      if (next.errorMessage.isEmpty) return;
+      _showSnackbar(context, next.errorMessage);
+      ref.read(optimizationProvider.notifier).clearError();
+    });
+    ref.listen<ReturnAddressFormState>(returnAddressFormProvider, (
+      previous,
+      next,
+    ) {
+      if (next.errorMessage.isEmpty) return;
+      _showSnackbar(context, next.errorMessage);
+      ref.read(returnAddressFormProvider.notifier).clearError();
+    });
+    ref.listen<ReportFormState>(reportFormProvider, (previous, next) {
+      if (next.errorMessage.isEmpty) return;
+      _showSnackbar(context, next.errorMessage);
+      ref.read(reportFormProvider.notifier).clearError();
+    });
+
+    final mapState = ref.watch(mapProvider);
+    final shareRouteState = ref.watch(shareRouteProvider);
     final size = MediaQuery.of(context).size;
     final maxSheetHeight = size.height * 0.6;
     _sheetHeight ??= _initialSheetHeight.clamp(_minSheetHeight, maxSheetHeight);
+    final selectedRoute = mapState.selectedRoute;
+    final routeState = mapState.selectedRoute?.state;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("HomeScreen"),
+        title: Text("Mapa"),
         actions: [
+          IconButton(
+            icon: Icon(Icons.assessment_outlined),
+            onPressed: () {
+              showDialog<bool>(
+                context: context,
+                builder: (_) => const GenerateReportDialog(),
+              );
+            },
+            tooltip: 'Generar reportes',
+          ),
+          IconButton(
+            icon: Icon(Icons.home),
+            onPressed: () {
+              showGeneralDialog(
+                context: context,
+                barrierColor: Colors.black54,
+                barrierDismissible: true,
+                barrierLabel: 'close-return-adress-list',
+                transitionDuration: const Duration(milliseconds: 250),
+                pageBuilder: (_, __, ___) {
+                  return ReturnAdressList();
+                },
+              );
+            },
+            tooltip: 'Dirección de retorno',
+          ),
           IconButton(
             icon: Icon(Icons.logout),
             onPressed: () async {
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder: (_) => ConfirmationDialog(
+                  title: 'Cerrar sesi\u00f3n',
+                  description:
+                      '\u00bfEst\u00e1s seguro que deseas cerrar sesi\u00f3n?',
+                  onConfirmed: () {},
+                ),
+              );
+              if (confirmed != true) return;
+
               final logoutResp = await ref.read(authProvider.notifier).logout();
               if (logoutResp) {
+                // ignore: use_build_context_synchronously
                 context.pushReplacementNamed(LoginScreen.name);
               }
             },
@@ -60,109 +155,140 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       body: Stack(
         children: [
           // MAPA
-          GoogleMap(
-            mapType: MapType.normal,
-            initialCameraPosition: _kGooglePlex,
-            mapToolbarEnabled: false,
-            myLocationEnabled: true,
-            myLocationButtonEnabled: false,
-            zoomControlsEnabled: false,
-            compassEnabled: true,
-            onMapCreated: (GoogleMapController controller) {
-              _controller.complete(controller);
-            },
-          ),
-
-          Positioned(
-            bottom:
-                (_sheetHeight ?? _initialSheetHeight) +
-                12, // <-- separación fija
-            right: 16,
-            child: FloatingActionButton(
-              onPressed: () {
-                showGeneralDialog(
-                  context: context,
-                  barrierColor: Colors.black54,
-                  barrierDismissible: true,
-                  barrierLabel: 'close-return-adress-list',
-                  transitionDuration: const Duration(milliseconds: 250),
-                  pageBuilder: (_, __, ___) {
-                    return ReturnAdressList();
-                  },
-                );
-              },
-              elevation: 2,
-              child: Icon(Icons.home),
-            ),
-          ),
+          const CustomGoogleMap(),
 
           Positioned(
             left: 0,
             right: 0,
             bottom: 0,
-            child: GestureDetector(
-              onVerticalDragUpdate: (details) {
-                setState(() {
-                  final next =
-                      (_sheetHeight ?? _initialSheetHeight) - details.delta.dy;
-                  final maxSheetHeight =
-                      MediaQuery.of(context).size.height * 0.6;
-                  _sheetHeight = next.clamp(_minSheetHeight, maxSheetHeight);
-                });
-              },
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 120),
-                curve: Curves.easeOut,
-                width: double.infinity,
-                height: (_sheetHeight ?? _initialSheetHeight),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 12,
-                      offset: Offset(0, -2),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (selectedRoute != null)
+                  GestureDetector(
+                    onVerticalDragUpdate: (details) {
+                      setState(() {
+                        final next =
+                            (_sheetHeight ?? _initialSheetHeight) -
+                            details.delta.dy;
+                        final maxSheetHeight =
+                            MediaQuery.of(context).size.height * 0.6;
+                        _sheetHeight = next.clamp(
+                          _minSheetHeight,
+                          maxSheetHeight,
+                        );
+                      });
+                    },
+                    child: RouteBottomSheet(
+                      height: (_sheetHeight ?? _initialSheetHeight),
                     ),
-                  ],
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(16),
                   ),
-                ),
-                child: SafeArea(
-                  top: false,
-                  child: Column(
-                    children: [
-                      SizedBox(height: 8),
-                      Container(
-                        width: 44,
-                        height: 5,
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.outlineVariant,
-                          borderRadius: BorderRadius.circular(3),
-                        ),
-                      ),
-                      SizedBox(height: 12),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: TextFormField(
-                          onTap: () async {
-                            await showSearch(
+                if (selectedRoute == null)
+                  SafeArea(
+                    top: false,
+                    child: Container(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                      child: SizedBox(
+                        height: 48,
+                        width: double.infinity,
+                        child: LoadingFloatingActionButton(
+                          label: "Nueva Ruta",
+                          loader: false,
+                          onPressed: () {
+                            showGeneralDialog(
                               context: context,
-                              delegate: AddressSearchDelegate(),
+                              barrierColor: Colors.black54,
+                              barrierDismissible: true,
+                              barrierLabel: 'close-route-form',
+                              transitionDuration: const Duration(
+                                milliseconds: 250,
+                              ),
+                              pageBuilder: (_, __, ___) {
+                                return const CreateRoute();
+                              },
                             );
                           },
-                          decoration: InputDecoration(
-                            hintText: "Excribe para añadir una parada",
-                          ),
                         ),
                       ),
-                      Expanded(child: StopsList()),
-                    ],
+                    ),
                   ),
-                ),
-              ),
+                if (selectedRoute != null && routeState != RouteState.completed)
+                  SafeArea(
+                    top: false,
+                    child: Container(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surface,
+                        border: BoxBorder.all(color: Colors.grey.shade300),
+                      ),
+                      child: Column(
+                        spacing: 5,
+                        children: [
+                          if (routeState == RouteState.planned)
+                            SizedBox(
+                              height: 48,
+                              width: double.infinity,
+                              child: LoadingFloatingActionButton(
+                                label: "Iniciar Ruta",
+                                loader: false,
+                                onPressed: () async {
+                                  await ref
+                                      .read(mapProvider.notifier)
+                                      .startSelectedRoute();
+                                },
+                              ),
+                            ),
+                          if (routeState == RouteState.planned)
+                            SizedBox(
+                              height: 48,
+                              width: double.infinity,
+                              child: LoadingFloatingActionButton(
+                                label: "Optimizar",
+                                loader: false,
+                                onPressed: () {
+                                  showDialog<bool>(
+                                    context: context,
+                                    builder: (_) => const OptimizationDialog(),
+                                  );
+                                },
+                              ),
+                            ),
+                          if (routeState == RouteState.started)
+                            SizedBox(
+                              height: 48,
+                              width: double.infinity,
+                              child: LoadingFloatingActionButton(
+                                label: "Finalizar Ruta",
+                                loader: false,
+                                onPressed: () async {
+                                  final confirmed = await showDialog<bool>(
+                                    context: context,
+                                    builder: (_) => ConfirmationDialog(
+                                      title: 'Finalizar ruta',
+                                      description:
+                                          '¿Estás seguro que desea finalizar la ruta?',
+                                      onConfirmed: () {},
+                                    ),
+                                  );
+                                  if (confirmed != true) return;
+
+                                  await ref
+                                      .read(mapProvider.notifier)
+                                      .completeSelectedRoute();
+                                },
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
+          if (shareRouteState.isAccepting) ...[
+            const ModalBarrier(dismissible: false, color: Colors.black26),
+            const Center(child: CircularProgressIndicator()),
+          ],
         ],
       ),
     );

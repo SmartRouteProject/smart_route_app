@@ -31,4 +31,28 @@ class AuthRepositoryImpl extends IAuthRepository {
   Future<bool> register(User user) {
     return authDatasource.register(user);
   }
+
+  @override
+  Future<bool> sendEmailVerification(String email) {
+    return authDatasource.sendEmailVerification(email);
+  }
+
+  @override
+  Future<bool> verifyEmail(String email, String code) {
+    return authDatasource.verifyEmail(email, code);
+  }
+
+  @override
+  Future<bool> requestPasswordChange(String email) {
+    return authDatasource.requestPasswordChange(email);
+  }
+
+  @override
+  Future<bool> verifyPasswordChange(
+    String email,
+    String code,
+    String newPassword,
+  ) {
+    return authDatasource.verifyPasswordChange(email, code, newPassword);
+  }
 }

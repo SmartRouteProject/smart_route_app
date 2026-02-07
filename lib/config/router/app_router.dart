@@ -27,6 +27,36 @@ final appRouter = GoRouter(
       },
     ),
     GoRoute(
+      path: '/verify-email',
+      name: VerifyEmailScreen.name,
+      builder: (context, state) {
+        final email = state.uri.queryParameters['email'] ?? '';
+        return VerifyEmailScreen(email: email);
+      },
+    ),
+    GoRoute(
+      path: '/change-password',
+      name: ChangePasswordScreen.name,
+      builder: (context, state) {
+        return const ChangePasswordScreen();
+      },
+    ),
+    GoRoute(
+      path: '/change-password-success',
+      name: SuccesfulPasswordChangeScreen.name,
+      builder: (context, state) {
+        return const SuccesfulPasswordChangeScreen();
+      },
+    ),
+    GoRoute(
+      path: '/s/:sharedRouteId',
+      name: 'share-route-link',
+      builder: (context, state) {
+        final sharedRouteId = state.pathParameters['sharedRouteId'];
+        return HomeScreen(sharedRouteId: sharedRouteId);
+      },
+    ),
+    GoRoute(
       path: '/',
       name: HomeScreen.name,
       builder: (context, state) => const HomeScreen(),

@@ -1,0 +1,276 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'package:smart_route_app/domain/domain.dart';
+import 'package:smart_route_app/infrastructure/errors/return_address_errors.dart';
+import 'package:smart_route_app/infrastructure/infrastructure.dart';
+import 'package:smart_route_app/presentation/providers/auth_provider.dart';
+
+final returnAddressFormProvider =
+    StateNotifierProvider.autoDispose<
+      ReturnAddressFormNotifier,
+      ReturnAddressFormState
+    >((ref) {
+      final returnAddressRepository = ReturnAddressRepositoryImpl();
+      return ReturnAddressFormNotifier(
+        ref: ref,
+        returnAddressRepository: returnAddressRepository,
+      );
+    });
+
+class ReturnAddressFormNotifier extends StateNotifier<ReturnAddressFormState> {
+  final Ref _ref;
+  final IReturnAddressRepository _returnAddressRepository;
+
+  ReturnAddressFormNotifier({
+    required Ref ref,
+    required IReturnAddressRepository returnAddressRepository,
+  }) : _ref = ref,
+       _returnAddressRepository = returnAddressRepository,
+       super(ReturnAddressFormState());
+
+  void initializeForEdit(ReturnAddress address, int index) {
+    state = state.copyWith(
+      address: address.address,
+      latitude: address.latitude,
+      longitude: address.longitude,
+      nickname: address.nickname,
+      editingIndex: index,
+      isValid: _isValid(address: address.address, nickname: address.nickname),
+    );
+  }
+
+  void resetForm() {
+    state = ReturnAddressFormState();
+  }
+
+  void onNicknameChanged(String value) {
+    state = state.copyWith(
+      nickname: value,
+      isValid: _isValid(nickname: value),
+    );
+  }
+
+  void onAddressSelected(AddressSearch result) {
+    state = state.copyWith(
+      address: result.formattedAddress,
+      latitude: result.latitude,
+      longitude: result.longitude,
+      isValid: _isValid(address: result.formattedAddress),
+    );
+  }
+
+  Future<bool> onFormSubmit() async {
+    try {
+      if (state.isPosting) return false;
+      _touchEveryField();
+      if (!state.isValid) return false;
+
+      state = state.copyWith(isPosting: true, errorMessage: '');
+      final saved = await _saveReturnAddress();
+      if (mounted) {
+        state = state.copyWith(
+          isPosting: false,
+          errorMessage: saved ? '' : 'No se pudo guardar la direccion',
+        );
+      }
+      return saved;
+    } on ArgumentError catch (err) {
+      if (mounted) {
+        state = state.copyWith(isPosting: false, errorMessage: err.message);
+      }
+      return false;
+    } on ADDR002DuplicatedAddress catch (_) {
+      state = state.copyWith(
+        isPosting: false,
+        errorMessage:
+            "Ya existe una dirección de retorno con la misma dirección",
+      );
+      return false;
+    } catch (_) {
+      if (mounted) {
+        state = state.copyWith(
+          isPosting: false,
+          errorMessage: 'No se pudo guardar la direccion',
+        );
+      }
+      return false;
+    }
+  }
+
+  Future<bool> deleteReturnAddress(int index) async {
+    if (state.isPosting) return false;
+    final currentUser = _ref.read(authProvider).user;
+    if (currentUser == null) return false;
+    if (index < 0 || index >= currentUser.returnAddresses.length) return false;
+
+    state = state.copyWith(isPosting: true, errorMessage: '');
+    try {
+      final addressToDelete = currentUser.returnAddresses[index];
+      final addressId = addressToDelete.id;
+      if (addressId != null && addressId.isNotEmpty) {
+        final deleted = await _returnAddressRepository.deleteReturnAddress(
+          addressId,
+        );
+        if (!deleted) {
+          state = state.copyWith(
+            errorMessage: 'No se pudo eliminar la direccion',
+          );
+          return false;
+        }
+      }
+      final updatedAddresses = List<ReturnAddress>.from(
+        currentUser.returnAddresses,
+      )..removeAt(index);
+      final updatedUser = currentUser.copyWith(
+        returnAddresses: updatedAddresses,
+      );
+      // final savedUser = await _userRepository.editUser(updatedUser);
+      _ref.read(authProvider.notifier).updateUser(updatedUser);
+      return true;
+    } on ArgumentError catch (err) {
+      state = state.copyWith(errorMessage: err.message);
+      return false;
+    } catch (_) {
+      state = state.copyWith(errorMessage: 'No se pudo eliminar la direccion');
+      return false;
+    } finally {
+      if (mounted) {
+        state = state.copyWith(isPosting: false);
+      }
+    }
+  }
+
+  void clearError() {
+    if (state.errorMessage.isEmpty) return;
+    state = state.copyWith(errorMessage: '');
+  }
+
+  void _touchEveryField() {
+    state = state.copyWith(isFormPosted: true, isValid: _isValid());
+  }
+
+  bool _isValid({String? address, String? nickname}) {
+    final addressValue = address ?? state.address;
+    final nicknameValue = nickname ?? state.nickname;
+    return addressValue.trim().isNotEmpty && nicknameValue.trim().isNotEmpty;
+  }
+
+  Future<bool> _saveReturnAddress() async {
+    final currentUser = _ref.read(authProvider).user;
+    if (currentUser == null) return false;
+
+    final updatedAddresses = List<ReturnAddress>.from(
+      currentUser.returnAddresses,
+    );
+    ReturnAddress? savedAddress;
+    final hasEditingIndex =
+        state.editingIndex != null &&
+        state.editingIndex! >= 0 &&
+        state.editingIndex! < updatedAddresses.length;
+    final addressId = hasEditingIndex
+        ? updatedAddresses[state.editingIndex!].id
+        : null;
+    final updatedAddress = ReturnAddress(
+      id: addressId,
+      nickname: state.nickname.trim(),
+      latitude: state.latitude,
+      longitude: state.longitude,
+      address: state.address.trim(),
+    );
+
+    if (hasEditingIndex) {
+      if (addressId != null && addressId.isNotEmpty) {
+        savedAddress = await _returnAddressRepository.editReturnAddress(
+          addressId,
+          updatedAddress,
+        );
+        if (savedAddress == null) {
+          state = state.copyWith(
+            errorMessage: 'No se pudo guardar la direccion',
+          );
+          return false;
+        }
+        updatedAddresses[state.editingIndex!] = savedAddress;
+      } else {
+        updatedAddresses[state.editingIndex!] = updatedAddress;
+      }
+    } else {
+      savedAddress = await _returnAddressRepository.createReturnAddress(
+        updatedAddress,
+      );
+      if (savedAddress == null) {
+        state = state.copyWith(errorMessage: 'No se pudo guardar la direccion');
+        return false;
+      }
+      updatedAddresses.add(savedAddress);
+    }
+
+    if (savedAddress == null) {
+      return false;
+    }
+
+    final updatedUser = currentUser.copyWith(returnAddresses: updatedAddresses);
+
+    // final savedUser = await _userRepository.editUser(updatedUser);
+    _ref.read(authProvider.notifier).updateUser(updatedUser);
+    return true;
+  }
+}
+
+class ReturnAddressFormState {
+  final bool isPosting;
+  final bool isFormPosted;
+  final bool isValid;
+  final String address;
+  final double latitude;
+  final double longitude;
+  final String nickname;
+  final int? editingIndex;
+  final String errorMessage;
+
+  ReturnAddressFormState({
+    this.isPosting = false,
+    this.isFormPosted = false,
+    this.isValid = false,
+    this.address = '',
+    this.latitude = 0,
+    this.longitude = 0,
+    this.nickname = '',
+    this.editingIndex,
+    this.errorMessage = '',
+  });
+
+  String? get addressErrorMessage {
+    if (!isFormPosted) return null;
+    if (address.trim().isEmpty) return 'El campo es requerido';
+    return null;
+  }
+
+  String? get nicknameErrorMessage {
+    if (!isFormPosted) return null;
+    if (nickname.trim().isEmpty) return 'El campo es requerido';
+    return null;
+  }
+
+  ReturnAddressFormState copyWith({
+    bool? isPosting,
+    bool? isFormPosted,
+    bool? isValid,
+    String? address,
+    double? latitude,
+    double? longitude,
+    String? nickname,
+    int? editingIndex,
+    String? errorMessage,
+  }) => ReturnAddressFormState(
+    isPosting: isPosting ?? this.isPosting,
+    isFormPosted: isFormPosted ?? this.isFormPosted,
+    isValid: isValid ?? this.isValid,
+    address: address ?? this.address,
+    latitude: latitude ?? this.latitude,
+    longitude: longitude ?? this.longitude,
+    nickname: nickname ?? this.nickname,
+    editingIndex: editingIndex ?? this.editingIndex,
+    errorMessage: errorMessage ?? this.errorMessage,
+  );
+}

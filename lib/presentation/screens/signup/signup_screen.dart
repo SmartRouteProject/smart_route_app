@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:smart_route_app/presentation/screens/signup/succesful_signup_screen.dart';
+import 'package:smart_route_app/presentation/screens/screens.dart';
 import 'package:smart_route_app/presentation/widgets/widgets.dart';
 
 import '../../providers/providers.dart';
@@ -110,14 +110,14 @@ class _SignupForm extends ConsumerWidget {
                 onChanged: ref
                     .read(signupFormProvider.notifier)
                     .onPasswordChange,
-                obscureText: true,
+                isPassword: true,
                 errorMessage: signupForm.isFormPosted
                     ? signupForm.password.errorMessage
                     : null,
               ),
               CustomTextFormField(
                 label: 'Confirmar Contraseña',
-                obscureText: true,
+                isPassword: true,
                 onChanged: ref
                     .read(signupFormProvider.notifier)
                     .onConfirmPasswordChange,
@@ -131,26 +131,21 @@ class _SignupForm extends ConsumerWidget {
 
         const SizedBox(height: 40),
 
-        FloatingActionButton.extended(
-          heroTag: null,
+        LoadingFloatingActionButton(
+          label: 'Registrarse',
+          loader: signupForm.isPosting,
           onPressed: () async {
             final isValidForm = await ref
                 .read(signupFormProvider.notifier)
                 .onFormSubmit();
-            // ignore: use_build_context_synchronously
-            if (isValidForm) context.goNamed(SuccesfulSignupScreen.name);
+            if (isValidForm) {
+              // ignore: use_build_context_synchronously
+              context.goNamed(
+                VerifyEmailScreen.name,
+                queryParameters: {'email': signupForm.email.value},
+              );
+            }
           },
-          label: signupForm.isPosting
-              ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
-                )
-              : const Text("Registrarse"),
-          elevation: 0,
         ),
       ],
     );

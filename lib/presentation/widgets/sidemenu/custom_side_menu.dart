@@ -1,10 +1,8 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
 
-import 'package:smart_route_app/infrastructure/mocks/route_sample.dart';
 import 'package:smart_route_app/presentation/providers/providers.dart';
 import 'package:smart_route_app/presentation/widgets/widgets.dart';
 
@@ -25,30 +23,8 @@ class CustomSideMenu extends ConsumerWidget {
             // Header
             _SideMenuHeader(),
 
-            // Opciones de menú
-            Expanded(
-              child: ListView.separated(
-                itemCount: sampleRoutes.length,
-                separatorBuilder: (_, __) => const Divider(height: 1),
-                itemBuilder: (context, index) {
-                  final route = sampleRoutes[index];
-
-                  return ListTile(
-                    leading: const Icon(Icons.route),
-                    // Fecha primero
-                    title: Text(
-                      dateFormat.format(route.creationDate),
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    // Nombre de la ruta debajo
-                    subtitle: Text(route.name),
-                    onTap: () {
-                      Navigator.pop(context); // cierra el drawer
-                    },
-                  );
-                },
-              ),
-            ),
+            // Lista de rutas
+            _CustomSideMenuRoutesList(dateFormat: dateFormat),
 
             Divider(),
 
@@ -104,24 +80,30 @@ class _SideMenuHeader extends ConsumerWidget {
                 child: profilePicture != null ? null : const Icon(Icons.person),
               ),
               SizedBox(width: 16),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "${user.name} ${user.lastName}",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "${user.name} ${user.lastName}",
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    user.email,
-                    style: TextStyle(color: Colors.white70, fontSize: 14),
-                  ),
-                ],
+                    SizedBox(height: 4),
+                    Text(
+                      user.email,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                      style: TextStyle(color: Colors.white70, fontSize: 14),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -164,6 +146,101 @@ class _SideMenuHeader extends ConsumerWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _CustomSideMenuRoutesList extends ConsumerWidget {
+  const _CustomSideMenuRoutesList({required this.dateFormat});
+
+  final DateFormat dateFormat;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(authProvider).user!;
+    final mapNotifier = ref.read(mapProvider.notifier);
+
+    final reversedRoutes = user.routes.reversed.toList();
+
+    return Expanded(
+      child: ListView.separated(
+        itemCount: reversedRoutes.length,
+        separatorBuilder: (_, __) => const Divider(height: 1),
+        itemBuilder: (context, index) {
+          final route = reversedRoutes[index];
+
+          return ListTile(
+            leading: const Icon(Icons.route),
+            // Fecha primero
+            title: Text(
+              dateFormat.format(route.creationDate),
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+            // Nombre de la ruta debajo
+            subtitle: Text(route.name),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.share_outlined),
+                  onPressed: () async {
+                    final link = await ref
+                        .read(shareRouteProvider.notifier)
+                        .shareRoute(route.id);
+                    if (link == null || link.isEmpty) {
+                      final error =
+                          ref.read(shareRouteProvider).errorMessage;
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              error.isNotEmpty
+                                  ? error
+                                  : 'No se pudo compartir la ruta',
+                            ),
+                          ),
+                        );
+                      }
+                      return;
+                    }
+
+                    await SharePlus.instance.share(ShareParams(text: link));
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete_outline),
+                  onPressed: () {
+                    showDialog<bool>(
+                      context: context,
+                      builder: (_) => ConfirmationDialog(
+                    title: 'Eliminar ruta',
+                    description: '¿Esta seguro que desea eliminar esta ruta?',
+                    onConfirmed: () {
+                      ref
+                          .read(authProvider.notifier)
+                          .deleteRoute(route.id)
+                          .then((deleted) {
+                            if (!deleted) return;
+                            final selectedRoute =
+                                ref.read(mapProvider).selectedRoute;
+                            if (selectedRoute?.id == route.id) {
+                              mapNotifier.clearSelectedRoute();
+                            }
+                          });
+                    },
+                  ),
+                );
+              },
+            ),
+              ],
+            ),
+            onTap: () {
+              mapNotifier.selectRoute(route);
+              Navigator.pop(context); // cierra el drawer
+            },
+          );
+        },
       ),
     );
   }

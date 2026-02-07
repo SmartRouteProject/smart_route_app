@@ -29,17 +29,28 @@ class SignupFormNotifier extends StateNotifier<SignupFormState> {
 
       final newUser = User.fromSignupForm(state);
 
-      state = state.copyWith(isPosting: true);
+      state = state.copyWith(isPosting: true, errorMessage: '');
 
       await signupUserCallback(newUser);
 
-      state = state.copyWith(isPosting: false);
+      state = state.copyWith(isPosting: false, errorMessage: '');
 
       return true;
+    } on ArgumentError catch (err) {
+      state = state.copyWith(isPosting: false, errorMessage: err.message);
+      return false;
     } catch (err) {
-      state = state.copyWith(isPosting: false);
+      state = state.copyWith(
+        isPosting: false,
+        errorMessage: 'No se pudo registrar el usuario',
+      );
       return false;
     }
+  }
+
+  void clearError() {
+    if (state.errorMessage.isEmpty) return;
+    state = state.copyWith(errorMessage: '');
   }
 
   onUserNameChange(String value) {
@@ -152,6 +163,7 @@ class SignupFormState {
   final Email email;
   final Password password;
   final ConfirmPassword confirmPassword;
+  final String errorMessage;
 
   SignupFormState({
     this.isPosting = false,
@@ -162,6 +174,7 @@ class SignupFormState {
     this.email = const Email.pure(),
     this.password = const Password.pure(),
     this.confirmPassword = const ConfirmPassword.pure(),
+    this.errorMessage = '',
   });
 
   SignupFormState copyWith({
@@ -173,6 +186,7 @@ class SignupFormState {
     Email? email,
     Password? password,
     ConfirmPassword? confirmPassword,
+    String? errorMessage,
   }) => SignupFormState(
     isPosting: isPosting ?? this.isPosting,
     isFormPosted: isFormPosted ?? this.isFormPosted,
@@ -182,5 +196,6 @@ class SignupFormState {
     email: email ?? this.email,
     password: password ?? this.password,
     confirmPassword: confirmPassword ?? this.confirmPassword,
+    errorMessage: errorMessage ?? this.errorMessage,
   );
 }

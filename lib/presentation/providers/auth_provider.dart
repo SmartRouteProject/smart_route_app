@@ -3,17 +3,30 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:smart_route_app/domain/domain.dart';
 import 'package:smart_route_app/infrastructure/infrastructure.dart';
+import 'package:smart_route_app/presentation/providers/map_provider.dart';
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   final authRepository = AuthRepositoryImpl();
+  final routeRepository = RouteRepositoryImpl();
 
-  return AuthNotifier(authRepository: authRepository);
+  return AuthNotifier(
+    ref: ref,
+    authRepository: authRepository,
+    routeRepository: routeRepository,
+  );
 });
 
 class AuthNotifier extends StateNotifier<AuthState> {
   final IAuthRepository authRepository;
+  final IRouteRepository routeRepository;
+  final Ref _ref;
 
-  AuthNotifier({required this.authRepository}) : super(AuthState());
+  AuthNotifier({
+    required Ref ref,
+    required this.authRepository,
+    required this.routeRepository,
+  }) : _ref = ref,
+       super(AuthState());
 
   Future<void> loginUser(String email, String password) async {
     try {
@@ -33,7 +46,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } on ArgumentError catch (err) {
       state = state.copyWith(errorMessage: err.message);
       rethrow;
-    } on WrongCredentials catch (_) {
+    } on AUTH002WrongCredentials catch (_) {
       state = state.copyWith(errorMessage: "Credenciales incorrectas");
       rethrow;
     }
@@ -58,7 +71,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } on ArgumentError catch (err) {
       state = state.copyWith(errorMessage: err.message);
       return false;
-    } on EmailAlreadyRegisterdManually catch (_) {
+    } on AUTH004EmailAlreadyRegisteredManually catch (_) {
       state = state.copyWith(
         errorMessage:
             "Email ya fue registrado con otro metodo de autenticacion",
@@ -75,7 +88,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> registerUser(User user) async {
     try {
       await authRepository.register(user);
-    } on DuplicatedEmail catch (_) {
+    } on USER003DuplicatedEmail catch (_) {
       state = state.copyWith(
         errorMessage: "Ya existe una cuenta con ese correo",
       );
@@ -88,7 +101,97 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  Future<bool> sendEmailVerification(String email) async {
+    try {
+      final sent = await authRepository.sendEmailVerification(email);
+      if (sent) {
+        state = state.copyWith(errorMessage: '');
+      }
+      return sent;
+    } on ArgumentError catch (err) {
+      state = state.copyWith(errorMessage: err.message);
+      return false;
+    } catch (_) {
+      state = state.copyWith(
+        errorMessage: "No se pudo enviar el codigo de verificacion",
+      );
+      return false;
+    }
+  }
+
+  Future<bool> verifyEmail(String email, String code) async {
+    try {
+      final verified = await authRepository.verifyEmail(email, code);
+      if (verified) {
+        state = state.copyWith(errorMessage: '');
+      }
+      return verified;
+    } on AUTH007InvalidVerificationCode catch (_) {
+      state = state.copyWith(errorMessage: "Codigo de verificacion invalido");
+      return false;
+    } on ArgumentError catch (err) {
+      state = state.copyWith(errorMessage: err.message);
+      return false;
+    } catch (_) {
+      state = state.copyWith(errorMessage: "No se pudo verificar el correo");
+      return false;
+    }
+  }
+
+  Future<bool> requestPasswordChange(String email) async {
+    try {
+      final sent = await authRepository.requestPasswordChange(email);
+      if (sent) {
+        state = state.copyWith(errorMessage: '');
+      }
+      return sent;
+    } on ArgumentError catch (err) {
+      state = state.copyWith(errorMessage: err.message);
+      return false;
+    } on USER005UnexistentUser catch (_) {
+      state = state.copyWith(
+        errorMessage: "No existe un usuario con ese correo",
+      );
+      return false;
+    } catch (_) {
+      state = state.copyWith(
+        errorMessage: "No se pudo solicitar el cambio de contraseña",
+      );
+      return false;
+    }
+  }
+
+  Future<bool> verifyPasswordChange(
+    String email,
+    String code,
+    String newPassword,
+  ) async {
+    try {
+      final verified = await authRepository.verifyPasswordChange(
+        email,
+        code,
+        newPassword,
+      );
+      if (verified) {
+        state = state.copyWith(errorMessage: '');
+      }
+      return verified;
+    } on AUTH007InvalidVerificationCode catch (_) {
+      state = state.copyWith(errorMessage: "Codigo de verificacion invalido");
+      return false;
+    } on ArgumentError catch (err) {
+      state = state.copyWith(errorMessage: err.message);
+      return false;
+    } catch (_) {
+      state = state.copyWith(
+        errorMessage: "No se pudo actualizar la contraseña",
+      );
+      return false;
+    }
+  }
+
   Future<bool> logout({String? errorMsg}) async {
+    _ref.read(mapProvider.notifier).clearSelectedRoute();
     state = state.copyWith(
       user: null,
       authStatus: AuthStatus.notAuthenticated,
@@ -96,6 +199,30 @@ class AuthNotifier extends StateNotifier<AuthState> {
     );
 
     return true;
+  }
+
+  void updateUser(User updatedUser) {
+    state = state.copyWith(user: updatedUser);
+  }
+
+  Future<bool> deleteRoute(String routeId) async {
+    final currentUser = state.user;
+    if (currentUser == null) return false;
+
+    try {
+      final deleted = await routeRepository.deleteRoute(routeId);
+      if (deleted) {
+        final updatedUser = currentUser.copyWith(
+          routes: currentUser.routes
+              .where((route) => route.id != routeId)
+              .toList(),
+        );
+        state = state.copyWith(user: updatedUser, errorMessage: '');
+      }
+      return deleted;
+    } catch (err) {
+      rethrow;
+    }
   }
 }
 

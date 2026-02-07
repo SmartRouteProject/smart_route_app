@@ -39,17 +39,28 @@ class LoginFormNotifier extends StateNotifier<LoginFormState> {
 
       if (!state.isValid) return false;
 
-      state = state.copyWith(isPosting: true);
+      state = state.copyWith(isPosting: true, errorMessage: '');
 
       await loginUserCallback(state.email.value, state.password.value);
 
       state = state.copyWith(isPosting: false);
 
       return true;
+    } on ArgumentError catch (err) {
+      state = state.copyWith(isPosting: false, errorMessage: err.message);
+      return false;
     } catch (err) {
-      state = state.copyWith(isPosting: false);
+      state = state.copyWith(
+        isPosting: false,
+        errorMessage: 'No se pudo iniciar sesion',
+      );
       return false;
     }
+  }
+
+  void clearError() {
+    if (state.errorMessage.isEmpty) return;
+    state = state.copyWith(errorMessage: '');
   }
 
   _touchEveryField() {
@@ -71,6 +82,7 @@ class LoginFormState {
   final bool isValid;
   final Email email;
   final Password password;
+  final String errorMessage;
 
   LoginFormState({
     this.isPosting = false,
@@ -78,6 +90,7 @@ class LoginFormState {
     this.isValid = false,
     this.email = const Email.pure(),
     this.password = const Password.pure(),
+    this.errorMessage = '',
   });
 
   LoginFormState copyWith({
@@ -86,11 +99,13 @@ class LoginFormState {
     bool? isValid,
     Email? email,
     Password? password,
+    String? errorMessage,
   }) => LoginFormState(
     isPosting: isPosting ?? this.isPosting,
     isFormPosted: isFormPosted ?? this.isFormPosted,
     isValid: isValid ?? this.isValid,
     email: email ?? this.email,
     password: password ?? this.password,
+    errorMessage: errorMessage ?? this.errorMessage,
   );
 }
