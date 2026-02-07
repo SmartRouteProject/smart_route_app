@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:map_launcher/map_launcher.dart';
 
 import 'package:smart_route_app/domain/domain.dart';
 import 'package:smart_route_app/presentation/providers/providers.dart';
 import 'package:smart_route_app/presentation/widgets/widgets.dart';
 
-//TODO: Abrir el formulario para crear una parada y luego cerrarlo, queda una activestop invalida
 class ActiveStop extends ConsumerWidget {
   const ActiveStop({super.key});
 
@@ -32,6 +32,14 @@ class ActiveStop extends ConsumerWidget {
         : totalStops > 0
         ? '-/$totalStops'
         : '0/0';
+    final showClosedTime =
+        stop.status != StopStatus.pending && stop.closedTime != null;
+    final closedTimeLabel = showClosedTime
+        ? DateFormat('HH:mm').format(stop.closedTime!.toLocal())
+        : null;
+    final positionText = showClosedTime
+        ? '$positionLabel - $closedTimeLabel'
+        : positionLabel;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
@@ -71,7 +79,7 @@ class ActiveStop extends ConsumerWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                positionLabel,
+                positionText,
                 style: textTheme.bodySmall?.copyWith(
                   color: textTheme.bodySmall?.color?.withValues(alpha: 0.6),
                 ),

@@ -97,6 +97,7 @@ class _StopsListState extends ConsumerState<StopsList> {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     final mapState = ref.watch(mapProvider);
     final mapNotifier = ref.read(mapProvider.notifier);
     final returnAddress = mapState.selectedRoute?.returnAddress;
@@ -188,11 +189,13 @@ class _StopsListState extends ConsumerState<StopsList> {
                   leading: Icon(Icons.route),
                   title: Text(
                     'Parada #${orderedStops[index].order ?? index + 1}',
+                    style: textTheme.titleMedium,
                   ),
                   subtitle: Text(
                     orderedStops[index].address,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
+                    style: textTheme.bodyLarge,
                   ),
                   trailing: Icon(Icons.chevron_right),
                   onTap: () {
